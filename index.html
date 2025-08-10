@@ -960,21 +960,13 @@ function placeOrder() {
     const selectedPayment = document.querySelector('input[name="payment"]:checked');
     
     if (!selectedPayment) {
-const stripe = Stripe('pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm');
-
-fetch('https://tree-of-lifa.vercel.app/api/create-checkout-session', {
-  method: 'POST'
-})
-.then(res => res.json())
-.then(session => stripe.redirectToCheckout({ sessionId: session.id }))
-.catch(err => console.error(err));
+        alert('Vänligen välj en betalmetod');
         return;
     }
-
-    const form = document.getElementById('checkout-form');
-    const requiredFields = form.querySelectorAll('input[required]');
+    
+    // Validera formuläret
+    const requiredFields = document.querySelectorAll('input[required]');
     let allValid = true;
-
     requiredFields.forEach(field => {
         if (!field.value.trim()) {
             field.style.borderColor = '#ff6b6b';
@@ -989,6 +981,20 @@ fetch('https://tree-of-lifa.vercel.app/api/create-checkout-session', {
         return;
     }
 
+    // Om betalmetod är kort (Stripe)
+    if (selectedPayment.value === 'card') {
+        const stripe = Stripe('DIN_PUBLISHABLE_KEY'); // från Stripe Dashboard
+
+        fetch('https://DITT-VERCEL-PROJEKT.vercel.app/api/create-checkout-session', {
+            method: 'POST'
+        })
+        .then(res => res.json())
+        .then(session => stripe.redirectToCheckout({ sessionId: session.id }))
+        .catch(err => console.error(err));
+        return;
+    }
+
+    // Om annan metod (Swish etc) — kör som vanligt
     alert(`Tack för din beställning! Din betalning med ${getPaymentMethodName(selectedPayment.value)} behandlas nu. Du kommer att få en bekräftelse via e-post.`);
     
     cart = [];
