@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <script src="htftps://js.stripe.com/v3/"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TreeOfLifa - Naturliga Luffasvampar</title>
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         * {
             margin: 0;
@@ -17,16 +17,17 @@
             line-height: 1.6;
             color: #2d4a2b;
             background-color: #fefefe;
+            overflow-x: hidden;
         }
 
-        /* Header */
+        /* Header Styles */
         header {
             position: fixed;
             top: 0;
             width: 100%;
             background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 2px 30px rgba(45, 74, 43, 0.1);
             z-index: 1000;
             transition: all 0.3s ease;
         }
@@ -36,37 +37,50 @@
             justify-content: space-between;
             align-items: center;
             padding: 1rem 5%;
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         .logo {
-            font-size: 2rem;
+            font-size: 2.2rem;
             font-weight: bold;
             color: #4a7c59;
             text-decoration: none;
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: scale(1.05);
         }
 
         .logo::before {
             content: "🌿";
-            font-size: 1.5rem;
+            font-size: 1.8rem;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
         }
 
         .nav-links {
             display: flex;
             list-style: none;
-            gap: 2rem;
+            gap: 2.5rem;
+            align-items: center;
         }
 
         .nav-links a {
             text-decoration: none;
             color: #2d4a2b;
             font-weight: 500;
-            transition: color 0.3s ease, transform 0.3s ease;
+            transition: all 0.3s ease;
             position: relative;
+            padding: 0.5rem 0;
         }
 
         .nav-links a:hover {
@@ -77,7 +91,7 @@
         .nav-links a::after {
             content: '';
             position: absolute;
-            bottom: -5px;
+            bottom: 0;
             left: 0;
             width: 0;
             height: 2px;
@@ -89,10 +103,48 @@
             width: 100%;
         }
 
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.8rem;
+            color: #4a7c59;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .cart-icon:hover {
+            background: #f0f8f0;
+            transform: scale(1.1);
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+            color: white;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
         /* Hero Section */
         .hero {
             height: 100vh;
-            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 50%, #d4e6d4 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -108,78 +160,106 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23d4e6d4" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
-            opacity: 0.3;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><defs><pattern id="leaves" width="40" height="40" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="%23a8d5a8" opacity="0.3"/><circle cx="10" cy="30" r="0.5" fill="%237fb069" opacity="0.2"/></pattern></defs><rect width="200" height="200" fill="url(%23leaves)"/></svg>');
+            animation: drift 20s linear infinite;
+        }
+
+        @keyframes drift {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-40px); }
         }
 
         .hero-content {
-            max-width: 800px;
+            max-width: 900px;
             padding: 2rem;
             position: relative;
             z-index: 2;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
             color: #2d4a2b;
             font-weight: 300;
-            letter-spacing: -1px;
+            letter-spacing: -2px;
+            line-height: 1.2;
         }
 
         .hero .subtitle {
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             color: #5a7c5a;
-            margin-bottom: 2rem;
+            margin-bottom: 3rem;
             font-style: italic;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .cta-button {
             display: inline-block;
-            padding: 1rem 2.5rem;
+            padding: 1.2rem 3rem;
             background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%);
             color: white;
             text-decoration: none;
             border-radius: 50px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 30px rgba(74, 124, 89, 0.3);
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.4s ease;
+            box-shadow: 0 15px 35px rgba(74, 124, 89, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
         }
 
         .cta-button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(74, 124, 89, 0.4);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(74, 124, 89, 0.4);
         }
 
-        /* Sections */
+        /* Section Styles */
         .section {
-            padding: 5rem 5%;
-            max-width: 1200px;
+            padding: 6rem 5%;
+            max-width: 1400px;
             margin: 0 auto;
         }
 
         .section h2 {
-            font-size: 2.5rem;
-            margin-bottom: 2rem;
+            font-size: 3rem;
+            margin-bottom: 3rem;
             color: #2d4a2b;
             text-align: center;
             position: relative;
+            font-weight: 300;
         }
 
         .section h2::after {
             content: '';
             position: absolute;
-            bottom: -10px;
+            bottom: -15px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60px;
-            height: 3px;
+            width: 80px;
+            height: 4px;
             background: linear-gradient(90deg, #4a7c59, #7fb069);
             border-radius: 2px;
         }
 
         .section p {
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             line-height: 1.8;
             margin-bottom: 2rem;
             color: #4a5a4a;
@@ -192,110 +272,124 @@
         /* Products Grid */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 3rem;
-            margin-top: 3rem;
+            margin-top: 4rem;
         }
 
         .product-card {
             background: white;
-            border-radius: 20px;
+            border-radius: 25px;
             overflow: hidden;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.08);
+            transition: all 0.4s ease;
             position: relative;
+            border: 1px solid #f0f8f0;
         }
 
         .product-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            transform: translateY(-15px);
+            box-shadow: 0 25px 70px rgba(0, 0, 0, 0.12);
         }
 
         .product-image {
-            height: 250px;
+            height: 280px;
             background: linear-gradient(135deg, #e8f5e8 0%, #d4e6d4 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 4rem;
+            font-size: 5rem;
             color: #4a7c59;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .product-image::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%);
         }
 
         .product-info {
-            padding: 2rem;
+            padding: 2.5rem;
         }
 
         .product-info h3 {
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             margin-bottom: 1rem;
             color: #2d4a2b;
+            font-weight: 500;
         }
 
         .product-info p {
             color: #5a7c5a;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             text-align: left;
+            line-height: 1.6;
         }
 
         .price {
-            font-size: 1.3rem;
+            font-size: 1.5rem;
             font-weight: bold;
             color: #4a7c59;
-            margin-bottom: 1rem;
+            margin-bottom: 1.5rem;
         }
 
         .buy-button {
             background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            font-weight: 500;
+            padding: 1rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             width: 100%;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .buy-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .buy-button:hover::before {
+            left: 100%;
         }
 
         .buy-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(74, 124, 89, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(74, 124, 89, 0.3);
         }
 
-        /* Cart */
-        .cart-icon {
-            position: relative;
-            cursor: pointer;
-            font-size: 1.5rem;
-            color: #4a7c59;
-            margin-left: 1rem;
+        .buy-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
         }
 
-        .cart-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #ff6b6b;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-        }
-
+        /* Cart Sidebar */
         .cart-sidebar {
             position: fixed;
             top: 0;
-            right: -400px;
-            width: 400px;
+            right: -450px;
+            width: 450px;
             height: 100vh;
             background: white;
-            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
-            transition: right 0.3s ease;
+            box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+            transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             z-index: 2000;
             overflow-y: auto;
         }
@@ -310,9 +404,10 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.6);
             z-index: 1500;
             display: none;
+            backdrop-filter: blur(3px);
         }
 
         .cart-overlay.show {
@@ -321,23 +416,33 @@
 
         .cart-header {
             padding: 2rem;
-            border-bottom: 1px solid #e8e8e8;
+            border-bottom: 1px solid #f0f8f0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
         }
 
         .cart-header h2 {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             color: #2d4a2b;
+            margin: 0;
         }
 
         .close-cart {
             background: none;
             border: none;
-            font-size: 1.5rem;
+            font-size: 2rem;
             cursor: pointer;
             color: #666;
+            padding: 0.5rem;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-cart:hover {
+            background: #f0f0f0;
+            color: #333;
         }
 
         .cart-content {
@@ -348,46 +453,65 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 1rem 0;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 1.5rem 0;
+            border-bottom: 1px solid #f8f8f8;
         }
 
         .cart-item-info h4 {
             color: #2d4a2b;
             margin-bottom: 0.5rem;
+            font-size: 1.1rem;
         }
 
         .cart-item-price {
             font-weight: bold;
             color: #4a7c59;
+            font-size: 1.1rem;
         }
 
         .quantity-controls {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 1rem;
         }
 
         .quantity-btn {
-            background: #f0f0f0;
+            background: #f8f8f8;
             border: none;
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            color: #666;
+        }
+
+        .quantity-btn:hover {
+            background: #4a7c59;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .quantity-display {
+            font-weight: bold;
+            font-size: 1.1rem;
+            min-width: 30px;
+            text-align: center;
         }
 
         .cart-total {
             padding: 2rem;
-            border-top: 2px solid #e8e8e8;
+            border-top: 2px solid #e8f5e8;
             text-align: center;
+            background: #fafffe;
         }
 
         .total-amount {
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
             color: #2d4a2b;
             margin-bottom: 2rem;
@@ -397,131 +521,61 @@
             background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%);
             color: white;
             border: none;
-            padding: 1rem 2rem;
-            border-radius: 25px;
-            font-weight: 500;
+            padding: 1.2rem 2rem;
+            border-radius: 30px;
+            font-weight: 600;
             cursor: pointer;
             width: 100%;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             margin-bottom: 1rem;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .checkout-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .checkout-button:hover::before {
+            left: 100%;
         }
 
         .checkout-button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(74, 124, 89, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(74, 124, 89, 0.3);
         }
 
-        /* Checkout Modal */
-        .checkout-modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 3000;
-        }
-
-        .checkout-modal.show {
-            display: flex;
-        }
-
-        .checkout-content {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
-
-        .payment-methods {
-            margin-top: 2rem;
-        }
-
-        .payment-method {
-            display: flex;
-            align-items: center;
-            padding: 1rem;
-            border: 2px solid #e8e8e8;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .payment-method:hover, .payment-method.selected {
-            border-color: #4a7c59;
-            background: #f8fffe;
-        }
-
-        .payment-method input[type="radio"] {
-            margin-right: 1rem;
-        }
-
-        .payment-icon {
-            font-size: 1.5rem;
-            margin-right: 1rem;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #2d4a2b;
-            font-weight: 500;
-        }
-
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 0.8rem;
-            border: 2px solid #e8e8e8;
-            border-radius: 8px;
-            font-size: 1rem;
-        }
-
-        .form-group input:focus, .form-group select:focus {
-            outline: none;
-            border-color: #4a7c59;
-        }
-
-        .order-button {
-            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%);
-            color: white;
-            border: none;
-            padding: 1rem 2rem;
-            border-radius: 25px;
-            font-weight: 500;
-            cursor: pointer;
-            width: 100%;
-            font-size: 1.1rem;
-            margin-top: 1rem;
+        .checkout-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .empty-cart {
             text-align: center;
-            padding: 3rem 2rem;
-            color: #666;
+            padding: 4rem 2rem;
+            color: #888;
         }
 
         .empty-cart-icon {
-            font-size: 3rem;
+            font-size: 4rem;
             margin-bottom: 1rem;
-            color: #ccc;
+            color: #ddd;
         }
 
         /* Footer */
         footer {
-            background: #2d4a2b;
+            background: linear-gradient(135deg, #2d4a2b 0%, #1a2e1a 100%);
             color: white;
-            padding: 3rem 5%;
+            padding: 4rem 5% 2rem;
             text-align: center;
         }
 
@@ -533,12 +587,17 @@
         .footer-content h3 {
             margin-bottom: 1rem;
             color: #7fb069;
+            font-size: 1.5rem;
         }
 
-        /* Page content styles */
+        .footer-content p {
+            margin-bottom: 0.5rem;
+        }
+
+        /* Page Styles */
         .page {
             display: none;
-            padding-top: 100px;
+            padding-top: 120px;
             min-height: 100vh;
         }
 
@@ -546,14 +605,19 @@
             display: block;
         }
 
-        /* Responsive */
+        /* Responsive Design */
         @media (max-width: 768px) {
             .nav-links {
                 gap: 1rem;
+                font-size: 0.9rem;
+            }
+
+            .logo {
+                font-size: 1.8rem;
             }
 
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 2.8rem;
             }
 
             .hero .subtitle {
@@ -561,11 +625,25 @@
             }
 
             .section {
-                padding: 3rem 5%;
+                padding: 4rem 5%;
+            }
+
+            .section h2 {
+                font-size: 2.2rem;
             }
 
             .products-grid {
                 grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+
+            .cart-sidebar {
+                width: 100%;
+                right: -100%;
+            }
+
+            .product-card {
+                margin: 0 1rem;
             }
         }
 
@@ -573,7 +651,7 @@
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(40px);
             }
             to {
                 opacity: 1;
@@ -582,14 +660,60 @@
         }
 
         .fade-in {
-            animation: fadeInUp 0.6s ease forwards;
+            animation: fadeInUp 0.8s ease forwards;
+        }
+
+        /* Loading states */
+        .loading {
+            position: relative;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 20px;
+            height: 20px;
+            margin: -10px 0 0 -10px;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            top: 120px;
+            right: 20px;
+            background: #4a7c59;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            z-index: 4000;
+            animation: slideInRight 0.4s ease, fadeOut 0.4s ease 2.6s forwards;
+            box-shadow: 0 10px 30px rgba(74, 124, 89, 0.3);
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes fadeOut {
+            to { opacity: 0; transform: translateX(100%); }
         }
     </style>
 </head>
 <body>
     <header>
         <nav>
-            <a href="#" class="logo">TreeOfLifa</a>
+            <a href="#" class="logo" onclick="showPage('hem')">TreeOfLifa</a>
             <ul class="nav-links">
                 <li><a href="#" onclick="showPage('hem')">Hem</a></li>
                 <li><a href="#" onclick="showPage('om-oss')">Om oss</a></li>
@@ -607,14 +731,14 @@
         <section class="hero">
             <div class="hero-content fade-in">
                 <h1>Naturens Rena Skönhet</h1>
-                <p class="subtitle">Upptäck våra handplockade, ekologiska luffasvampar för en naturlig hudvård</p>
+                <p class="subtitle">Upptäck våra handplockade, ekologiska luffasvampar för en naturlig hudvård som får din hud att stråla</p>
                 <a href="#" class="cta-button" onclick="showPage('produkter')">Utforska Produkter</a>
             </div>
         </section>
 
         <section class="section">
             <h2>Varför Välja TreeOfLifa?</h2>
-            <p>Vi tror på naturens kraft att vårda och förnya din hud. Våra luffasvampar odlas med kärlek och respekt för miljön, vilket ger dig den bästa naturliga exfolieringen för en strålande, hälsosam hy.</p>
+            <p>Vi tror på naturens kraft att vårda och förnya din hud. Våra luffasvampar odlas med kärlek och respekt för miljön, vilket ger dig den bästa naturliga exfolieringen för en strålande, hälsosam hy. Varje produkt är noggrant utvald för att säkerställa högsta kvalitet och hållbarhet.</p>
         </section>
     </div>
 
@@ -624,54 +748,54 @@
             <h2>Vår Berättelse</h2>
             <p>TreeOfLifa grundades ur en passion för naturlig skönhet och hållbar livsstil. Vi startade vår resa med en enkel övertygelse: att naturen erbjuder de bästa lösningarna för hudvård.</p>
             <p>Vårt team består av naturentusiaster som arbetar direkt med lokala odlare för att säkerställa att varje luffasvamp är av högsta kvalitet. Vi tror på transparent handel och miljövänliga metoder i varje steg av vår process.</p>
-            <p>Från vårt hjärta till ditt hem, vi är stolta över att erbjuda produkter som inte bara gör din hud vacker, utan också bidrar till en mer hållbar framtid.</p>
+            <p>Från vårt hjärta till ditt hem, vi är stolta över att erbjuda produkter som inte bara gör din hud vacker, utan också bidrar till en mer hållbar framtid. Våra luffasvampar är 100% naturliga, biologiskt nedbrytbara och fria från kemikalier.</p>
         </section>
     </div>
 
     <!-- Produkter Page -->
     <div id="produkter" class="page">
         <section class="section">
-            <h2>Vårt Naturliga Sortiment</h2>
-            <p>Upptäck vår exklusiva kollektion av handplockade, ekologiska luffasvampar. Varje produkt är noggrant utvald för att ge dig den bästa naturliga exfolieringen.</p>
+            <h2>Våra Naturliga Luffasvampar</h2>
+            <p>Upptäck vår exklusiva kollektion av handplockade, ekologiska luffasvampar. Varje produkt är noggrant utvald för att ge dig den bästa naturliga exfolieringen och är perfekt för en hållbar hudvårdsrutin.</p>
             
             <div class="products-grid">
                 <div class="product-card fade-in">
-<img src="imagess/IMG_4031.JPG" alt="Beskrivning av bilden" width="300">                
+                    <div class="product-image">🧽</div>
                     <div class="product-info">
-                        <h3>Mindre Lifah</h3>
-                        <p>Vår populäraste liffasvamp, lite kompaktare, perfekt för daglig användning. Mjuk men effektiv exfoliering för alla hudtyper.</p>
-                        <div class="price">50 kr</div>
-                        <button class="buy-button" onclick="addToCart('Mindre Lifah', 50)">Lägg i kundvagn</button>
+                        <h3>Klassisk Luffasvamp</h3>
+                        <p>Vår populäraste luffasvamp, perfekt för daglig användning. Mjuk men effektiv exfoliering för alla hudtyper. Idealisk för att ge din hud en naturlig glöd.</p>
+                        <div class="price">149 kr</div>
+                        <button class="buy-button" onclick="addToCart('Klassisk Luffasvamp', 149, '🧽')">Lägg i kundvagn</button>
                     </div>
                 </div>
                 
                 <div class="product-card fade-in">
-<img src="imagess/IMG_4057.JPG" alt="Större Lifa" width="300">
+                    <div class="product-image">🌿</div>
                     <div class="product-info">
-                        <h3>Större Lifah</h3>
-                        <p>Större lifa.Extra tjock och hållbar luffasvamp för djup rengöring. Idealisk för att ta bort döda hudceller och stimulera blodcirkulationen.</
-p>
-                        <div class="price">75 kr</div>
-                        <button class="buy-button" onclick="addToCart('Större Lifa', 75)">Lägg i kundvagn</button>
+                        <h3>Premium Exfoliering</h3>
+                        <p>Extra tjock och hållbar luffasvamp för djup rengöring. Idealisk för att ta bort döda hudceller och stimulera blodcirkulationen för en föryngrad hud.</p>
+                        <div class="price">199 kr</div>
+                        <button class="buy-button" onclick="addToCart('Premium Exfoliering', 199, '🌿')">Lägg i kundvagn</button>
                     </div>
                 </div>
                 
                 <div class="product-card fade-in">
-<img src="imagess/IMG_4024.JPG" alt="Aleppotvål" width="300">
+                    <div class="product-image">✨</div>
                     <div class="product-info">
-                        <h3>Aleppotvål</h3>
-                        <p>En mild 100% naturlig tvål som är gjord på ett urgammalt recept. Många använder denna tvål mot akne med goda resultat.</p>
-                        <div class="price">50 kr</div>
-                        <button class="buy-button" onclick="addToCart('Aleppotvål', 50)">Lägg i kundvagn</button>
+                        <h3>Sensitiv Hudvård</h3>
+                        <p>Särskilt mjuk luffasvamp för känslig hud. Ger skonsam exfoliering utan irritation. Perfekt för de med känslig hud som ändå vill ha fördelarna av naturlig exfoliering.</p>
+                        <div class="price">169 kr</div>
+                        <button class="buy-button" onclick="addToCart('Sensitiv Hudvård', 169, '✨')">Lägg i kundvagn</button>
                     </div>
                 </div>
                 
                 <div class="product-card fade-in">
+                    <div class="product-image">🎁</div>
                     <div class="product-info">
                         <h3>Presentset</h3>
-                        <p>Komplett set i en fin presentask, perfekt som gåva till dina närmaste med två lifas och en Aleppotvål. Kommer även med en överraskning.</p>
-                        <div class="price">145 kr</div>
-                        <button class="buy-button" onclick="addToCart('Presentset', 145)">Lägg i kundvagn</button>
+                        <p>Komplett set med tre olika luffasvampar i vacker förpackning. Perfekt som present eller för att testa olika varianter. Inkluderar alla våra populäraste produkter.</p>
+                        <div class="price">399 kr</div>
+                        <button class="buy-button" onclick="addToCart('Presentset', 399, '🎁')">Lägg i kundvagn</button>
                     </div>
                 </div>
             </div>
@@ -689,143 +813,48 @@ p>
             <div class="empty-cart" id="empty-cart">
                 <div class="empty-cart-icon">🛒</div>
                 <p>Din kundvagn är tom</p>
+                <p style="font-size: 0.9rem; color: #999; margin-top: 1rem;">Lägg till produkter för att komma igång!</p>
             </div>
         </div>
         <div class="cart-total" id="cart-total" style="display: none;">
             <div class="total-amount" id="total-amount">Totalt: 0 kr</div>
-            <button class="checkout-button" onclick="showCheckout()">Gå till kassan</button>
+            <button class="checkout-button" onclick="proceedToCheckout()" id="checkout-btn">
+                Fortsätt till betalning
+            </button>
+            <p style="font-size: 0.9rem; color: #666; margin-top: 1rem;">
+                🚚 Fri frakt på beställningar över 300 kr
+            </p>
         </div>
     </div>
-
-<!-- Checkout Modal -->
-<div class="checkout-modal" id="checkout-modal">
-    <div class="checkout-content">
-        <form id="checkout-form" onsubmit="placeOrder(); return false;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-                <h2>Slutför ditt köp</h2>
-                <button type="button" class="close-cart" onclick="closeCheckout()">×</button>
-            </div>
-            
-            <div class="form-group">
-                <label>Leveransadress</label>
-                <input type="text" placeholder="Namn" name="namn" required>
-                <input type="text" placeholder="Adress" name="adress" style="margin-top: 0.5rem;" required>
-                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                    <input type="text" placeholder="Postnummer" name="postnummer" required>
-                    <input type="text" placeholder="Stad" name="stad" required>
-                </div>
-                <input type="email" placeholder="E-post" name="email" style="margin-top: 0.5rem;" required>
-                <input type="tel" placeholder="Telefon" name="telefon" style="margin-top: 0.5rem;" required>
-            </div>
-
-            <div class="payment-methods">
-                <h3 style="margin-bottom: 1rem;">Välj betalmetod</h3>
-                
-                <div class="payment-method" onclick="selectPayment(event, 'klarna')">
-                    <input type="radio" name="payment" value="klarna">
-                    <span class="payment-icon">💳</span>
-                    <div>
-                        <strong>Klarna</strong><br>
-                        <small>Betala senare eller dela upp betalningen</small>
-                    </div>
-                </div>
-                
-                <div class="payment-method" onclick="selectPayment(event, 'card')">
-                    <input type="radio" name="payment" value="card">
-                    <span class="payment-icon">💳</span>
-                    <div>
-                        <strong>Kort</strong><br>
-                        <small>Visa, Mastercard, American Express</small>
-                    </div>
-                </div>
-                
-                <div class="payment-method" onclick="selectPayment(event, 'swish')">
-                    <input type="radio" name="payment" value="swish">
-                    <span class="payment-icon">📱</span>
-                    <div>
-                        <strong>Swish</strong><br>
-                        <small>Betala direkt med din bank-app</small>
-                    </div>
-                </div>
-                
-                <div class="payment-method" onclick="selectPayment(event, 'bankgiro')">
-                    <input type="radio" name="payment" value="bankgiro">
-                    <span class="payment-icon">🏦</span>
-                    <div>
-                        <strong>Bankgiro</strong><br>
-                        <small>Traditionell banköverföring</small>
-                    </div>
-                </div>
-                
-                <div class="payment-method" onclick="selectPayment(event, 'paypal')">
-                    <input type="radio" name="payment" value="paypal">
-                    <span class="payment-icon">💰</span>
-                    <div>
-                        <strong>PayPal</strong><br>
-                        <small>Betala säkert med PayPal</small>
-                    </div>
-                </div>
-            </div>
-
-            <div id="card-details" style="display: none;">
-                <div class="form-group">
-                    <label>Kortuppgifter</label>
-                    <input type="text" placeholder="Kortnummer" name="kortnummer">
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                        <input type="text" placeholder="MM/ÅÅ" name="expiry">
-                        <input type="text" placeholder="CVC" name="cvc">
-                    </div>
-                </div>
-            </div>
-
-            <div style="margin-top: 2rem; padding: 1rem; background: #f8fffe; border-radius: 10px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span>Produkter:</span>
-                    <span id="checkout-subtotal">0 kr</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span>Frakt:</span>
-                    <span>49 kr</span>
-                </div>
-                <hr style="margin: 1rem 0; border: none; height: 1px; background: #e8e8e8;">
-                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;">
-                    <span>Totalt:</span>
-                    <span id="checkout-total">49 kr</span>
-                </div>
-            </div>
-
-            <button type="submit" class="order-button">Slutför beställning</button>
-        </form>
-    </div>
-</div>
-
 
     <footer>
         <div class="footer-content">
             <h3>TreeOfLifa</h3>
             <p>Naturlig skönhet, hållbar framtid</p>
-            <p>Kontakta oss: tree.of.liifa@gmail.com |</p>
+            <p>Kontakta oss: info@treeoflifa.se | 08-123 456 789</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem; opacity: 0.8;">
+                Säker betalning med Stripe | Snabb leverans | 30 dagars returrätt
+            </p>
         </div>
     </footer>
 
     <script>
+        // Stripe konfiguration
+        const stripe = Stripe('pk_test_51234567890abcdef'); // Ersätt med din Stripe Publishable Key
+        
+        // Global variabler
         let cart = [];
         let isCartOpen = false;
 
+        // Page navigation
         function showPage(pageId) {
-            // Hide all pages
             const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                page.classList.remove('active');
-            });
+            pages.forEach(page => page.classList.remove('active'));
             
-            // Show selected page
             document.getElementById(pageId).classList.add('active');
-            
-            // Scroll to top
             window.scrollTo(0, 0);
             
-            // Add fade-in animation to elements
+            // Add animations
             setTimeout(() => {
                 const elements = document.querySelectorAll('.fade-in');
                 elements.forEach((el, index) => {
@@ -834,17 +863,23 @@ p>
             }, 100);
         }
 
-        function addToCart(name, price) {
+        // Cart functionality
+        function addToCart(name, price, emoji) {
             const existingItem = cart.find(item => item.name === name);
             
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
-                cart.push({ name, price, quantity: 1 });
+                cart.push({ 
+                    name, 
+                    price, 
+                    emoji,
+                    quantity: 1 
+                });
             }
             
             updateCartDisplay();
-            showCartNotification();
+            showNotification('✅ Produkt tillagd i kundvagnen!');
         }
 
         function removeFromCart(name) {
@@ -872,38 +907,62 @@ p>
             const totalAmount = document.getElementById('total-amount');
             
             const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
             
             cartCount.textContent = itemCount;
+            cartCount.style.display = itemCount > 0 ? 'flex' : 'none';
             
             if (cart.length === 0) {
-                emptyCart.style.display = 'block';
+                cartContent.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <p>Din kundvagn är tom</p>
+                        <p style="font-size: 0.9rem; color: #999; margin-top: 1rem;">Lägg till produkter för att komma igång!</p>
+                    </div>
+                `;
                 cartTotal.style.display = 'none';
-                cartContent.innerHTML = '<div class="empty-cart" id="empty-cart"><div class="empty-cart-icon">🛒</div><p>Din kundvagn är tom</p></div>';
             } else {
-                emptyCart.style.display = 'none';
-                cartTotal.style.display = 'block';
-                
                 cartContent.innerHTML = cart.map(item => `
                     <div class="cart-item">
-                        <div class="cart-item-info">
-                            <h4>${item.name}</h4>
-                            <div class="cart-item-price">${item.price} kr</div>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="font-size: 2rem;">${item.emoji}</div>
+                            <div class="cart-item-info">
+                                <h4>${item.name}</h4>
+                                <div class="cart-item-price">${item.price} kr × ${item.quantity}</div>
+                            </div>
                         </div>
                         <div class="quantity-controls">
                             <button class="quantity-btn" onclick="updateQuantity('${item.name}', -1)">−</button>
-                            <span>${item.quantity}</span>
+                            <span class="quantity-display">${item.quantity}</span>
                             <button class="quantity-btn" onclick="updateQuantity('${item.name}', 1)">+</button>
                         </div>
                     </div>
                 `).join('');
                 
-                totalAmount.textContent = `Totalt: ${total} kr`;
+                cartTotal.style.display = 'block';
+                
+                // Beräkna frakt
+                const shippingCost = subtotal >= 300 ? 0 : 49;
+                const total = subtotal + shippingCost;
+                
+                totalAmount.innerHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Produkter:</span>
+                            <span>${subtotal} kr</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Frakt:</span>
+                            <span>${shippingCost === 0 ? 'Gratis' : shippingCost + ' kr'}</span>
+                        </div>
+                        <hr style="margin: 1rem 0; border: none; height: 1px; background: #e8e8e8;">
+                        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold;">
+                            <span>Totalt:</span>
+                            <span>${total} kr</span>
+                        </div>
+                    </div>
+                `;
             }
-            
-            // Update checkout totals
-            document.getElementById('checkout-subtotal').textContent = `${total} kr`;
-            document.getElementById('checkout-total').textContent = `${total + 49} kr`;
         }
 
         function toggleCart() {
@@ -923,156 +982,151 @@ p>
             }
         }
 
-        function showCheckout() {
+        // Stripe checkout integration
+        async function proceedToCheckout() {
             if (cart.length === 0) return;
             
-            document.getElementById('checkout-modal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeCheckout() {
-            document.getElementById('checkout-modal').classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-
-function selectPayment(event, method) {
-    // Välj radioknapp
-    document.querySelector(`input[value="${method}"]`).checked = true;
-
-    // Styla aktiv metod
-    document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-    event.currentTarget.classList.add('selected');
-
-    // Kortdetaljer
-    const cardDetails = document.getElementById('card-details');
-    const cardInputs = cardDetails.querySelectorAll('input');
-
-    if (method === 'card') {
-        cardDetails.style.display = 'block';
-        cardInputs.forEach(input => input.setAttribute('required', 'required'));
-    } else {
-        cardDetails.style.display = 'none';
-        cardInputs.forEach(input => input.removeAttribute('required'));
-    }
-}
-
-function placeOrder() {
-            const selectedPayment = document.querySelector('input[name="payment"]:checked');
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const originalText = checkoutBtn.textContent;
             
-            if (!selectedPayment) {
-                alert('Vänligen välj en betalmetod');
-                return;
-            }
+            // Visa loading state
+            checkoutBtn.textContent = 'Förbereder betalning...';
+            checkoutBtn.classList.add('loading');
+            checkoutBtn.disabled = true;
             
-            // Validera formfält
-            const requiredFields = document.querySelectorAll('input[required]');
-            let allValid = true;
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    field.style.borderColor = '#ff6b6b';
-                    allValid = false;
-                } else {
-                    field.style.borderColor = '#e8e8e8';
+            try {
+                // Förbered data för backend
+                const orderData = {
+                    items: cart.map(item => ({
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity
+                    })),
+                    currency: 'sek',
+                    success_url: window.location.origin + '/success.html',
+                    cancel_url: window.location.origin + '/?cancelled=true'
+                };
+
+                // Anropa backend för att skapa Stripe Checkout Session
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Nätverksfel vid skapande av checkout session');
                 }
-            });
-            
-            if (!allValid) {
-                alert('Vänligen fyll i alla obligatoriska fält');
-                return;
-            }
 
-            // Om Kortbetalning (Stripe)
-            if (selectedPayment.value === 'card') {
-                const stripe = Stripe('pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm');
+                const session = await response.json();
                 
-fetch('/api/create-checkout-session', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-        items: cart.map(item => ({
-            name: item.name,
-            price: item.price,
-            quantity: item.quantity
-        })),
-        method: selectedPayment.value,
-        customer: {
-            namn: document.querySelector('[name="namn"]').value,
-            adress: document.querySelector('[name="adress"]').value,
-            postnummer: document.querySelector('[name="postnummer"]').value,
-            stad: document.querySelector('[name="stad"]').value,
-            email: document.querySelector('[name="email"]').value,
-            telefon: document.querySelector('[name="telefon"]').value
-        }
-    })
-})
-.then(res => res.json())
-.then(session => stripe.redirectToCheckout({ sessionId: session.id }))
-.catch(err => console.error(err));
+                if (session.error) {
+                    throw new Error(session.error);
+                }
 
+                // Omdirigera till Stripe Checkout
+                const { error } = await stripe.redirectToCheckout({
+                    sessionId: session.sessionId
+                });
 
+                if (error) {
+                    console.error('Stripe redirect error:', error);
+                    throw new Error(error.message);
+                }
 
-        function getPaymentMethodName(method) {
-            const methods = {
-                'klarna': 'Klarna',
-                'card': 'Kort',
-                'swish': 'Swish',
-                'bankgiro': 'Bankgiro',
-                'paypal': 'PayPal'
-            };
-            return methods[method] || method;
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showNotification('❌ Ett fel uppstod. Försök igen senare.', 'error');
+                
+                // Återställ knappen
+                checkoutBtn.textContent = originalText;
+                checkoutBtn.classList.remove('loading');
+                checkoutBtn.disabled = false;
+            }
         }
 
-        function showCartNotification() {
-            // Create and show a brief notification
+        // Notification system
+        function showNotification(message, type = 'success') {
+            // Ta bort befintliga notifikationer
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
             const notification = document.createElement('div');
-            notification.innerHTML = '✅ Produkt tillagd i kundvagnen!';
-            notification.style.cssText = `
-                position: fixed;
-                top: 100px;
-                right: 20px;
-                background: #4a7c59;
-                color: white;
-                padding: 1rem 2rem;
-                border-radius: 10px;
-                z-index: 4000;
-                animation: slideIn 0.3s ease;
-            `;
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            if (type === 'error') {
+                notification.style.background = '#ff6b6b';
+            }
             
             document.body.appendChild(notification);
             
             setTimeout(() => {
-                notification.remove();
-            }, 2000);
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
         }
 
         // Header scroll effect
+        let lastScrollTop = 0;
         window.addEventListener('scroll', () => {
             const header = document.querySelector('header');
-            if (window.scrollY > 100) {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > 100) {
                 header.style.background = 'rgba(255, 255, 255, 0.98)';
+                header.style.boxShadow = '0 2px 40px rgba(45, 74, 43, 0.15)';
             } else {
                 header.style.background = 'rgba(255, 255, 255, 0.95)';
+                header.style.boxShadow = '0 2px 30px rgba(45, 74, 43, 0.1)';
             }
+            
+            // Hide/show header on scroll
+            if (scrollTop > lastScrollTop && scrollTop > 200) {
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            
+            lastScrollTop = scrollTop;
         });
 
         // Initialize animations on load
         window.addEventListener('load', () => {
             const elements = document.querySelectorAll('.fade-in');
             elements.forEach((el, index) => {
-                el.style.animationDelay = `${index * 0.1}s`;
+                el.style.animationDelay = `${index * 0.15}s`;
             });
-        });
-
-        // Close modals with Escape key
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                if (document.getElementById('checkout-modal').classList.contains('show')) {
-                    closeCheckout();
-                } else if (isCartOpen) {
-                    toggleCart();
-                }
+            
+            // Check for cancelled payment
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('cancelled') === 'true') {
+                showNotification('⚠️ Betalning avbröts. Dina produkter finns kvar i kundvagnen.', 'error');
             }
         });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isCartOpen) {
+                toggleCart();
+            }
+        });
+
+        // Mobile menu toggle (för framtida användning)
+        function toggleMobileMenu() {
+            // Implementation för mobil meny om behövs
+        }
+
+        // Prevent cart from closing when clicking inside
+        document.getElementById('cart-sidebar').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Initialize cart display
+        updateCartDisplay();
     </script>
 </body>
 </html>
