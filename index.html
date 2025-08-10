@@ -838,114 +838,295 @@
         </div>
     </footer>
 
-    <script>
-    // Stripe konfiguration
-    const stripe = Stripe('pk_test_51234567890abcdef'); // Ersätt med din Stripe Publishable Key
-    
-    // Global variabler
-    let cart = [];
-    let isCartOpen = false;
+   <script>
+        // Stripe konfiguration
+        const stripe = Stripe('pk_test_51234567890abcdef'); // Ersätt med din Stripe Publishable Key
+        
+        // Global variabler
+        let cart = [];
+        let isCartOpen = false;
 
-    // Page navigation
-    function showPage(pageId) {
-        const pages = document.querySelectorAll('.page');
-        pages.forEach(page => page.classList.remove('active'));
-        document.getElementById(pageId).classList.add('active');
-        window.scrollTo(0, 0);
-    }
-
-    // Lägg till i kundvagn
-    function addToCart(name, price, emoji) {
-        const existingItem = cart.find(item => item.name === name);
-        if (existingItem) {
-            existingItem.quantity += 1;
-        } else {
-            cart.push({ name, price, quantity: 1, emoji });
-        }
-        updateCart();
-        showNotification(`${emoji} ${name} lades till i kundvagnen`);
-    }
-
-    // Visa/Göm kundvagn
-    function toggleCart() {
-        isCartOpen = !isCartOpen;
-        document.getElementById('cart-sidebar').classList.toggle('open', isCartOpen);
-        document.getElementById('cart-overlay').classList.toggle('show', isCartOpen);
-    }
-
-    // Uppdatera kundvagnsvy
-    function updateCart() {
-        const cartContent = document.getElementById('cart-content');
-        const emptyCart = document.getElementById('empty-cart');
-        const cartTotal = document.getElementById('cart-total');
-        const cartCount = document.getElementById('cart-count');
-
-        cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-
-        if (cart.length === 0) {
-            emptyCart.style.display = 'block';
-            cartTotal.style.display = 'none';
-            cartContent.innerHTML = '';
-            cartContent.appendChild(emptyCart);
-            return;
+        // Page navigation
+        function showPage(pageId) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+            
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0, 0);
+            
+            // Add animations
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach((el, index) => {
+                    el.style.animationDelay = `${index * 0.1}s`;
+                });
+            }, 100);
         }
 
-        emptyCart.style.display = 'none';
-        cartTotal.style.display = 'block';
-        cartContent.innerHTML = '';
+        // Cart functionality
+        function addToCart(name, price, emoji) {
+            const existingItem = cart.find(item => item.name === name);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ 
+                    name, 
+                    price, 
+                    emoji,
+                    quantity: 1 
+                });
+            }
+            
+            updateCartDisplay();
+            showNotification('✅ Produkt tillagd i kundvagnen!');
+        }
 
-        let total = 0;
-        cart.forEach((item, index) => {
-            total += item.price * item.quantity;
-            const cartItem = document.createElement('div');
-            cartItem.classList.add('cart-item');
-            cartItem.innerHTML = `
-                <div class="cart-item-info">
-                    <h4>${item.emoji} ${item.name}</h4>
-                    <div class="cart-item-price">${item.price} kr</div>
-                </div>
-                <div class="quantity-controls">
-                    <button class="quantity-btn" onclick="changeQuantity(${index}, -1)">-</button>
-                    <span class="quantity-display">${item.quantity}</span>
-                    <button class="quantity-btn" onclick="changeQuantity(${index}, 1)">+</button>
-                </div>
-            `;
-            cartContent.appendChild(cartItem);
+        function removeFromCart(name) {
+            cart = cart.filter(item => item.name !== name);
+            updateCartDisplay();
+        }
+
+        function updateQuantity(name, change) {
+            const item = cart.find(item => item.name === name);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(name);
+                } else {
+                    updateCartDisplay();
+                }
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartCount = document.getElementById('cart-count');
+            const cartContent = document.getElementById('cart-content');
+            const cartTotal = document.getElementById('cart-total');
+            const emptyCart = document.getElementById('empty-cart');
+            const totalAmount = document.getElementById('total-amount');
+            
+            const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            cartCount.textContent = itemCount;
+            cartCount.style.display = itemCount > 0 ? 'flex' : 'none';
+            
+            if (cart.length === 0) {
+                cartContent.innerHTML = `
+                    <div class="empty-cart">
+                        <div class="empty-cart-icon">🛒</div>
+                        <p>Din kundvagn är tom</p>
+                        <p style="font-size: 0.9rem; color: #999; margin-top: 1rem;">Lägg till produkter för att komma igång!</p>
+                    </div>
+                `;
+                cartTotal.style.display = 'none';
+            } else {
+                cartContent.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <div style="font-size: 2rem;">${item.emoji}</div>
+                            <div class="cart-item-info">
+                                <h4>${item.name}</h4>
+                                <div class="cart-item-price">${item.price} kr × ${item.quantity}</div>
+                            </div>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="updateQuantity('${item.name}', -1)">−</button>
+                            <span class="quantity-display">${item.quantity}</span>
+                            <button class="quantity-btn" onclick="updateQuantity('${item.name}', 1)">+</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                cartTotal.style.display = 'block';
+                
+                // Beräkna frakt
+                const shippingCost = subtotal >= 300 ? 0 : 49;
+                const total = subtotal + shippingCost;
+                
+                totalAmount.innerHTML = `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Produkter:</span>
+                            <span>${subtotal} kr</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                            <span>Frakt:</span>
+                            <span>${shippingCost === 0 ? 'Gratis' : shippingCost + ' kr'}</span>
+                        </div>
+                        <hr style="margin: 1rem 0; border: none; height: 1px; background: #e8e8e8;">
+                        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold;">
+                            <span>Totalt:</span>
+                            <span>${total} kr</span>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function toggleCart() {
+            const cartSidebar = document.getElementById('cart-sidebar');
+            const cartOverlay = document.getElementById('cart-overlay');
+            
+            isCartOpen = !isCartOpen;
+            
+            if (isCartOpen) {
+                cartSidebar.classList.add('open');
+                cartOverlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            } else {
+                cartSidebar.classList.remove('open');
+                cartOverlay.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Stripe checkout integration
+        async function proceedToCheckout() {
+            if (cart.length === 0) return;
+            
+            const checkoutBtn = document.getElementById('checkout-btn');
+            const originalText = checkoutBtn.textContent;
+            
+            // Visa loading state
+            checkoutBtn.textContent = 'Förbereder betalning...';
+            checkoutBtn.classList.add('loading');
+            checkoutBtn.disabled = true;
+            
+            try {
+                // Förbered data för backend
+                const orderData = {
+                    items: cart.map(item => ({
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity
+                    })),
+                    currency: 'sek',
+                    success_url: window.location.origin + '/success.html',
+                    cancel_url: window.location.origin + '/?cancelled=true'
+                };
+
+                // Anropa backend för att skapa Stripe Checkout Session
+                const response = await fetch('/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(orderData)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Nätverksfel vid skapande av checkout session');
+                }
+
+                const session = await response.json();
+                
+                if (session.error) {
+                    throw new Error(session.error);
+                }
+
+                // Omdirigera till Stripe Checkout
+                const { error } = await stripe.redirectToCheckout({
+                    sessionId: session.sessionId
+                });
+
+                if (error) {
+                    console.error('Stripe redirect error:', error);
+                    throw new Error(error.message);
+                }
+
+            } catch (error) {
+                console.error('Checkout error:', error);
+                showNotification('❌ Ett fel uppstod. Försök igen senare.', 'error');
+                
+                // Återställ knappen
+                checkoutBtn.textContent = originalText;
+                checkoutBtn.classList.remove('loading');
+                checkoutBtn.disabled = false;
+            }
+        }
+
+        // Notification system
+        function showNotification(message, type = 'success') {
+            // Ta bort befintliga notifikationer
+            const existingNotifications = document.querySelectorAll('.notification');
+            existingNotifications.forEach(notification => notification.remove());
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.textContent = message;
+            
+            if (type === 'error') {
+                notification.style.background = '#ff6b6b';
+            }
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+
+        // Header scroll effect
+        let lastScrollTop = 0;
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            
+            if (scrollTop > 100) {
+                header.style.background = 'rgba(255, 255, 255, 0.98)';
+                header.style.boxShadow = '0 2px 40px rgba(45, 74, 43, 0.15)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+                header.style.boxShadow = '0 2px 30px rgba(45, 74, 43, 0.1)';
+            }
+            
+            // Hide/show header on scroll
+            if (scrollTop > lastScrollTop && scrollTop > 200) {
+                header.style.transform = 'translateY(-100%)';
+            } else {
+                header.style.transform = 'translateY(0)';
+            }
+            
+            lastScrollTop = scrollTop;
         });
 
-        document.getElementById('total-amount').textContent = `Totalt: ${total} kr`;
-    }
-
-    // Ändra antal i kundvagn
-    function changeQuantity(index, delta) {
-        cart[index].quantity += delta;
-        if (cart[index].quantity <= 0) {
-            cart.splice(index, 1);
-        }
-        updateCart();
-    }
-
-    // Gå till kassan med Stripe
-    async function proceedToCheckout() {
-        try {
-            const response = await fetch('/api/create-checkout-session', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: cart })
+        // Initialize animations on load
+        window.addEventListener('load', () => {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.15}s`;
             });
-            const session = await response.json();
-            await stripe.redirectToCheckout({ sessionId: session.id });
-        } catch (error) {
-            console.error('Kunde inte starta betalning:', error);
-        }
-    }
+            
+            // Check for cancelled payment
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('cancelled') === 'true') {
+                showNotification('⚠️ Betalning avbröts. Dina produkter finns kvar i kundvagnen.', 'error');
+            }
+        });
 
-    // Visa liten notifiering
-    function showNotification(message) {
-        const note = document.createElement('div');
-        note.classList.add('notification');
-        note.textContent = message;
-        document.body.appendChild(note);
-        setTimeout(() => note.remove(), 3000);
-    }
-</script>
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isCartOpen) {
+                toggleCart();
+            }
+        });
+
+        // Mobile menu toggle (för framtida användning)
+        function toggleMobileMenu() {
+            // Implementation för mobil meny om behövs
+        }
+
+        // Prevent cart from closing when clicking inside
+        document.getElementById('cart-sidebar').addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+
+        // Initialize cart display
+        updateCartDisplay();
+    </script>
+</body>
+</html>
