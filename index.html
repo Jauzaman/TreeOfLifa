@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
+    <script src="https://js.stripe.com/v3/"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TreeOfLifa - Naturliga Luffasvampar</title>
@@ -959,7 +960,14 @@ function placeOrder() {
     const selectedPayment = document.querySelector('input[name="payment"]:checked');
     
     if (!selectedPayment) {
-        alert('Vänligen välj en betalmetod');
+const stripe = Stripe('pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm');
+
+fetch('https://tree-of-lifa.vercel.app/api/create-checkout-session', {
+  method: 'POST'
+})
+.then(res => res.json())
+.then(session => stripe.redirectToCheckout({ sessionId: session.id }))
+.catch(err => console.error(err));
         return;
     }
 
