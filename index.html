@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <script src="https://js.stripe.com/v3/"></script>
+    <script src="htftps://js.stripe.com/v3/"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TreeOfLifa - Naturliga Luffasvampar</title>
@@ -985,7 +985,7 @@ function placeOrder() {
             if (selectedPayment.value === 'card') {
                 const stripe = Stripe('pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm');
                 
-fetch('https://tree-of-lifa-ozlevziq0-jauzas-projects-9588f8f4.vercel.app/api/create-checkout-session', {
+fetch('/api/create-checkout-session', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -994,25 +994,21 @@ fetch('https://tree-of-lifa-ozlevziq0-jauzas-projects-9588f8f4.vercel.app/api/cr
             price: item.price,
             quantity: item.quantity
         })),
-        method: selectedPayment.value // Lägg till detta
+        method: selectedPayment.value,
+        customer: {
+            namn: document.querySelector('[name="namn"]').value,
+            adress: document.querySelector('[name="adress"]').value,
+            postnummer: document.querySelector('[name="postnummer"]').value,
+            stad: document.querySelector('[name="stad"]').value,
+            email: document.querySelector('[name="email"]').value,
+            telefon: document.querySelector('[name="telefon"]').value
+        }
     })
 })
 .then(res => res.json())
 .then(session => stripe.redirectToCheckout({ sessionId: session.id }))
 .catch(err => console.error(err));
 
-                
-                return;
-            }
-            
-            // För Swish, Bankgiro och PayPal — gammal logik
-            alert(`Tack för din beställning! Din betalning med ${getPaymentMethodName(selectedPayment.value)} behandlas nu. Du kommer att få en bekräftelse via e-post.`);
-            
-            cart = [];
-            updateCartDisplay();
-            closeCheckout();
-            toggleCart();
-        }
 
 
         function getPaymentMethodName(method) {
