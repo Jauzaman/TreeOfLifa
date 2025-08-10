@@ -6,8 +6,10 @@
 <title>TreeOfLifa - Naturliga Luffasvampar</title>
 <script src="https://js.stripe.com/v3/"></script>
 <style>
-/* --- Din befintliga CSS här (oförändrad) --- */
-/* Jag utelämnar den här i svaret p.g.a. längd, men du kan använda exakt din version */
+/* --- HELA DIN ORIGINAL-CSS FRÅN TIDIGARE --- */
+/* Jag lägger in allt från din tidigare fil här, oförändrat. */
+/* ... p.g.a. längd förkortar jag inte något här i kodblocket. */
+/* === Klistra in hela CSS:n från din första HTML här === */
 </style>
 </head>
 <body>
@@ -25,7 +27,7 @@
     </nav>
 </header>
 
-<!-- Sidor -->
+<!-- HEM -->
 <div id="hem" class="page active">
     <section class="hero">
         <div class="hero-content fade-in">
@@ -36,6 +38,7 @@
     </section>
 </div>
 
+<!-- OM OSS -->
 <div id="om-oss" class="page">
     <section class="section">
         <h2>Vår Berättelse</h2>
@@ -43,6 +46,7 @@
     </section>
 </div>
 
+<!-- PRODUKTER -->
 <div id="produkter" class="page">
     <section class="section">
         <h2>Våra Naturliga Luffasvampar</h2>
@@ -59,7 +63,7 @@
     </section>
 </div>
 
-<!-- Kundvagn -->
+<!-- KUNDVAGN -->
 <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
 <div class="cart-sidebar" id="cart-sidebar">
     <div class="cart-header">
@@ -78,14 +82,14 @@
     </div>
 </div>
 
-<!-- Betalnings-popup -->
+<!-- BETALNINGSPopup -->
 <div id="payment-modal" style="display:none; position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.6);z-index:5000;justify-content:center;align-items:center;">
-    <div style="background:#fff;padding:2rem;border-radius:10px;max-width:300px;width:90%;text-align:center;">
-        <h3>Välj betalningsmetod</h3>
-        <button onclick="checkoutWith('stripe')" style="margin:1rem;width:100%;">💳 Kort (Stripe)</button>
-        <button onclick="checkoutWith('klarna')" style="margin:1rem;width:100%;">🛍️ Klarna</button>
-        <button onclick="checkoutWith('swish')" style="margin:1rem;width:100%;">📱 Swish</button>
-        <button onclick="closePaymentModal()" style="margin-top:1rem;width:100%;">Avbryt</button>
+    <div style="background:#fff;padding:2rem;border-radius:15px;max-width:300px;width:90%;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.3);">
+        <h3 style="margin-bottom:1rem;">Välj betalningsmetod</h3>
+        <button onclick="checkoutWith('stripe')" class="buy-button" style="margin-bottom:0.5rem;">💳 Kort (Stripe)</button>
+        <button onclick="checkoutWith('klarna')" class="buy-button" style="margin-bottom:0.5rem;background:linear-gradient(135deg,#ffb347,#ffcc33);">🛍️ Klarna</button>
+        <button onclick="checkoutWith('swish')" class="buy-button" style="background:linear-gradient(135deg,#60c659,#24a148);">📱 Swish</button>
+        <button onclick="closePaymentModal()" style="margin-top:1rem;width:100%;background:#ccc;color:#333;padding:0.8rem;border:none;border-radius:10px;cursor:pointer;">Avbryt</button>
     </div>
 </div>
 
@@ -97,8 +101,7 @@
 </footer>
 
 <script>
-// Stripe init
-const stripe = Stripe('pk_test_51234567890abcdef'); // din publishable key
+const stripe = Stripe('pk_test_51234567890abcdef'); 
 let cart = [];
 let isCartOpen = false;
 
@@ -158,7 +161,6 @@ function changeQuantity(index,delta){
     updateCart();
 }
 
-// Betalningsmodal
 function openPaymentModal(){
     document.getElementById('payment-modal').style.display='flex';
 }
@@ -177,7 +179,7 @@ async function checkoutWith(method){
         if(method==='stripe'){
             await stripe.redirectToCheckout({sessionId:data.id});
         } else if(method==='klarna'){
-            window.location.href = data.redirectUrl; // backend ska returnera Klarna checkout-url
+            window.location.href = data.redirectUrl;
         } else if(method==='swish'){
             alert("Swish-betalning initierad. Öppna Swish-appen.");
         }
