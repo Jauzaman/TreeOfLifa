@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <script src="https://js.stripe.com/v3/"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TreeOfLifa - Naturliga Luffasvampar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Georgia', serif;
+            line-height: 1.6;
+            color: #2d4a2b;
+            background-color: #fefefe;
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #4a7c59;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: "🌿";
+            font-size: 1.5rem;
+        }
+
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            color: #2d4a2b;
+            font-weight: 500;
+            transition: color 0.3s ease, transform 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: #4a7c59;
+            transform: translateY(-2px);
+        }
+
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #4a7c59, #7fb069);
+            transition: width 0.3s ease;
+        }
+
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="%23d4e6d4" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            max-width: 800px;
+            padding: 2rem;
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            color: #2d4a2b;
+            font-weight: 300;
+            letter-spacing: -1px;
+        }
+
+        .hero .subtitle {
+            font-size: 1.3rem;
+            color: #5a7c5a;
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(74, 124, 89, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(74, 124, 89, 0.4);
+        }
+
+        /* Sections */
+        .section {
+            padding: 5rem 5%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #2d4a2b;
+            text-align: center;
+            position: relative;
+        }
+
+        .section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #4a7c59, #7fb069);
+            border-radius: 2px;
+        }
+
+        .section p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+            color: #4a5a4a;
+            text-align: center;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Products Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+            margin-top: 3rem;
+        }
+
+        .product-card {
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+
+        .product-image {
+            height: 250px;
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4e6d4 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            color: #4a7c59;
+        }
+
+        .product-info {
+            padding: 2rem;
+        }
+
+        .product-info h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2d4a2b;
+        }
+
+        .product-info p {
+            color: #5a7c5a;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        .price {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #4a7c59;
+            margin-bottom: 1rem;
+        }
+
+        .buy-button {
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            font-size: 1rem;
+        }
+
+        .buy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 124, 89, 0.3);
+        }
+
+        /* Cart */
+        .cart-icon {
+            position: relative;
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: #4a7c59;
+            margin-left: 1rem;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        .cart-sidebar {
+            position: fixed;
+            top: 0;
+            right: -400px;
+            width: 400px;
+            height: 100vh;
+            background: white;
+            box-shadow: -5px 0 20px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 2000;
+            overflow-y: auto;
+        }
+
+        .cart-sidebar.open {
+            right: 0;
+        }
+
+        .cart-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1500;
+            display: none;
+        }
+
+        .cart-overlay.show {
+            display: block;
+        }
+
+        .cart-header {
+            padding: 2rem;
+            border-bottom: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cart-header h2 {
+            font-size: 1.5rem;
+            color: #2d4a2b;
+        }
+
+        .close-cart {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .cart-content {
+            padding: 1rem 2rem;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .cart-item-info h4 {
+            color: #2d4a2b;
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item-price {
+            font-weight: bold;
+            color: #4a7c59;
+        }
+
+        .quantity-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quantity-btn {
+            background: #f0f0f0;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cart-total {
+            padding: 2rem;
+            border-top: 2px solid #e8e8e8;
+            text-align: center;
+        }
+
+        .total-amount {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2d4a2b;
+            margin-bottom: 2rem;
+        }
+
+        .checkout-button {
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkout-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(74, 124, 89, 0.3);
+        }
+
+        /* Checkout Modal */
+        .checkout-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 3000;
+        }
+
+        .checkout-modal.show {
+            display: flex;
+        }
+
+        .checkout-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .payment-methods {
+            margin-top: 2rem;
+        }
+
+        .payment-method {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .payment-method:hover, .payment-method.selected {
+            border-color: #4a7c59;
+            background: #f8fffe;
+        }
+
+        .payment-method input[type="radio"] {
+            margin-right: 1rem;
+        }
+
+        .payment-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2d4a2b;
+            font-weight: 500;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #4a7c59;
+        }
+
+        .order-button {
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 25px;
+            font-weight: 500;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: #666;
+        }
+
+        .empty-cart-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #ccc;
+        }
+
+        /* Footer */
+        footer {
+            background: #2d4a2b;
+            color: white;
+            padding: 3rem 5%;
+            text-align: center;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .footer-content h3 {
+            margin-bottom: 1rem;
+            color: #7fb069;
+        }
+
+        /* Page content styles */
+        .page {
+            display: none;
+            padding-top: 100px;
+            min-height: 100vh;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                gap: 1rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .hero .subtitle {
+                font-size: 1.1rem;
+            }
+
+            .section {
+                padding: 3rem 5%;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeInUp 0.6s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="#" class="logo">TreeOfLifa</a>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showPage('hem')">Hem</a></li>
+                <li><a href="#" onclick="showPage('om-oss')">Om oss</a></li>
+                <li><a href="#" onclick="showPage('produkter')">Produkter</a></li>
+            </ul>
+            <div class="cart-icon" onclick="toggleCart()">
+                🛒
+                <span class="cart-count" id="cart-count">0</span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Hem Page -->
+    <div id="hem" class="page active">
+        <section class="hero">
+            <div class="hero-content fade-in">
+                <h1>Naturens Rena Skönhet</h1>
+                <p class="subtitle">Upptäck våra handplockade, ekologiska luffasvampar för en naturlig hudvård</p>
+                <a href="#" class="cta-button" onclick="showPage('produkter')">Utforska Produkter</a>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Varför Välja TreeOfLifa?</h2>
+            <p>Vi tror på naturens kraft att vårda och förnya din hud. Våra luffasvampar odlas med kärlek och respekt för miljön, vilket ger dig den bästa naturliga exfolieringen för en strålande, hälsosam hy.</p>
+        </section>
+    </div>
+
+    <!-- Om oss Page -->
+    <div id="om-oss" class="page">
+        <section class="section">
+            <h2>Vår Berättelse</h2>
+            <p>TreeOfLifa grundades ur en passion för naturlig skönhet och hållbar livsstil. Vi startade vår resa med en enkel övertygelse: att naturen erbjuder de bästa lösningarna för hudvård.</p>
+            <p>Vårt team består av naturentusiaster som arbetar direkt med lokala odlare för att säkerställa att varje luffasvamp är av högsta kvalitet. Vi tror på transparent handel och miljövänliga metoder i varje steg av vår process.</p>
+            <p>Från vårt hjärta till ditt hem, vi är stolta över att erbjuda produkter som inte bara gör din hud vacker, utan också bidrar till en mer hållbar framtid.</p>
+        </section>
+    </div>
+
+    <!-- Produkter Page -->
+    <div id="produkter" class="page">
+        <section class="section">
+            <h2>Vårt Naturliga Sortiment</h2>
+            <p>Upptäck vår exklusiva kollektion av handplockade, ekologiska luffasvampar. Varje produkt är noggrant utvald för att ge dig den bästa naturliga exfolieringen.</p>
+            
+            <div class="products-grid">
+                <div class="product-card fade-in">
+<img src="imagess/IMG_4031.JPG" alt="Beskrivning av bilden" width="300">                
+                    <div class="product-info">
+                        <h3>Mindre Lifah</h3>
+                        <p>Vår populäraste liffasvamp, lite kompaktare, perfekt för daglig användning. Mjuk men effektiv exfoliering för alla hudtyper.</p>
+                        <div class="price">50 kr</div>
+                        <button class="buy-button" onclick="addToCart('Mindre Lifah', 50)">Lägg i kundvagn</button>
+                    </div>
+                </div>
+                
+                <div class="product-card fade-in">
+<img src="imagess/IMG_4057.JPG" alt="Större Lifa" width="300">
+                    <div class="product-info">
+                        <h3>Större Lifah</h3>
+                        <p>Större lifa.Extra tjock och hållbar luffasvamp för djup rengöring. Idealisk för att ta bort döda hudceller och stimulera blodcirkulationen.</
+p>
+                        <div class="price">75 kr</div>
+                        <button class="buy-button" onclick="addToCart('Större Lifa', 75)">Lägg i kundvagn</button>
+                    </div>
+                </div>
+                
+                <div class="product-card fade-in">
+<img src="imagess/IMG_4024.JPG" alt="Aleppotvål" width="300">
+                    <div class="product-info">
+                        <h3>Aleppotvål</h3>
+                        <p>En mild 100% naturlig tvål som är gjord på ett urgammalt recept. Många använder denna tvål mot akne med goda resultat.</p>
+                        <div class="price">50 kr</div>
+                        <button class="buy-button" onclick="addToCart('Aleppotvål', 50)">Lägg i kundvagn</button>
+                    </div>
+                </div>
+                
+                <div class="product-card fade-in">
+                    <div class="product-info">
+                        <h3>Presentset</h3>
+                        <p>Komplett set i en fin presentask, perfekt som gåva till dina närmaste med två lifas och en Aleppotvål. Kommer även med en överraskning.</p>
+                        <div class="price">145 kr</div>
+                        <button class="buy-button" onclick="addToCart('Presentset', 145)">Lägg i kundvagn</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Cart Sidebar -->
+    <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
+    <div class="cart-sidebar" id="cart-sidebar">
+        <div class="cart-header">
+            <h2>Kundvagn</h2>
+            <button class="close-cart" onclick="toggleCart()">×</button>
+        </div>
+        <div class="cart-content" id="cart-content">
+            <div class="empty-cart" id="empty-cart">
+                <div class="empty-cart-icon">🛒</div>
+                <p>Din kundvagn är tom</p>
+            </div>
+        </div>
+        <div class="cart-total" id="cart-total" style="display: none;">
+            <div class="total-amount" id="total-amount">Totalt: 0 kr</div>
+            <button class="checkout-button" onclick="showCheckout()">Gå till kassan</button>
+        </div>
+    </div>
+
+<!-- Checkout Modal -->
+<div class="checkout-modal" id="checkout-modal">
+    <div class="checkout-content">
+        <form id="checkout-form" onsubmit="placeOrder(); return false;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2>Slutför ditt köp</h2>
+                <button type="button" class="close-cart" onclick="closeCheckout()">×</button>
+            </div>
+            
+            <div class="form-group">
+                <label>Leveransadress</label>
+                <input type="text" placeholder="Namn" name="namn" required>
+                <input type="text" placeholder="Adress" name="adress" style="margin-top: 0.5rem;" required>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                    <input type="text" placeholder="Postnummer" name="postnummer" required>
+                    <input type="text" placeholder="Stad" name="stad" required>
+                </div>
+                <input type="email" placeholder="E-post" name="email" style="margin-top: 0.5rem;" required>
+                <input type="tel" placeholder="Telefon" name="telefon" style="margin-top: 0.5rem;" required>
+            </div>
+
+            <div class="payment-methods">
+                <h3 style="margin-bottom: 1rem;">Välj betalmetod</h3>
+                
+                <div class="payment-method" onclick="selectPayment(event, 'klarna')">
+                    <input type="radio" name="payment" value="klarna">
+                    <span class="payment-icon">💳</span>
+                    <div>
+                        <strong>Klarna</strong><br>
+                        <small>Betala senare eller dela upp betalningen</small>
+                    </div>
+                </div>
+                
+                <div class="payment-method" onclick="selectPayment(event, 'card')">
+                    <input type="radio" name="payment" value="card">
+                    <span class="payment-icon">💳</span>
+                    <div>
+                        <strong>Kort</strong><br>
+                        <small>Visa, Mastercard, American Express</small>
+                    </div>
+                </div>
+                
+                <div class="payment-method" onclick="selectPayment(event, 'swish')">
+                    <input type="radio" name="payment" value="swish">
+                    <span class="payment-icon">📱</span>
+                    <div>
+                        <strong>Swish</strong><br>
+                        <small>Betala direkt med din bank-app</small>
+                    </div>
+                </div>
+                
+                <div class="payment-method" onclick="selectPayment(event, 'bankgiro')">
+                    <input type="radio" name="payment" value="bankgiro">
+                    <span class="payment-icon">🏦</span>
+                    <div>
+                        <strong>Bankgiro</strong><br>
+                        <small>Traditionell banköverföring</small>
+                    </div>
+                </div>
+                
+                <div class="payment-method" onclick="selectPayment(event, 'paypal')">
+                    <input type="radio" name="payment" value="paypal">
+                    <span class="payment-icon">💰</span>
+                    <div>
+                        <strong>PayPal</strong><br>
+                        <small>Betala säkert med PayPal</small>
+                    </div>
+                </div>
+            </div>
+
+            <div id="card-details" style="display: none;">
+                <div class="form-group">
+                    <label>Kortuppgifter</label>
+                    <input type="text" placeholder="Kortnummer" name="kortnummer">
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <input type="text" placeholder="MM/ÅÅ" name="expiry">
+                        <input type="text" placeholder="CVC" name="cvc">
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; padding: 1rem; background: #f8fffe; border-radius: 10px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Produkter:</span>
+                    <span id="checkout-subtotal">0 kr</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Frakt:</span>
+                    <span>49 kr</span>
+                </div>
+                <hr style="margin: 1rem 0; border: none; height: 1px; background: #e8e8e8;">
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem;">
+                    <span>Totalt:</span>
+                    <span id="checkout-total">49 kr</span>
+                </div>
+            </div>
+
+            <button type="submit" class="order-button">Slutför beställning</button>
+        </form>
+    </div>
+</div>
+
+
+    <footer>
+        <div class="footer-content">
+            <h3>TreeOfLifa</h3>
+            <p>Naturlig skönhet, hållbar framtid</p>
+            <p>Kontakta oss: tree.of.liifa@gmail.com |</p>
+        </div>
+    </footer>
+
+    <script>
+        let cart = [];
+        let isCartOpen = false;
+
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            document.getElementById(pageId).classList.add('active');
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+            
+            // Add fade-in animation to elements
+            setTimeout(() => {
+                const elements = document.querySelectorAll('.fade-in');
+                elements.forEach((el, index) => {
+                    el.style.animationDelay = `${index * 0.1}s`;
+                });
+            }, 100);
+        }
+
+        function addToCart(name, price) {
+            const existingItem = cart.find(item => item.name === name);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+            
+            updateCartDisplay();
+            showCartNotification();
+        }
+
+        function removeFromCart(name) {
+            cart = cart.filter(item => item.name !== name);
+            updateCartDisplay();
+        }
+
+        function updateQuantity(name, change) {
+            const item = cart.find(item => item.name === name);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(name);
+                } else {
+                    updateCartDisplay();
+                }
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartCount = document.getElementById('cart-count');
+            const cartContent = document.getElementById('cart-content');
+            const cartTotal = document.getElementById('cart-total');
+            const emptyCart = document.getElementById('empty-cart');
+            const totalAmount = document.getElementById('total-amount');
+            
+            const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            cartCount.textContent = itemCount;
+            
+            if (cart.length === 0) {
+                emptyCart.style.display = 'block';
+                cartTotal.style.display = 'none';
+                cartContent.innerHTML = '<div class="empty-cart" id="empty-cart"><div class="empty-cart-icon">🛒</div><p>Din kundvagn är tom</p></div>';
+            } else {
+                emptyCart.style.display = 'none';
+                cartTotal.style.display = 'block';
+                
+                cartContent.innerHTML = cart.map(item => `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <h4>${item.name}</h4>
+                            <div class="cart-item-price">${item.price} kr</div>
+                        </div>
+                        <div class="quantity-controls">
+                            <button class="quantity-btn" onclick="updateQuantity('${item.name}', -1)">−</button>
+                            <span>${item.quantity}</span>
+                            <button class="quantity-btn" onclick="updateQuantity('${item.name}', 1)">+</button>
+                        </div>
+                    </div>
+                `).join('');
+                
+                totalAmount.textContent = `Totalt: ${total} kr`;
+            }
+            
+            // Update checkout totals
+            document.getElementById('checkout-subtotal').textContent = `${total} kr`;
+            document.getElementById('checkout-total').textContent = `${total + 49} kr`;
+        }
+
+        function toggleCart() {
+            const cartSidebar = document.getElementById('cart-sidebar');
+            const cartOverlay = document.getElementById('cart-overlay');
+            
+            isCartOpen = !isCartOpen;
+            
+            if (isCartOpen) {
+                cartSidebar.classList.add('open');
+                cartOverlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            } else {
+                cartSidebar.classList.remove('open');
+                cartOverlay.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function showCheckout() {
+            if (cart.length === 0) return;
+            
+            document.getElementById('checkout-modal').classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkout-modal').classList.remove('show');
+            document.body.style.overflow = 'auto';
+        }
+
+function selectPayment(event, method) {
+    // Välj radioknapp
+    document.querySelector(`input[value="${method}"]`).checked = true;
+
+    // Styla aktiv metod
+    document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+    event.currentTarget.classList.add('selected');
+
+    // Kortdetaljer
+    const cardDetails = document.getElementById('card-details');
+    const cardInputs = cardDetails.querySelectorAll('input');
+
+    if (method === 'card') {
+        cardDetails.style.display = 'block';
+        cardInputs.forEach(input => input.setAttribute('required', 'required'));
+    } else {
+        cardDetails.style.display = 'none';
+        cardInputs.forEach(input => input.removeAttribute('required'));
+    }
+}
+
+function placeOrder() {
+            const selectedPayment = document.querySelector('input[name="payment"]:checked');
+            
+            if (!selectedPayment) {
+                alert('Vänligen välj en betalmetod');
+                return;
+            }
+            
+            // Validera formfält
+            const requiredFields = document.querySelectorAll('input[required]');
+            let allValid = true;
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.style.borderColor = '#ff6b6b';
+                    allValid = false;
+                } else {
+                    field.style.borderColor = '#e8e8e8';
+                }
+            });
+            
+            if (!allValid) {
+                alert('Vänligen fyll i alla obligatoriska fält');
+                return;
+            }
+
+            // Om Kortbetalning (Stripe)
+            if (selectedPayment.value === 'card') {
+                const stripe = Stripe('pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm');
+                
+fetch('https://tree-of-lifa-ozlevziq0-jauzas-projects-9588f8f4.vercel.app/api/create-checkout-session', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        items: cart.map(item => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity
+        })),
+        method: selectedPayment.value // Lägg till detta
+    })
+})
+.then(res => res.json())
+.then(session => stripe.redirectToCheckout({ sessionId: session.id }))
+.catch(err => console.error(err));
+
+                
+                return;
+            }
+            
+            // För Swish, Bankgiro och PayPal — gammal logik
+            alert(`Tack för din beställning! Din betalning med ${getPaymentMethodName(selectedPayment.value)} behandlas nu. Du kommer att få en bekräftelse via e-post.`);
+            
+            cart = [];
+            updateCartDisplay();
+            closeCheckout();
+            toggleCart();
+        }
+
+
+        function getPaymentMethodName(method) {
+            const methods = {
+                'klarna': 'Klarna',
+                'card': 'Kort',
+                'swish': 'Swish',
+                'bankgiro': 'Bankgiro',
+                'paypal': 'PayPal'
+            };
+            return methods[method] || method;
+        }
+
+        function showCartNotification() {
+            // Create and show a brief notification
+            const notification = document.createElement('div');
+            notification.innerHTML = '✅ Produkt tillagd i kundvagnen!';
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                background: #4a7c59;
+                color: white;
+                padding: 1rem 2rem;
+                border-radius: 10px;
+                z-index: 4000;
+                animation: slideIn 0.3s ease;
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 2000);
+        }
+
+        // Header scroll effect
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 100) {
+                header.style.background = 'rgba(255, 255, 255, 0.98)';
+            } else {
+                header.style.background = 'rgba(255, 255, 255, 0.95)';
+            }
+        });
+
+        // Initialize animations on load
+        window.addEventListener('load', () => {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Close modals with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                if (document.getElementById('checkout-modal').classList.contains('show')) {
+                    closeCheckout();
+                } else if (isCartOpen) {
+                    toggleCart();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
