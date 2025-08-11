@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+       <!DOCTYPE html>
 <html lang="sv">
 <head>
     <meta charset="utf-8" />
@@ -96,6 +96,10 @@
         .quantity-btn { width:30px; height:30px; border-radius:50%; border:none; background:#f0f0f0; cursor:pointer; }
 
         .cart-total { padding:1rem; border-top:2px solid #eee; text-align:center; }
+        .checkout-button {
+            width:100%; padding:0.9rem; border-radius:12px; border:none;
+            background:linear-gradient(135deg,#4a7c59 0%,#7fb069 100%); color:white; cursor:pointer; font-weight:700;
+        }
 
         /* ===== Checkout modal ===== */
         .checkout-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:1400; padding:20px; }
@@ -106,6 +110,15 @@
 
         .payment-method { display:flex; gap:0.7rem; align-items:center; padding:0.8rem; border-radius:10px; border:2px solid #e8e8e8; margin-bottom:0.6rem; cursor:pointer; }
         .payment-method.selected { border-color:#4a7c59; background:#f8fffe; }
+
+        .order-button {
+            width:100%; padding:0.9rem; border-radius:12px; border:none;
+            background:linear-gradient(135deg,#4a7c59 0%,#7fb069 100%); color:white; font-weight:700; cursor:pointer;
+        }
+
+        .close-cart {
+            background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;
+        }
 
         /* ===== Footer ===== */
         footer { background:#2d4a2b; color:#fff; padding:2rem 5%; margin-top:2rem; }
@@ -123,7 +136,7 @@
             .hero { padding-top:100px; }
             .product-image { height:180px; }
             .checkout-content { width:100%; height:100%; border-radius:0; max-height:100vh; }
-            .cart-sidebar { width:100%; right:-110%; } /* hide from screen, but we keep open state for large screens */
+            .cart-sidebar { width:100%; right:-110%; }
             .cart-sidebar.open { right:0; }
         }
         @media (max-width:420px) {
@@ -176,6 +189,7 @@
             <div class="section">
                 <h2>Vår Berättelse</h2>
                 <p>TreeOfLifa grundades ur en passion för naturlig skönhet och hållbar livsstil. Vi startade vår resa med en enkel övertygelse: att naturen erbjuder de bästa lösningarna för hudvård.</p>
+                <br>
                 <p>Vårt team består av naturentusiaster som arbetar direkt med lokala odlare för att säkerställa att varje luffasvamp är av högsta kvalitet. Vi tror på transparent handel och miljövänliga metoder i varje steg av vår process.</p>
             </div>
         </section>
@@ -187,9 +201,8 @@
                 <p>Upptäck vår exklusiva kollektion av handplockade, ekologiska luffasvampar. Varje produkt är noggrant utvald för att ge dig den bästa naturliga exfolieringen.</p>
 
                 <div class="products-grid" id="products-grid">
-                    <!-- Produktkort: se till att filnamnen matchar exakt de bilder du har i repo -->
                     <div class="product-card">
-                        <div class="product-image"><img src="IMG_4031.jpg" alt="Mindre Lifah"></div>
+                        <div class="product-image"><img src="IMG_4031.jpg" alt="Mindre Lifah" onerror="this.style.display='none'"></div>
                         <div class="product-info">
                             <h3>Mindre Lifah</h3>
                             <p>Vår populäraste liffasvamp, lite kompaktare, perfekt för daglig användning.</p>
@@ -199,17 +212,17 @@
                     </div>
 
                     <div class="product-card">
-                        <div class="product-image"><img src="IMG_4057.jpg" alt="Större Lifa"></div>
+                        <div class="product-image"><img src="IMG_4057.jpg" alt="Större Lifa" onerror="this.style.display='none'"></div>
                         <div class="product-info">
                             <h3>Större Lifah</h3>
                             <p>Extra tjock och hållbar luffasvamp för djup rengöring.</p>
                             <div class="price">75 kr</div>
-                            <button class="buy-button" onclick="addToCart('Större Lifa', 75)">Lägg i kundvagn</button>
+                            <button class="buy-button" onclick="addToCart('Större Lifah', 75)">Lägg i kundvagn</button>
                         </div>
                     </div>
 
                     <div class="product-card">
-                        <div class="product-image"><img src="IMG_4024.jpg" alt="Aleppotvål"></div>
+                        <div class="product-image"><img src="IMG_4024.jpg" alt="Aleppotvål" onerror="this.style.display='none'"></div>
                         <div class="product-info">
                             <h3>Aleppotvål</h3>
                             <p>En mild 100% naturlig tvål som är gjord på ett urgammalt recept.</p>
@@ -219,7 +232,7 @@
                     </div>
 
                     <div class="product-card">
-                        <div class="product-image"><img src="IMG_PRESENT.jpg" alt="Presentset"></div>
+                        <div class="product-image"><img src="IMG_PRESENT.jpg" alt="Presentset" onerror="this.style.display='none'"></div>
                         <div class="product-info">
                             <h3>Presentset</h3>
                             <p>Komplett set i en fin presentask, perfekt som gåva.</p>
@@ -261,17 +274,17 @@
                 <button class="close-cart" onclick="closeCheckout()">×</button>
             </div>
 
-            <form id="checkout-form" onsubmit="placeOrder(); return false;">
+            <form id="checkout-form" onsubmit="placeOrder(event)">
                 <div class="form-group">
                     <label>Leveransadress</label>
-                    <input type="text" name="namn" placeholder="Namn" required />
-                    <input type="text" name="adress" placeholder="Adress" style="margin-top:0.5rem;" required />
+                    <input type="text" id="namn" name="namn" placeholder="Namn" required />
+                    <input type="text" id="adress" name="adress" placeholder="Adress" style="margin-top:0.5rem;" required />
                     <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-                        <input type="text" name="postnummer" placeholder="Postnummer" required />
-                        <input type="text" name="stad" placeholder="Stad" required />
+                        <input type="text" id="postnummer" name="postnummer" placeholder="Postnummer" required />
+                        <input type="text" id="stad" name="stad" placeholder="Stad" required />
                     </div>
-                    <input type="email" name="email" placeholder="E-post" style="margin-top:0.5rem;" required />
-                    <input type="tel" name="telefon" placeholder="Telefon" style="margin-top:0.5rem;" required />
+                    <input type="email" id="email" name="email" placeholder="E-post" style="margin-top:0.5rem;" required />
+                    <input type="tel" id="telefon" name="telefon" placeholder="Telefon" style="margin-top:0.5rem;" required />
                 </div>
 
                 <div class="payment-methods">
@@ -311,12 +324,12 @@
                 <div id="card-details" style="display:none; margin-top:0.6rem;">
                     <div class="form-group">
                         <label>Kortuppgifter</label>
-                        <input type="text" name="kortnummer" placeholder="Kortnummer" />
+                        <input type="text" id="kortnummer" name="kortnummer" placeholder="Kortnummer" />
                         <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-                            <input type="text" name="expiry" placeholder="MM/ÅÅ" />
-                            <input type="text" name="cvc" placeholder="CVC" />
+                            <input type="text" id="expiry" name="expiry" placeholder="MM/ÅÅ" />
+                            <input type="text" id="cvc" name="cvc" placeholder="CVC" />
                         </div>
-                        <small style="color:#666">Kortuppgifterna används endast för demonstration i fältet. Riktiga korthantering sköts av Stripe Checkout.</small>
+                        <small style="color:#666">Kortuppgifterna används endast för demonstration. Riktig korthantering sköts av Stripe Checkout.</small>
                     </div>
                 </div>
 
@@ -327,7 +340,7 @@
                     <div style="display:flex; justify-content:space-between; font-weight:700;"><span>Totalt:</span><span id="checkout-total">49 kr</span></div>
                 </div>
 
-                <button type="submit" class="order-button" style="margin-top:1rem; width:100%; padding:0.9rem; border-radius:12px; border:none; background:linear-gradient(135deg,#4a7c59 0%,#7fb069 100%); color:white; font-weight:700;">Slutför beställning</button>
+                <button type="submit" class="order-button" style="margin-top:1rem;">Slutför beställning</button>
             </form>
         </div>
     </div>
@@ -341,307 +354,538 @@
         </div>
     </footer>
 
-    <!-- ===== JavaScript: funktioner ===== -->
-        <script>
-function showPage(pageId) {
-  // Dölj alla sidor
-  document.querySelectorAll('.page').forEach(page => {
-    page.style.display = 'none';
-  });
-
-  // Visa den valda
-  document.getElementById(pageId).style.display = 'block';
-}
-</script>
-
+    <script>
         // ===== Konfiguration =====
-        const STRIPE_PUBLISHABLE_KEY = "pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm";
+        const STRIPE_PUBLISHABLE_KEY = "pk_test_TYooMQauvdEDq54NiTphI7jx"; // Använd test-nyckel istället
         const BACKEND_URL = 'https://tree-of-lifa-ozlevziq0-jauzas-projects-9588f8f4.vercel.app';
 
         // ===== State =====
         let cart = [];
         let isCartOpen = false;
 
-        // ===== Navigation / Pages =====
-        function showPage(id) {
-            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'block';
-            // Close nav if open on mobile
-            closeNav();
-            window.scrollTo(0,0);
+        // ===== Navigation / Sidor =====
+        function showPage(pageId) {
+            try {
+                // Dölj alla sidor
+                document.querySelectorAll('.page').forEach(page => {
+                    page.style.display = 'none';
+                });
+
+                // Visa den valda sidan
+                const targetPage = document.getElementById(pageId);
+                if (targetPage) {
+                    targetPage.style.display = 'block';
+                } else {
+                    console.error(`Sida med ID '${pageId}' hittades inte`);
+                    return;
+                }
+
+                // Stäng navigation om den är öppen (mobil)
+                closeNav();
+                
+                // Scrolla till toppen
+                window.scrollTo(0, 0);
+            } catch (error) {
+                console.error('Fel vid sidnavigation:', error);
+            }
         }
 
-        // Initialize showing correct pages (hem visible by default)
-        document.addEventListener('DOMContentLoaded', () => {
-            // Ensure pages have .page class; we've used separate sections
-            // update cart display on load
-            updateCartDisplay();
-        });
-
-        // ===== Mobile nav =====
+        // ===== Mobil navigation =====
         function toggleNav() {
-            const nav = document.getElementById('nav-links');
-            nav.classList.toggle('show');
-        }
-        function closeNav() {
-            const nav = document.getElementById('nav-links');
-            nav.classList.remove('show');
+            try {
+                const nav = document.getElementById('nav-links');
+                if (nav) {
+                    nav.classList.toggle('show');
+                }
+            } catch (error) {
+                console.error('Fel vid toggle av navigation:', error);
+            }
         }
 
-        // ===== Cart logic =====
+        function closeNav() {
+            try {
+                const nav = document.getElementById('nav-links');
+                if (nav) {
+                    nav.classList.remove('show');
+                }
+            } catch (error) {
+                console.error('Fel vid stängning av navigation:', error);
+            }
+        }
+
+        // ===== Kundvagn logik =====
         function addToCart(name, price) {
-            const existing = cart.find(i => i.name === name);
-            if (existing) existing.quantity += 1;
-            else cart.push({ name, price, quantity: 1 });
-            updateCartDisplay();
-            showCartNotification();
+            try {
+                // Validera input
+                if (!name || typeof name !== 'string' || !price || typeof price !== 'number') {
+                    console.error('Ogiltiga parametrar för addToCart');
+                    return;
+                }
+
+                const existing = cart.find(item => item.name === name);
+                if (existing) {
+                    existing.quantity += 1;
+                } else {
+                    cart.push({ name, price, quantity: 1 });
+                }
+                
+                updateCartDisplay();
+                showCartNotification();
+            } catch (error) {
+                console.error('Fel vid tillägg till kundvagn:', error);
+            }
         }
 
         function removeFromCart(name) {
-            cart = cart.filter(i => i.name !== name);
-            updateCartDisplay();
+            try {
+                cart = cart.filter(item => item.name !== name);
+                updateCartDisplay();
+            } catch (error) {
+                console.error('Fel vid borttagning från kundvagn:', error);
+            }
         }
 
         function updateQuantity(name, change) {
-            const item = cart.find(i => i.name === name);
-            if (!item) return;
-            item.quantity += change;
-            if (item.quantity <= 0) removeFromCart(name);
-            else updateCartDisplay();
+            try {
+                const item = cart.find(i => i.name === name);
+                if (!item) {
+                    console.error(`Produkt '${name}' hittades inte i kundvagnen`);
+                    return;
+                }
+                
+                item.quantity += change;
+                
+                if (item.quantity <= 0) {
+                    removeFromCart(name);
+                } else {
+                    updateCartDisplay();
+                }
+            } catch (error) {
+                console.error('Fel vid uppdatering av kvantitet:', error);
+            }
         }
 
         function updateCartDisplay() {
-            const cartCount = document.getElementById('cart-count');
-            const cartContent = document.getElementById('cart-content');
-            const cartTotal = document.getElementById('cart-total');
-            const emptyCart = document.getElementById('empty-cart');
-            const totalAmountEl = document.getElementById('total-amount');
+            try {
+                // Hämta DOM-element
+                const cartCount = document.getElementById('cart-count');
+                const cartContent = document.getElementById('cart-content');
+                const cartTotal = document.getElementById('cart-total');
+                const emptyCart = document.getElementById('empty-cart');
+                const totalAmountEl = document.getElementById('total-amount');
 
-            const itemCount = cart.reduce((s,i) => s + i.quantity, 0);
-            const total = cart.reduce((s,i) => s + i.price * i.quantity, 0);
+                // Kontrollera att element finns
+                if (!cartCount || !cartContent) {
+                    console.error('Kundvagn DOM-element hittades inte');
+                    return;
+                }
 
-            cartCount.textContent = itemCount;
+                // Beräkna totaler
+                const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-            if (cart.length === 0) {
-                emptyCart.style.display = 'block';
-                cartTotal.style.display = 'none';
-                cartContent.innerHTML = '<div class="empty-cart" id="empty-cart" style="text-align:center; padding:2rem;"><div style="font-size:2.2rem; color:#ccc;">🛒</div><p>Din kundvagn är tom</p></div>';
-            } else {
-                emptyCart.style.display = 'none';
-                cartTotal.style.display = 'block';
-                cartContent.innerHTML = cart.map(item => `
-                    <div class="cart-item">
-                        <div>
-                            <strong>${item.name}</strong><div style="color:#777">${item.price} kr</div>
+                // Uppdatera räknare
+                cartCount.textContent = itemCount;
+
+                // Hantera tom kundvagn
+                if (cart.length === 0) {
+                    if (emptyCart) emptyCart.style.display = 'block';
+                    if (cartTotal) cartTotal.style.display = 'none';
+                    
+                    cartContent.innerHTML = `
+                        <div class="empty-cart" style="text-align:center; padding:2rem;">
+                            <div style="font-size:2.2rem; color:#ccc;">🛒</div>
+                            <p>Din kundvagn är tom</p>
                         </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="quantity-controls">
-                                <button class="quantity-btn" onclick="updateQuantity('${item.name}', -1)">−</button>
-                                <span style="margin:0 6px;">${item.quantity}</span>
-                                <button class="quantity-btn" onclick="updateQuantity('${item.name}', 1)">+</button>
+                    `;
+                } else {
+                    // Visa kundvagn med innehåll
+                    if (emptyCart) emptyCart.style.display = 'none';
+                    if (cartTotal) cartTotal.style.display = 'block';
+                    
+                    cartContent.innerHTML = cart.map(item => `
+                        <div class="cart-item">
+                            <div>
+                                <strong>${escapeHtml(item.name)}</strong>
+                                <div style="color:#777">${item.price} kr</div>
                             </div>
-                            <button style="background:none; border:none; color:#999; cursor:pointer;" onclick="removeFromCart('${item.name}')">Ta bort</button>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <div class="quantity-controls">
+                                    <button class="quantity-btn" onclick="updateQuantity('${escapeHtml(item.name)}', -1)">−</button>
+                                    <span style="margin:0 6px;">${item.quantity}</span>
+                                    <button class="quantity-btn" onclick="updateQuantity('${escapeHtml(item.name)}', 1)">+</button>
+                                </div>
+                                <button style="background:none; border:none; color:#999; cursor:pointer;" 
+                                        onclick="removeFromCart('${escapeHtml(item.name)}')">
+                                    Ta bort
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                `).join('');
-                totalAmountEl.textContent = `Totalt: ${total} kr`;
-            }
+                    `).join('');
+                    
+                    // Uppdatera total
+                    if (totalAmountEl) {
+                        totalAmountEl.textContent = `Totalt: ${total.toFixed(2)} kr`;
+                    }
+                }
 
-            // Update checkout totals
-            const checkoutSubtotal = document.getElementById('checkout-subtotal');
-            const checkoutTotal = document.getElementById('checkout-total');
-            if (checkoutSubtotal) checkoutSubtotal.textContent = `${total} kr`;
-            if (checkoutTotal) checkoutTotal.textContent = `${total + 49} kr`;
+                // Uppdatera checkout-totaler
+                updateCheckoutTotals(total);
+                
+            } catch (error) {
+                console.error('Fel vid uppdatering av kundvagn:', error);
+            }
         }
 
+        function updateCheckoutTotals(subtotal) {
+            try {
+                const checkoutSubtotal = document.getElementById('checkout-subtotal');
+                const checkoutTotal = document.getElementById('checkout-total');
+                const shippingCost = 49;
+                
+                if (checkoutSubtotal) checkoutSubtotal.textContent = `${subtotal.toFixed(2)} kr`;
+                if (checkoutTotal) checkoutTotal.textContent = `${(subtotal + shippingCost).toFixed(2)} kr`;
+            } catch (error) {
+                console.error('Fel vid uppdatering av checkout-totaler:', error);
+            }
+        }
+
+        // ===== Kundvagn notifikation =====
+        function showCartNotification() {
+            try {
+                // Ta bort befintlig notifikation om den finns
+                const existingNotification = document.getElementById('cart-notification');
+                if (existingNotification) {
+                    existingNotification.remove();
+                }
+
+                // Skapa ny notifikation
+                const notification = document.createElement('div');
+                notification.id = 'cart-notification';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 100px;
+                    right: 20px;
+                    background: #4a7c59;
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 10px;
+                    z-index: 2000;
+                    font-weight: bold;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                `;
+                notification.textContent = '✅ Produkt tillagd i kundvagnen!';
+                document.body.appendChild(notification);
+                
+                // Dölj efter 3 sekunder
+                setTimeout(() => {
+                    if (notification && notification.parentNode) {
+                        notification.remove();
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Fel vid visning av notifikation:', error);
+            }
+        }
+
+        // ===== Hjälpfunktioner =====
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== Kundvagn toggle =====
         function toggleCart() {
-            const sidebar = document.getElementById('cart-sidebar');
-            const overlay = document.getElementById('cart-overlay');
-            isCartOpen = !isCartOpen;
-            if (isCartOpen) {
-                sidebar.classList.add('open');
-                overlay.classList.add('show');
-                overlay.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            } else {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('show');
-                overlay.style.display = 'none';
-                document.body.style.overflow = 'auto';
+            try {
+                const sidebar = document.getElementById('cart-sidebar');
+                const overlay = document.getElementById('cart-overlay');
+                
+                if (!sidebar || !overlay) {
+                    console.error('Kundvagn element hittades inte');
+                    return;
+                }
+
+                isCartOpen = !isCartOpen;
+                
+                if (isCartOpen) {
+                    sidebar.classList.add('open');
+                    overlay.classList.add('show');
+                    overlay.style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    sidebar.classList.remove('open');
+                    overlay.classList.remove('show');
+                    overlay.style.display = 'none';
+                    document.body.style.overflow = 'auto';
+                }
+            } catch (error) {
+                console.error('Fel vid toggle av kundvagn:', error);
             }
         }
 
         // ===== Checkout modal =====
         function showCheckout() {
-            if (cart.length === 0) return;
-            document.getElementById('checkout-modal').classList.add('show');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeCheckout() {
-            document.getElementById('checkout-modal').classList.remove('show');
-            document.body.style.overflow = 'auto';
-        }
-
-        // ===== Payment selection =====
-        function selectPayment(event, method) {
-            // set radio
-            const radio = document.querySelector(`input[value="${method}"]`);
-            if (radio) radio.checked = true;
-
-            // visual
-            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
-            if (event && event.currentTarget) event.currentTarget.classList.add('selected');
-
-            // card details
-            const cardDetails = document.getElementById('card-details');
-            const inputs = cardDetails ? cardDetails.querySelectorAll('input') : [];
-            if (method === 'card') {
-                if (cardDetails) cardDetails.style.display = 'block';
-                inputs.forEach(i => i.setAttribute('required', 'required'));
-            } else {
-                if (cardDetails) cardDetails.style.display = 'none';
-                inputs.forEach(i => i.removeAttribute('required'));
-            }
-        }
-
-        // ===== Place order - main logic (Stripe for card) =====
-        async function placeOrder() {
-    const paymentMethod = document.querySelector("input[name='payment']:checked")?.value;
-    
-    if (!paymentMethod) {
-        alert("Välj en betalmetod.");
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/create-checkout-session', {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                items: cart, // array med { name, price, quantity }
-                method: paymentMethod,
-                customer: {
-                    name: document.getElementById("name").value,
-                    email: document.getElementById("email").value,
-                    phone: document.getElementById("phone").value,
-                    address: document.getElementById("address").value
+            try {
+                if (cart.length === 0) {
+                    alert('Din kundvagn är tom. Lägg till produkter innan du går till kassan.');
+                    return;
                 }
-            })
-        });
-
-        const data = await response.json();
-
-        if (data.url) {
-            window.location.href = data.url; // Skicka kunden direkt till Stripe
-        } else {
-            alert("Fel vid betalning: " + (data.error || "Okänt fel"));
+                
+                const modal = document.getElementById('checkout-modal');
+                if (modal) {
+                    modal.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                }
+            } catch (error) {
+                console.error('Fel vid öppning av checkout:', error);
+            }
         }
 
-    } catch (err) {
-        alert("Nätverksfel: " + err.message);
-    }
-}
-
-
-            if (!allValid) {
-                alert('Vänligen fyll i alla obligatoriska fält');
-                return;
+        function closeCheckout() {
+            try {
+                const modal = document.getElementById('checkout-modal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    document.body.style.overflow = 'auto';
+                }
+            } catch (error) {
+                console.error('Fel vid stängning av checkout:', error);
             }
+        }
 
-            // If card -> use Stripe Checkout
-            if (selectedPayment.value === 'card') {
-                try {
-                    const stripe = Stripe("pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm");
+        // ===== Betalningsval =====
+        function selectPayment(event, method) {
+            try {
+                // Sätt radio button
+                const radio = document.querySelector(`input[value="${method}"]`);
+                if (radio) radio.checked = true;
 
-                    // Build line items from cart
-                    const items = cart.map(i => ({
-                        name: i.name,
-                        amount: i.price * 100, // send in öre to server? (server expects price_data or your server can map)
-                        quantity: i.quantity
-                    }));
+                // Uppdatera visuell markering
+                document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+                if (event && event.currentTarget) {
+                    event.currentTarget.classList.add('selected');
+                }
 
-                    // POST to backend to create session
-                    const res = await fetch(BACKEND_URL + '/api/create-checkout-session', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ items })
-                    });
+                // Visa/dölj kortuppgifter
+                const cardDetails = document.getElementById('card-details');
+                const cardInputs = cardDetails ? cardDetails.querySelectorAll('input') : [];
+                
+                if (method === 'card') {
+                    if (cardDetails) cardDetails.style.display = 'block';
+                    cardInputs.forEach(input => input.setAttribute('required', 'required'));
+                } else {
+                    if (cardDetails) cardDetails.style.display = 'none';
+                    cardInputs.forEach(input => input.removeAttribute('required'));
+                }
+            } catch (error) {
+                console.error('Fel vid val av betalmetod:', error);
+            }
+        }
 
-                    const data = await res.json();
-                    if (data.error) {
-                        console.error(data.error);
-                        alert('Kunde inte skapa betalningssession: ' + data.error);
+        // ===== Beställningshantering =====
+        async function placeOrder(event) {
+            event.preventDefault();
+            
+            try {
+                // Validera att kundvagn inte är tom
+                if (cart.length === 0) {
+                    alert('Din kundvagn är tom.');
+                    return;
+                }
+
+                // Hämta formulärdata
+                const form = document.getElementById('checkout-form');
+                const formData = new FormData(form);
+                
+                // Validera betalmetod
+                const paymentMethod = formData.get('payment');
+                if (!paymentMethod) {
+                    alert('Vänligen välj en betalmetod.');
+                    return;
+                }
+
+                // Validera obligatoriska fält
+                const requiredFields = ['namn', 'adress', 'postnummer', 'stad', 'email', 'telefon'];
+                for (const field of requiredFields) {
+                    if (!formData.get(field)) {
+                        alert(`Vänligen fyll i ${field}.`);
                         return;
                     }
-
-                    // Redirect to Stripe Checkout
-                    const result = await stripe.redirectToCheckout({ sessionId: data.id });
-                    if (result.error) console.error(result.error.message);
-                } catch (err) {
-                    console.error(err);
-                    alert('Ett fel uppstod vid betalningen. Se konsol för detaljer.');
                 }
-                return;
+
+                // Hantera kortbetalning med Stripe
+                if (paymentMethod === 'card') {
+                    await handleStripePayment(formData);
+                    return;
+                }
+
+                // Hantera andra betalmetoder (demonstration)
+                await handleOtherPayments(paymentMethod, formData);
+
+            } catch (error) {
+                console.error('Fel vid beställning:', error);
+                alert('Ett fel uppstod vid beställningen. Försök igen.');
             }
-
-            // For other methods (Swish, PayPal, Bankgiro, Klarna) we show placeholder message
-            alert(`Tack för din beställning! Din betalning med ${getPaymentMethodName(selectedPayment.value)} behandlas nu. Du kommer att få en bekräftelse via e-post.`);
-
-            // Clear cart and UI
-            cart = [];
-            updateCartDisplay();
-            closeCheckout();
-            toggleCart();
         }
 
-        // ===== Helpers =====
-        function getPaymentMethodName(method) {
-            const map = { klarna: 'Klarna', card: 'Kort', swish: 'Swish', bankgiro: 'Bankgiro', paypal: 'PayPal' };
-            return map[method] || method;
+        async function handleStripePayment(formData) {
+            try {
+                // I en riktig implementation skulle du:
+                // 1. Skicka beställningsdata till din backend
+                // 2. Skapa en Stripe Checkout Session
+                // 3. Omdirigera till Stripe Checkout
+
+                // För demonstration visar vi bara en bekräftelse
+                alert('Stripe-integration är inte konfigurerad i denna demo. I en riktig implementation skulle du omdirigeras till Stripe Checkout.');
+                
+                // Simulera framgångsrik beställning
+                completeOrder('Kort (Stripe)');
+                
+            } catch (error) {
+                console.error('Stripe-fel:', error);
+                alert('Fel vid Stripe-betalning.');
+            }
         }
 
-        function showCartNotification() {
-            const notification = document.createElement('div');
-            notification.innerText = '✅ Produkt tillagd i kundvagnen!';
-            notification.style.cssText = 'position:fixed; top:100px; right:20px; background:#4a7c59; color:#fff; padding:0.9rem 1.2rem; border-radius:10px; z-index:2000;';
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 1800);
+        async function handleOtherPayments(paymentMethod, formData) {
+            try {
+                const paymentNames = {
+                    'klarna': 'Klarna',
+                    'swish': 'Swish',
+                    'bankgiro': 'Bankgiro',
+                    'paypal': 'PayPal'
+                };
+
+                const paymentName = paymentNames[paymentMethod] || paymentMethod;
+                
+                // Simulera betalningsprocessning
+                alert(`Tack för din beställning! Din betalning med ${paymentName} behandlas nu. Du kommer att få en bekräftelse via e-post.`);
+                
+                completeOrder(paymentName);
+                
+            } catch (error) {
+                console.error('Betalningsfel:', error);
+                alert('Fel vid betalning.');
+            }
         }
 
-        // Close modals and cart on Esc
-        document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') {
-                if (document.getElementById('checkout-modal').classList.contains('show')) closeCheckout();
-                if (isCartOpen) toggleCart();
-                closeNav();
+        function completeOrder(paymentMethod) {
+            try {
+                // Rensa kundvagn
+                cart = [];
+                updateCartDisplay();
+                
+                // Stäng modaler
+                closeCheckout();
+                toggleCart();
+                
+                // Visa bekräftelse
+                showOrderConfirmation(paymentMethod);
+                
+            } catch (error) {
+                console.error('Fel vid slutförande av beställning:', error);
+            }
+        }
+
+        function showOrderConfirmation(paymentMethod) {
+            try {
+                // Skapa bekräftelsemeddelande
+                const confirmation = document.createElement('div');
+                confirmation.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: white;
+                    padding: 2rem;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+                    z-index: 3000;
+                    text-align: center;
+                    max-width: 400px;
+                `;
+                
+                confirmation.innerHTML = `
+                    <div style="font-size: 3rem; color: #4a7c59; margin-bottom: 1rem;">✅</div>
+                    <h3 style="color: #2d4a2b; margin-bottom: 1rem;">Beställning bekräftad!</h3>
+                    <p style="color: #666; margin-bottom: 1.5rem;">
+                        Tack för din beställning. Du kommer att få en bekräftelse via e-post.
+                        <br><br>
+                        Betalmetod: ${paymentMethod}
+                    </p>
+                    <button onclick="this.parentElement.remove(); document.body.style.overflow='auto';" 
+                            style="padding: 0.8rem 2rem; background: #4a7c59; color: white; border: none; border-radius: 8px; cursor: pointer;">
+                        OK
+                    </button>
+                `;
+                
+                document.body.appendChild(confirmation);
+                document.body.style.overflow = 'hidden';
+                
+                // Ta bort automatiskt efter 10 sekunder
+                setTimeout(() => {
+                    if (confirmation && confirmation.parentNode) {
+                        confirmation.remove();
+                        document.body.style.overflow = 'auto';
+                    }
+                }, 10000);
+                
+            } catch (error) {
+                console.error('Fel vid visning av bekräftelse:', error);
+            }
+        }
+
+        // ===== Event listeners =====
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                // Uppdatera kundvagn vid laddning
+                updateCartDisplay();
+                
+                // Visa startsida som standard
+                showPage('hem');
+                
+                console.log('TreeOfLifa webbplats laddad framgångsrikt');
+            } catch (error) {
+                console.error('Fel vid initialisering:', error);
             }
         });
 
-        // Initialize animations or any on load tasks
-        window.addEventListener('load', () => {
-            // Ensure cart display correct
-            updateCartDisplay();
+        // Stäng modaler vid Esc-tangent
+        document.addEventListener('keydown', (event) => {
+            try {
+                if (event.key === 'Escape') {
+                    const checkoutModal = document.getElementById('checkout-modal');
+                    if (checkoutModal && checkoutModal.classList.contains('show')) {
+                        closeCheckout();
+                    } else if (isCartOpen) {
+                        toggleCart();
+                    } else {
+                        closeNav();
+                    }
+                }
+            } catch (error) {
+                console.error('Fel vid hantering av Esc-tangent:', error);
+            }
         });
 
-        // Expose some functions to window for inline onclicks
-        window.addToCart = addToCart;
-        window.updateQuantity = updateQuantity;
-        window.removeFromCart = removeFromCart;
-        window.toggleCart = toggleCart;
-        window.showCheckout = showCheckout;
-        window.closeCheckout = closeCheckout;
-        window.selectPayment = selectPayment;
-        window.placeOrder = placeOrder;
-        window.showPage = id => {
-            // show/hide pages by id
-            document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
-            const el = document.getElementById(id);
-            if (el) el.style.display = 'block';
-            closeNav();
-        };
-        window.toggleNav = toggleNav;
-        window.closeNav = closeNav;
+        // Stäng kundvagn vid klick utanför
+        document.addEventListener('click', (event) => {
+            try {
+                const cartSidebar = document.getElementById('cart-sidebar');
+                const cartIcon = document.querySelector('.cart-icon');
+                
+                if (isCartOpen && cartSidebar && cartIcon) {
+                    if (!cartSidebar.contains(event.target) && !cartIcon.contains(event.target)) {
+                        toggleCart();
+                    }
+                }
+            } catch (error) {
+                console.error('Fel vid hantering av klick utanför kundvagn:', error);
+            }
+        });
+
     </script>
 </body>
 </html>
