@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>TreeOfLifa - Naturliga Luffasvampar</title>
 
-    <!-- Stripe SDK -->
-    <script src="https://js.stripe.com/v3/"></script>
-
     <style>
         /* ===== Reset & Base ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -16,12 +13,13 @@
             font-family: 'Georgia', serif;
             color: #2d4a2b;
             background: #fefefe;
-            -webkit-font-smoothing:antialiased;
+            -webkit-font-smoothing: antialiased;
         }
 
         /* ===== Page Navigation ===== */
         .page {
             display: none;
+            min-height: calc(100vh - 160px);
         }
         .page.active {
             display: block;
@@ -37,120 +35,279 @@
         }
         nav {
             max-width: 1200px; margin: 0 auto;
-            padding: 1rem 5%; display:flex; align-items:center; justify-content:space-between;
+            padding: 1rem 5%; display: flex; align-items: center; justify-content: space-between;
         }
-        .logo { font-size:1.6rem; font-weight:700; color:#4a7c59; text-decoration:none; display:flex; align-items:center; gap:8px; }
+        .logo { 
+            font-size: 1.6rem; font-weight: 700; color: #4a7c59; 
+            text-decoration: none; display: flex; align-items: center; gap: 8px; 
+            cursor: pointer;
+        }
         .logo::before { content: "🌿"; }
 
-        .nav-links { display:flex; gap:1.2rem; list-style:none; }
-        .nav-links a { text-decoration:none; color:#2d4a2b; font-weight:500; }
-        .nav-links a:hover { color:#4a7c59; }
-        .menu-toggle { display:none; background:none; border:none; font-size:1.6rem; cursor:pointer; }
+        .nav-links { 
+            display: flex; gap: 1.2rem; list-style: none; 
+        }
+        .nav-links a { 
+            text-decoration: none; color: #2d4a2b; font-weight: 500; 
+            cursor: pointer; transition: color 0.3s ease;
+        }
+        .nav-links a:hover { color: #4a7c59; }
+        .menu-toggle { 
+            display: none; background: none; border: none; 
+            font-size: 1.6rem; cursor: pointer; 
+        }
 
-        .cart-icon { position:relative; cursor:pointer; font-size:1.4rem; margin-left:10px; }
-        .cart-count { position:absolute; top:-8px; right:-10px; background:#ff6b6b; color:#fff; width:20px; height:20px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.8rem; }
+        .cart-icon { 
+            position: relative; cursor: pointer; font-size: 1.4rem; 
+            margin-left: 10px; transition: transform 0.3s ease;
+        }
+        .cart-icon:hover { transform: scale(1.1); }
+        .cart-count { 
+            position: absolute; top: -8px; right: -10px; 
+            background: #ff6b6b; color: #fff; width: 20px; height: 20px; 
+            border-radius: 50%; display: flex; align-items: center; 
+            justify-content: center; font-weight: 700; font-size: 0.8rem; 
+        }
 
         /* ===== Hero ===== */
-        .hero { padding-top:100px; min-height:60vh; display:flex; align-items:center; justify-content:center; text-align:center; background: linear-gradient(135deg,#f8fffe 0%, #e8f5e8 100%); }
-        .hero h1 { font-size:2.6rem; font-weight:300; color:#2d4a2b; margin-bottom:0.6rem; }
-        .hero .subtitle { font-style:italic; color:#5a7c5a; margin-bottom:1rem; }
+        .hero { 
+            padding-top: 100px; min-height: 60vh; 
+            display: flex; align-items: center; justify-content: center; 
+            text-align: center; 
+            background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%); 
+        }
+        .hero h1 { 
+            font-size: 2.6rem; font-weight: 300; color: #2d4a2b; 
+            margin-bottom: 0.6rem; 
+        }
+        .hero .subtitle { 
+            font-style: italic; color: #5a7c5a; margin-bottom: 1rem; 
+        }
 
         .cta-button {
-            display:inline-block; padding:0.8rem 2rem; border-radius:40px;
-            background:linear-gradient(135deg,#4a7c59 0%,#7fb069 100%); color:#fff; text-decoration:none;
+            display: inline-block; padding: 0.8rem 2rem; border-radius: 40px;
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%); 
+            color: #fff; text-decoration: none; cursor: pointer;
             box-shadow: 0 8px 22px rgba(74,124,89,0.24);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none; font-family: inherit; font-size: inherit;
+        }
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px rgba(74,124,89,0.3);
         }
 
         /* ===== Sections ===== */
-        .section { max-width:1200px; margin:0 auto; padding:2.5rem 5%; }
-        .section h2 { font-size:1.9rem; color:#2d4a2b; text-align:center; margin-bottom:0.8rem; }
-        .section p { text-align:center; max-width:820px; margin:0 auto; color:#4a5a4a; }
+        .section { 
+            max-width: 1200px; margin: 0 auto; padding: 2.5rem 5%; 
+        }
+        .section h2 { 
+            font-size: 1.9rem; color: #2d4a2b; text-align: center; 
+            margin-bottom: 0.8rem; 
+        }
+        .section p { 
+            text-align: center; max-width: 820px; margin: 0 auto; 
+            color: #4a5a4a; line-height: 1.6;
+        }
 
         /* ===== Products grid ===== */
         .products-grid {
-            display:grid;
+            display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap:1.25rem;
-            margin-top:1.2rem;
+            gap: 1.25rem;
+            margin-top: 1.2rem;
         }
         .product-card {
-            background:#fff; border-radius:14px; box-shadow:0 8px 30px rgba(0,0,0,0.06);
-            overflow:hidden; display:flex; flex-direction:column;
-            transition: transform .18s ease, box-shadow .18s ease;
+            background: #fff; border-radius: 14px; 
+            box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+            overflow: hidden; display: flex; flex-direction: column;
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
         }
-        .product-card:hover { transform: translateY(-6px); box-shadow:0 14px 40px rgba(0,0,0,0.08); }
+        .product-card:hover { 
+            transform: translateY(-6px); 
+            box-shadow: 0 14px 40px rgba(0,0,0,0.08); 
+        }
 
-        .product-image { width:100%; height:220px; background:linear-gradient(135deg,#e8f5e8 0%, #d4e6d4 100%); display:block; overflow:hidden; }
-        .product-image img { width:100%; height:100%; object-fit:cover; display:block; }
+        .product-image { 
+            width: 100%; height: 220px; 
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4e6d4 100%); 
+            display: flex; align-items: center; justify-content: center;
+            overflow: hidden; 
+        }
+        .product-image img { 
+            width: 100%; height: 100%; object-fit: cover; display: block; 
+        }
+        .product-image.no-image {
+            font-size: 3rem; color: #4a7c59;
+        }
 
-        .product-info { padding:1rem 1.2rem; display:flex; flex-direction:column; gap:0.6rem; flex:1; }
-        .product-info h3 { font-size:1.05rem; color:#2d4a2b; }
-        .product-info p { color:#5a7c5a; font-size:0.95rem; line-height:1.4; }
-        .price { color:#4a7c59; font-weight:700; margin-top:auto; }
+        .product-info { 
+            padding: 1rem 1.2rem; display: flex; flex-direction: column; 
+            gap: 0.6rem; flex: 1; 
+        }
+        .product-info h3 { font-size: 1.05rem; color: #2d4a2b; }
+        .product-info p { 
+            color: #5a7c5a; font-size: 0.95rem; line-height: 1.4; 
+        }
+        .price { color: #4a7c59; font-weight: 700; margin-top: auto; }
 
         .buy-button {
-            margin-top:0.8rem; padding:0.9rem; width:100%; border-radius:22px; border:none;
-            background:linear-gradient(135deg,#4a7c59 0%,#7fb069 100%); color:white; cursor:pointer;
+            margin-top: 0.8rem; padding: 0.9rem; width: 100%; 
+            border-radius: 22px; border: none;
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%); 
+            color: white; cursor: pointer; font-family: inherit;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .buy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(74,124,89,0.3);
         }
 
         /* ===== Cart sidebar ===== */
-        .cart-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:1300; display:none; }
-        .cart-overlay.show { display:block; }
-        .cart-sidebar { position:fixed; top:0; right:-420px; width:400px; height:100vh; background:#fff; box-shadow:-6px 0 30px rgba(0,0,0,0.12); transition:right .22s ease; z-index:1350; overflow:auto; }
-        .cart-sidebar.open { right:0; }
-        .cart-header { display:flex; justify-content:space-between; align-items:center; padding:1rem; border-bottom:1px solid #eee; }
-        .cart-content { padding:1rem; }
-        .cart-item { display:flex; justify-content:space-between; align-items:center; padding:0.8rem 0; border-bottom:1px solid #f2f2f2; }
-        .quantity-controls { display:flex; align-items:center; gap:0.5rem; }
-        .quantity-btn { width:30px; height:30px; border-radius:50%; border:none; background:#f0f0f0; cursor:pointer; }
+        .cart-overlay { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45); 
+            z-index: 1300; display: none; 
+        }
+        .cart-overlay.show { display: block; }
+        
+        .cart-sidebar { 
+            position: fixed; top: 0; right: -420px; width: 400px; 
+            height: 100vh; background: #fff; 
+            box-shadow: -6px 0 30px rgba(0,0,0,0.12); 
+            transition: right 0.22s ease; z-index: 1350; 
+            overflow-y: auto; display: flex; flex-direction: column;
+        }
+        .cart-sidebar.open { right: 0; }
+        
+        .cart-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 1rem; border-bottom: 1px solid #eee; 
+        }
+        .cart-content { 
+            padding: 1rem; flex: 1; overflow-y: auto;
+        }
+        .cart-item { 
+            display: flex; justify-content: space-between; align-items: center; 
+            padding: 0.8rem 0; border-bottom: 1px solid #f2f2f2; 
+        }
+        .quantity-controls { 
+            display: flex; align-items: center; gap: 0.5rem; 
+        }
+        .quantity-btn { 
+            width: 30px; height: 30px; border-radius: 50%; border: none; 
+            background: #f0f0f0; cursor: pointer; 
+            transition: background-color 0.2s ease;
+        }
+        .quantity-btn:hover {
+            background: #e0e0e0;
+        }
 
-        .cart-total { padding:1rem; border-top:2px solid #eee; text-align:center; }
+        .cart-total { 
+            padding: 1rem; border-top: 2px solid #eee; text-align: center; 
+        }
         .checkout-button {
-            width:100%; padding:0.9rem; border-radius:12px; border:none;
-            background:linear-gradient(135deg,#4a7c59 0%,#7fb069 100%); color:white; cursor:pointer; font-weight:700;
+            width: 100%; padding: 0.9rem; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%); 
+            color: white; cursor: pointer; font-weight: 700; font-family: inherit;
+            transition: transform 0.2s ease;
+        }
+        .checkout-button:hover {
+            transform: translateY(-2px);
         }
 
         /* ===== Checkout modal ===== */
-        .checkout-modal { position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.6); z-index:1400; padding:20px; }
-        .checkout-modal.show { display:flex; }
-        .checkout-content { width:520px; max-width:100%; max-height:90vh; overflow:auto; background:#fff; border-radius:12px; padding:1rem 1.2rem; }
-        .form-group { margin-bottom:1rem; }
-        .form-group input, .form-group select { width:100%; padding:0.7rem; border-radius:8px; border:2px solid #e8e8e8; }
+        .checkout-modal { 
+            position: fixed; inset: 0; display: none; 
+            align-items: center; justify-content: center; 
+            background: rgba(0,0,0,0.6); z-index: 1400; padding: 20px; 
+        }
+        .checkout-modal.show { display: flex; }
+        .checkout-content { 
+            width: 520px; max-width: 100%; max-height: 90vh; overflow: auto; 
+            background: #fff; border-radius: 12px; padding: 1rem 1.2rem; 
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block; margin-bottom: 0.5rem; font-weight: 500;
+        }
+        .form-group input, .form-group select { 
+            width: 100%; padding: 0.7rem; border-radius: 8px; 
+            border: 2px solid #e8e8e8; font-family: inherit;
+        }
 
-        .payment-method { display:flex; gap:0.7rem; align-items:center; padding:0.8rem; border-radius:10px; border:2px solid #e8e8e8; margin-bottom:0.6rem; cursor:pointer; }
-        .payment-method.selected { border-color:#4a7c59; background:#f8fffe; }
+        .payment-method { 
+            display: flex; gap: 0.7rem; align-items: center; 
+            padding: 0.8rem; border-radius: 10px; border: 2px solid #e8e8e8; 
+            margin-bottom: 0.6rem; cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+        .payment-method:hover {
+            border-color: #4a7c59;
+        }
+        .payment-method.selected { 
+            border-color: #4a7c59; background: #f8fffe; 
+        }
 
         .order-button {
-            width:100%; padding:0.9rem; border-radius:12px; border:none;
-            background:linear-gradient(135deg,#4a7c59 0%,#7fb069 100%); color:white; font-weight:700; cursor:pointer;
+            width: 100%; padding: 0.9rem; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%); 
+            color: white; font-weight: 700; cursor: pointer; font-family: inherit;
+            transition: transform 0.2s ease;
+        }
+        .order-button:hover {
+            transform: translateY(-2px);
         }
 
         .close-cart {
-            background:none; border:none; font-size:1.5rem; cursor:pointer; color:#666;
+            background: none; border: none; font-size: 1.5rem; 
+            cursor: pointer; color: #666; transition: color 0.2s ease;
+        }
+        .close-cart:hover {
+            color: #333;
         }
 
         /* ===== Footer ===== */
-        footer { background:#2d4a2b; color:#fff; padding:2rem 5%; margin-top:2rem; }
-        .footer-content { max-width:1200px; margin:0 auto; text-align:center; }
+        footer { 
+            background: #2d4a2b; color: #fff; padding: 2rem 5%; margin-top: 2rem; 
+        }
+        .footer-content { 
+            max-width: 1200px; margin: 0 auto; text-align: center; 
+        }
+
+        /* ===== Success message ===== */
+        .success-message {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #4a7c59; color: white; padding: 2rem; border-radius: 12px;
+            text-align: center; z-index: 1500; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
 
         /* ===== Responsive ===== */
-        @media (max-width:900px) {
-            .product-image { height:200px; }
-            .checkout-content { width:92%; }
+        @media (max-width: 900px) {
+            .product-image { height: 200px; }
+            .checkout-content { width: 92%; }
         }
-        @media (max-width:768px) {
-            .nav-links { display:none; position:absolute; top:64px; right:12px; background:#fff; flex-direction:column; padding:0.8rem; gap:0.6rem; box-shadow:0 8px 30px rgba(0,0,0,0.06); border-radius:8px; }
-            .nav-links.show { display:flex; }
-            .menu-toggle { display:block; }
-            .hero { padding-top:100px; }
-            .product-image { height:180px; }
-            .checkout-content { width:100%; height:100%; border-radius:0; max-height:100vh; }
-            .cart-sidebar { width:100%; right:-110%; }
-            .cart-sidebar.open { right:0; }
+        
+        @media (max-width: 768px) {
+            .nav-links { 
+                display: none; position: absolute; top: 64px; right: 12px; 
+                background: #fff; flex-direction: column; padding: 0.8rem; 
+                gap: 0.6rem; box-shadow: 0 8px 30px rgba(0,0,0,0.06); 
+                border-radius: 8px; 
+            }
+            .nav-links.show { display: flex; }
+            .menu-toggle { display: block; }
+            .hero { padding-top: 100px; }
+            .product-image { height: 180px; }
+            .checkout-content { 
+                width: 100%; height: 100%; border-radius: 0; max-height: 100vh; 
+            }
+            .cart-sidebar { width: 100%; right: -110%; }
+            .cart-sidebar.open { right: 0; }
         }
-        @media (max-width:420px) {
-            .hero h1 { font-size:1.6rem; }
-            .product-image { height:160px; }
+        
+        @media (max-width: 420px) {
+            .hero h1 { font-size: 1.6rem; }
+            .product-image { height: 160px; }
         }
     </style>
 </head>
@@ -159,15 +316,15 @@
     <!-- Header -->
     <header>
         <nav>
-            <a href="#" class="logo" onclick="showPage('hem')">TreeOfLifa</a>
+            <div class="logo" onclick="showPage('hem')">TreeOfLifa</div>
 
             <ul class="nav-links" id="nav-links">
-                <li><a href="#" onclick="showPage('hem')">Hem</a></li>
-                <li><a href="#" onclick="showPage('om-oss')">Om oss</a></li>
-                <li><a href="#" onclick="showPage('produkter')">Produkter</a></li>
+                <li><a onclick="showPage('hem')">Hem</a></li>
+                <li><a onclick="showPage('om-oss')">Om oss</a></li>
+                <li><a onclick="showPage('produkter')">Produkter</a></li>
             </ul>
 
-            <div style="display:flex; align-items:center; gap:8px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
                 <div class="cart-icon" onclick="toggleCart()" aria-label="Öppna kundvagn">
                     🛒 <span class="cart-count" id="cart-count">0</span>
                 </div>
@@ -178,12 +335,12 @@
 
     <!-- Hem page (hero) -->
     <main>
-        <section id="hem" class="page active" style="padding-top:80px;">
+        <section id="hem" class="page active" style="padding-top: 80px;">
             <div class="hero">
                 <div>
                     <h1>Naturens Rena Skönhet</h1>
                     <p class="subtitle">Upptäck våra handplockade, ekologiska luffasvampar för en naturlig hudvård</p>
-                    <a href="#" class="cta-button" onclick="showPage('produkter')">Utforska Produkter</a>
+                    <button class="cta-button" onclick="showPage('produkter')">Utforska Produkter</button>
                 </div>
             </div>
 
@@ -194,7 +351,7 @@
         </section>
 
         <!-- Om oss -->
-        <section id="om-oss" class="page" style="padding-top:80px;">
+        <section id="om-oss" class="page" style="padding-top: 80px;">
             <div class="section">
                 <h2>Vår Berättelse</h2>
                 <p>TreeOfLifa grundades ur en passion för naturlig skönhet och hållbar livsstil. Vi startade vår resa med en enkel övertygelse: att naturen erbjuder de bästa lösningarna för hudvård.</p>
@@ -204,24 +361,24 @@
         </section>
 
         <!-- Produkter -->
-        <section id="produkter" class="page" style="padding-top:80px;">
+        <section id="produkter" class="page" style="padding-top: 80px;">
             <div class="section">
                 <h2>Vårt Naturliga Sortiment</h2>
                 <p>Upptäck vår exklusiva kollektion av handplockade, ekologiska luffasvampar. Varje produkt är noggrant utvald för att ge dig den bästa naturliga exfolieringen.</p>
 
                 <div class="products-grid" id="products-grid">
                     <div class="product-card">
-                        <div class="product-image"><img src="IMG_4031.jpg" alt="Mindre Lifah" onerror="this.style.display='none'"></div>
+                        <div class="product-image no-image">🧽</div>
                         <div class="product-info">
                             <h3>Mindre Lifah</h3>
-                            <p>Vår populäraste liffasvamp, lite kompaktare, perfekt för daglig användning.</p>
+                            <p>Vår populäraste luffasvamp, lite kompaktare, perfekt för daglig användning.</p>
                             <div class="price">50 kr</div>
                             <button class="buy-button" onclick="addToCart('Mindre Lifah', 50)">Lägg i kundvagn</button>
                         </div>
                     </div>
 
                     <div class="product-card">
-                        <div class="product-image"><img src="IMG_4057.jpg" alt="Större Lifa" onerror="this.style.display='none'"></div>
+                        <div class="product-image no-image">🧽</div>
                         <div class="product-info">
                             <h3>Större Lifah</h3>
                             <p>Extra tjock och hållbar luffasvamp för djup rengöring.</p>
@@ -231,7 +388,7 @@
                     </div>
 
                     <div class="product-card">
-                        <div class="product-image"><img src="IMG_4024.jpg" alt="Aleppotvål" onerror="this.style.display='none'"></div>
+                        <div class="product-image no-image">🧼</div>
                         <div class="product-info">
                             <h3>Aleppotvål</h3>
                             <p>En mild 100% naturlig tvål som är gjord på ett urgammalt recept.</p>
@@ -241,7 +398,7 @@
                     </div>
 
                     <div class="product-card">
-                        <div class="product-image"><img src="IMG_PRESENT.jpg" alt="Presentset" onerror="this.style.display='none'"></div>
+                        <div class="product-image no-image">🎁</div>
                         <div class="product-info">
                             <h3>Presentset</h3>
                             <p>Komplett set i en fin presentask, perfekt som gåva.</p>
@@ -263,13 +420,13 @@
         </div>
 
         <div class="cart-content" id="cart-content">
-            <div class="empty-cart" id="empty-cart" style="text-align:center; padding:2rem;">
-                <div style="font-size:2.2rem; color:#ccc;">🛒</div>
+            <div class="empty-cart" id="empty-cart" style="text-align: center; padding: 2rem;">
+                <div style="font-size: 2.2rem; color: #ccc;">🛒</div>
                 <p>Din kundvagn är tom</p>
             </div>
         </div>
 
-        <div class="cart-total" id="cart-total" style="display:none;">
+        <div class="cart-total" id="cart-total" style="display: none;">
             <div class="total-amount" id="total-amount">Totalt: 0 kr</div>
             <button class="checkout-button" onclick="showCheckout()">Gå till kassan</button>
         </div>
@@ -278,7 +435,7 @@
     <!-- Checkout modal -->
     <div class="checkout-modal" id="checkout-modal" aria-hidden="true">
         <div class="checkout-content" role="dialog" aria-labelledby="checkout-heading">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.6rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
                 <h2 id="checkout-heading">Slutför ditt köp</h2>
                 <button class="close-cart" onclick="closeCheckout()">×</button>
             </div>
@@ -287,22 +444,22 @@
                 <div class="form-group">
                     <label>Leveransadress</label>
                     <input type="text" id="namn" name="namn" placeholder="Namn" required />
-                    <input type="text" id="adress" name="adress" placeholder="Adress" style="margin-top:0.5rem;" required />
-                    <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                    <input type="text" id="adress" name="adress" placeholder="Adress" style="margin-top: 0.5rem;" required />
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                         <input type="text" id="postnummer" name="postnummer" placeholder="Postnummer" required />
                         <input type="text" id="stad" name="stad" placeholder="Stad" required />
                     </div>
-                    <input type="email" id="email" name="email" placeholder="E-post" style="margin-top:0.5rem;" required />
-                    <input type="tel" id="telefon" name="telefon" placeholder="Telefon" style="margin-top:0.5rem;" required />
+                    <input type="email" id="email" name="email" placeholder="E-post" style="margin-top: 0.5rem;" required />
+                    <input type="tel" id="telefon" name="telefon" placeholder="Telefon" style="margin-top: 0.5rem;" required />
                 </div>
 
                 <div class="payment-methods">
-                    <h3 style="margin-bottom:0.6rem;">Välj betalmetod</h3>
+                    <h3 style="margin-bottom: 0.6rem;">Välj betalmetod</h3>
 
                     <div class="payment-method" onclick="selectPayment(event,'card')">
                         <input type="radio" name="payment" value="card">
                         <span class="payment-icon">💳</span>
-                        <div><strong>Kort (inkl. Klarna)</strong><br><small>Betala säkert med kort eller Klarna via Stripe</small></div>
+                        <div><strong>Kort (inkl. Klarna)</strong><br><small>Betala säkert med kort eller Klarna</small></div>
                     </div>
 
                     <div class="payment-method" onclick="selectPayment(event,'paypal')">
@@ -312,26 +469,35 @@
                     </div>
                 </div>
 
-                <div id="card-details" style="display:none; margin-top:0.6rem;">
+                <div id="card-details" style="display: none; margin-top: 0.6rem;">
                     <div class="form-group">
                         <label>Kortuppgifter</label>
                         <input type="text" id="kortnummer" name="kortnummer" placeholder="Kortnummer" />
-                        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+                        <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
                             <input type="text" id="expiry" name="expiry" placeholder="MM/ÅÅ" />
                             <input type="text" id="cvc" name="cvc" placeholder="CVC" />
                         </div>
-                        <small style="color:#666">Kortuppgifterna används endast för demonstration. Riktig korthantering sköts av Stripe Checkout.</small>
+                        <small style="color: #666;">Kortuppgifterna används endast för demonstration.</small>
                     </div>
                 </div>
 
-                <div style="margin-top:1rem; padding:0.9rem; background:#f8fffe; border-radius:10px;">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;"><span>Produkter:</span><span id="checkout-subtotal">0 kr</span></div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:0.4rem;"><span>Frakt:</span><span>49 kr</span></div>
-                    <hr style="border:none; height:1px; background:#e8e8e8; margin:0.6rem 0;">
-                    <div style="display:flex; justify-content:space-between; font-weight:700;"><span>Totalt:</span><span id="checkout-total">49 kr</span></div>
+                <div style="margin-top: 1rem; padding: 0.9rem; background: #f8fffe; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span>Produkter:</span>
+                        <span id="checkout-subtotal">0 kr</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span>Frakt:</span>
+                        <span>49 kr</span>
+                    </div>
+                    <hr style="border: none; height: 1px; background: #e8e8e8; margin: 0.6rem 0;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                        <span>Totalt:</span>
+                        <span id="checkout-total">49 kr</span>
+                    </div>
                 </div>
 
-                <button type="submit" class="order-button" style="margin-top:1rem;">Slutför beställning</button>
+                <button type="submit" class="order-button" style="margin-top: 1rem;">Slutför beställning</button>
             </form>
         </div>
     </div>
@@ -339,20 +505,28 @@
     <!-- Footer -->
     <footer>
         <div class="footer-content">
-            <h3 style="color:#7fb069; margin-bottom:0.6rem;">TreeOfLifa</h3>
+            <h3 style="color: #7fb069; margin-bottom: 0.6rem;">TreeOfLifa</h3>
             <p>Naturlig skönhet, hållbar framtid</p>
-            <p style="margin-top:0.4rem;">Kontakta oss: tree.of.liifa@gmail.com</p>
+            <p style="margin-top: 0.4rem;">Kontakta oss: tree.of.liifa@gmail.com</p>
         </div>
     </footer>
 
     <script>
-        // ===== Konfiguration =====
-        const STRIPE_PUBLISHABLE_KEY = "pk_test_51QMaGPQ2W4lqdp6blnxdZ4PI582jLSsnjDznejPKX3wSDDQ8PKEQVaZnqPeY22L0pekbSN7nyAt05B7OKqDDPyeg00QM3TiCAA"; // Byt till din riktiga live key
-        const BACKEND_URL = 'https://tree-of-lifa-ozlevziq0-jauzas-projects-9588f8f4.vercel.app'; // Din backend URL
-
         // ===== State =====
         let cart = [];
         let isCartOpen = false;
+
+        // ===== Helper Functions =====
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
 
         // ===== Navigation / Sidor =====
         function showPage(pageId) {
@@ -375,7 +549,7 @@
                 closeNav();
                 
                 // Scrolla till toppen
-                window.scrollTo(0, 0);
+                window.scrollTo({top: 0, behavior: 'smooth'});
             } catch (error) {
                 console.error('Fel vid sidnavigation:', error);
             }
@@ -407,7 +581,6 @@
         // ===== Kundvagn logik =====
         function addToCart(name, price) {
             try {
-                // Validera input
                 if (!name || typeof name !== 'string' || !price || typeof price !== 'number') {
                     console.error('Ogiltiga parametrar för addToCart');
                     return;
@@ -458,20 +631,17 @@
 
         function updateCartDisplay() {
             try {
-                // Hämta DOM-element
                 const cartCount = document.getElementById('cart-count');
                 const cartContent = document.getElementById('cart-content');
                 const cartTotal = document.getElementById('cart-total');
                 const emptyCart = document.getElementById('empty-cart');
                 const totalAmountEl = document.getElementById('total-amount');
 
-                // Kontrollera att element finns
                 if (!cartCount || !cartContent) {
                     console.error('Kundvagn DOM-element hittades inte');
                     return;
                 }
 
-                // Beräkna totaler
                 const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
                 const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -516,7 +686,7 @@
                     
                     // Uppdatera total
                     if (totalAmountEl) {
-                        totalAmountEl.textContent = `Totalt: ${total.toFixed(2)} kr`;
+                        totalAmountEl.textContent = `Totalt: ${total} kr`;
                     }
                 }
 
@@ -534,4 +704,222 @@
                 const checkoutTotal = document.getElementById('checkout-total');
                 const shippingCost = 49;
                 
-                if (checkoutSubtotal) checkoutSubtotal.textContent = `${subtotal.toFixe
+                if (checkoutSubtotal) checkoutSubtotal.textContent = `${subtotal} kr`;
+                if (checkoutTotal) checkoutTotal.textContent = `${subtotal + shippingCost} kr`;
+            } catch (error) {
+                console.error('Fel vid uppdatering av checkout totaler:', error);
+            }
+        }
+
+        function showCartNotification() {
+            // Skapa en temporär notifikation
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed; top: 100px; right: 20px; 
+                background: #4a7c59; color: white; 
+                padding: 1rem; border-radius: 8px; 
+                z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                transform: translateX(100%); transition: transform 0.3s ease;
+            `;
+            notification.textContent = 'Produkt tillagd i kundvagnen!';
+            document.body.appendChild(notification);
+            
+            // Animera in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // Ta bort efter 3 sekunder
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (document.body.contains(notification)) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+
+        // ===== Cart toggle =====
+        function toggleCart() {
+            try {
+                const overlay = document.getElementById('cart-overlay');
+                const sidebar = document.getElementById('cart-sidebar');
+                
+                if (!overlay || !sidebar) {
+                    console.error('Cart DOM-element hittades inte');
+                    return;
+                }
+
+                isCartOpen = !isCartOpen;
+                
+                if (isCartOpen) {
+                    overlay.classList.add('show');
+                    sidebar.classList.add('open');
+                    sidebar.setAttribute('aria-hidden', 'false');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    overlay.classList.remove('show');
+                    sidebar.classList.remove('open');
+                    sidebar.setAttribute('aria-hidden', 'true');
+                    document.body.style.overflow = '';
+                }
+            } catch (error) {
+                console.error('Fel vid toggle av kundvagn:', error);
+            }
+        }
+
+        // ===== Checkout =====
+        function showCheckout() {
+            try {
+                const modal = document.getElementById('checkout-modal');
+                if (modal) {
+                    modal.classList.add('show');
+                    modal.setAttribute('aria-hidden', 'false');
+                    
+                    // Focus på första input
+                    const firstInput = modal.querySelector('input');
+                    if (firstInput) firstInput.focus();
+                }
+            } catch (error) {
+                console.error('Fel vid visning av checkout:', error);
+            }
+        }
+
+        function closeCheckout() {
+            try {
+                const modal = document.getElementById('checkout-modal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                }
+            } catch (error) {
+                console.error('Fel vid stängning av checkout:', error);
+            }
+        }
+
+        function selectPayment(event, paymentType) {
+            try {
+                // Förhindra bubbling
+                event.stopPropagation();
+                
+                // Ta bort tidigare selektion
+                document.querySelectorAll('.payment-method').forEach(method => {
+                    method.classList.remove('selected');
+                });
+                
+                // Markera den valda metoden
+                const selectedMethod = event.currentTarget;
+                selectedMethod.classList.add('selected');
+                
+                // Sätt radio button
+                const radio = selectedMethod.querySelector('input[type="radio"]');
+                if (radio) radio.checked = true;
+                
+                // Visa/dölj kortdetaljer
+                const cardDetails = document.getElementById('card-details');
+                if (cardDetails) {
+                    cardDetails.style.display = paymentType === 'card' ? 'block' : 'none';
+                }
+            } catch (error) {
+                console.error('Fel vid val av betalmetod:', error);
+            }
+        }
+
+        function placeOrder(event) {
+            try {
+                event.preventDefault();
+                
+                // Validera att en betalmetod är vald
+                const selectedPayment = document.querySelector('input[name="payment"]:checked');
+                if (!selectedPayment) {
+                    alert('Vänligen välj en betalmetod');
+                    return;
+                }
+
+                // Validera kundvagn
+                if (cart.length === 0) {
+                    alert('Din kundvagn är tom');
+                    return;
+                }
+
+                // Simulera beställning
+                const orderData = {
+                    items: cart,
+                    total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 49,
+                    customer: {
+                        name: document.getElementById('namn').value,
+                        address: document.getElementById('adress').value,
+                        postalCode: document.getElementById('postnummer').value,
+                        city: document.getElementById('stad').value,
+                        email: document.getElementById('email').value,
+                        phone: document.getElementById('telefon').value
+                    },
+                    paymentMethod: selectedPayment.value
+                };
+
+                console.log('Beställning:', orderData);
+
+                // Visa framgångsmeddelande
+                showSuccessMessage();
+                
+                // Rensa kundvagn och stäng modal
+                cart = [];
+                updateCartDisplay();
+                closeCheckout();
+                toggleCart();
+
+            } catch (error) {
+                console.error('Fel vid beställning:', error);
+                alert('Ett fel uppstod vid beställningen. Försök igen.');
+            }
+        }
+
+        function showSuccessMessage() {
+            const message = document.createElement('div');
+            message.className = 'success-message';
+            message.innerHTML = `
+                <h3>Tack för din beställning! 🎉</h3>
+                <p>Vi har skickat en bekräftelse till din e-post.</p>
+                <p>Din beställning kommer att skickas inom 2-3 arbetsdagar.</p>
+            `;
+            
+            document.body.appendChild(message);
+            
+            setTimeout(() => {
+                if (document.body.contains(message)) {
+                    document.body.removeChild(message);
+                }
+            }, 4000);
+        }
+
+        // ===== Event Listeners =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Stäng modaler med ESC
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    if (document.getElementById('checkout-modal').classList.contains('show')) {
+                        closeCheckout();
+                    } else if (isCartOpen) {
+                        toggleCart();
+                    }
+                }
+            });
+
+            // Stäng mobil navigation när man klickar utanför
+            document.addEventListener('click', function(event) {
+                const nav = document.getElementById('nav-links');
+                const menuToggle = document.getElementById('menu-toggle');
+                
+                if (nav && nav.classList.contains('show') && 
+                    !nav.contains(event.target) && 
+                    event.target !== menuToggle) {
+                    closeNav();
+                }
+            });
+
+            console.log('TreeOfLifa webbplats laddad framgångsrikt');
+        });
+    </script>
+</body>
+</html>
