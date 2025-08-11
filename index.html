@@ -731,24 +731,32 @@
             }
         }
 
-        async function handleStripePayment(formData) {
-            try {
-                // I en riktig implementation skulle du:
-                // 1. Skicka beställningsdata till din backend
-                // 2. Skapa en Stripe Checkout Session
-                // 3. Omdirigera till Stripe Checkout
+        // Ersätt hela handleStripePayment funktionen med denna:
 
-                // För demonstration visar vi bara en bekräftelse
-                alert('Stripe-integration är inte konfigurerad i denna demo. I en riktig implementation skulle du omdirigeras till Stripe Checkout.');
-                
-                // Simulera framgångsrik beställning
-                completeOrder('Kort (Stripe)');
-                
-            } catch (error) {
-                console.error('Stripe-fel:', error);
-                alert('Fel vid Stripe-betalning.');
-            }
-        }
+async function handleStripePayment(formData) {
+    try {
+        // Detta är en förenklad version för test
+        alert('Stripe-betalning startar... (Observera: Detta är test-läge)');
+        
+        // Simulera framgångsrik betalning för test
+        setTimeout(() => {
+            // Rensa kundvagn
+            cart = [];
+            updateCartDisplay();
+            
+            // Stäng modaler
+            closeCheckout();
+            toggleCart();
+            
+            // Visa bekräftelse
+            showOrderConfirmation('Stripe (Test)');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Stripe-fel:', error);
+        alert('Fel vid Stripe-betalning.');
+    }
+}
 
         async function handleOtherPayments(paymentMethod, formData) {
             try {
