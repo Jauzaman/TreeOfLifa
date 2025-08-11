@@ -1,4 +1,30 @@
 // /api/create-checkout-session.js
+export default async function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "https://treeoflifa.se");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+
+  try {
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card", "swish"],
+      line_items: req.body.items,
+      mode: "payment",
+      success_url: "https://treeoflifa.se/success",
+      cancel_url: "https://treeoflifa.se/cancel",
+    });
+
+    res.status(200).json({ id: session.id });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+}
+
 import fs from 'fs';
 import path from 'path';
 import Stripe from 'stripe';
