@@ -288,26 +288,22 @@
                 </div>
 
                 <div class="payment-methods">
-                    <h3 style="margin-bottom:0.6rem;">Välj betalmetod</h3>
+    <h3 style="margin-bottom:0.6rem;">Välj betalmetod</h3>
 
-                    <div class="payment-method" onclick="selectPayment(event,'klarna')">
-                        <input type="radio" name="payment" value="klarna">
-                        <span class="payment-icon">💳</span>
-                        <div><strong>Klarna</strong><br><small>Betala senare eller dela upp betalningen</small></div>
-                    </div>
+    <div class="payment-method" onclick="selectPayment(event,'card')">
+        <input type="radio" name="payment" value="card">
+        <span class="payment-icon">💳</span>
+        <div><strong>Kort (inkl. Klarna)</strong><br><small>Betala säkert med kort eller Klarna via Stripe</small></div>
+    </div>
 
-                    <div class="payment-method" onclick="selectPayment(event,'card')">
-                        <input type="radio" name="payment" value="card">
-                        <span class="payment-icon">💳</span>
-                        <div><strong>Kort (Stripe)</strong><br><small>Betala säkert med kort</small></div>
-                    </div>
+    <div class="payment-method" onclick="selectPayment(event,'paypal')">
+        <input type="radio" name="payment" value="paypal">
+        <span class="payment-icon">💰</span>
+        <div><strong>PayPal</strong><br><small>Betala säkert med PayPal</small></div>
+    </div>
+</div>
+*/
 
-                    <div class="payment-method" onclick="selectPayment(event,'paypal')">
-                        <input type="radio" name="payment" value="paypal">
-                        <span class="payment-icon">💰</span>
-                        <div><strong>PayPal</strong><br><small>Betala säkert med PayPal</small></div>
-                    </div>
-                </div>
 
                 <div id="card-details" style="display:none; margin-top:0.6rem;">
                     <div class="form-group">
@@ -344,8 +340,10 @@
 
     <script>
         // ===== Konfiguration =====
-        const STRIPE_PUBLISHABLE_KEY = "pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm"; // Använd test-nyckel istället
-        const BACKEND_URL = 'https://tree-of-lifa-ozlevziq0-jauzas-projects-9588f8f4.vercel.app';
+        const STRIPE_PUBLISHABLE_KEY = "pk_test_51QMaGPQ2W4lqdp6blnxdZ4PI582jLSsnjDznejPKX3wSDDQ8PKEQVaZnqPeY22L0pekbSN7nyAt05B7OKqDDPyeg00QM3TiCAA"; // Byt till din riktiga live key
+        const BACKEND_URL = 'https://tree-of-lifa-ozlevziq0-jauzas-projects-9588f8f4.vercel.app'; // Din backend URL
+
+
 
         // ===== State =====
         let cart = [];
