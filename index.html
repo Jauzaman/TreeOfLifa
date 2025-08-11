@@ -496,24 +496,42 @@
 
         // ===== Place order - main logic (Stripe for card) =====
         async function placeOrder() {
-            const selectedPayment = document.querySelector('input[name="payment"]:checked');
-            if (!selectedPayment) {
-                alert('Vänligen välj en betalmetod');
-                return;
-            }
+    const paymentMethod = document.querySelector("input[name='payment']:checked")?.value;
+    
+    if (!paymentMethod) {
+        alert("Välj en betalmetod.");
+        return;
+    }
 
-            // Validate required fields
-            const form = document.getElementById('checkout-form');
-            const requiredFields = form.querySelectorAll('input[required]');
-            let allValid = true;
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    field.style.borderColor = '#ff6b6b';
-                    allValid = false;
-                } else {
-                    field.style.borderColor = '#e8e8e8';
+    try {
+        const response = await fetch('/api/create-checkout-session', {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                items: cart, // array med { name, price, quantity }
+                method: paymentMethod,
+                customer: {
+                    name: document.getElementById("name").value,
+                    email: document.getElementById("email").value,
+                    phone: document.getElementById("phone").value,
+                    address: document.getElementById("address").value
                 }
-            });
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.url) {
+            window.location.href = data.url; // Skicka kunden direkt till Stripe
+        } else {
+            alert("Fel vid betalning: " + (data.error || "Okänt fel"));
+        }
+
+    } catch (err) {
+        alert("Nätverksfel: " + err.message);
+    }
+}
+
 
             if (!allValid) {
                 alert('Vänligen fyll i alla obligatoriska fält');
