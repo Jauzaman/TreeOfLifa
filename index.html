@@ -302,18 +302,6 @@
                         <div><strong>Kort (Stripe)</strong><br><small>Betala säkert med kort</small></div>
                     </div>
 
-                    <div class="payment-method" onclick="selectPayment(event,'swish')">
-                        <input type="radio" name="payment" value="swish">
-                        <span class="payment-icon">📱</span>
-                        <div><strong>Swish</strong><br><small>Betala direkt med din bank-app</small></div>
-                    </div>
-
-                    <div class="payment-method" onclick="selectPayment(event,'bankgiro')">
-                        <input type="radio" name="payment" value="bankgiro">
-                        <span class="payment-icon">🏦</span>
-                        <div><strong>Bankgiro</strong><br><small>Traditionell banköverföring</small></div>
-                    </div>
-
                     <div class="payment-method" onclick="selectPayment(event,'paypal')">
                         <input type="radio" name="payment" value="paypal">
                         <span class="payment-icon">💰</span>
@@ -753,8 +741,6 @@
             try {
                 const paymentNames = {
                     'klarna': 'Klarna',
-                    'swish': 'Swish',
-                    'bankgiro': 'Bankgiro',
                     'paypal': 'PayPal'
                 };
 
