@@ -1,29 +1,4 @@
 // /api/create-checkout-session.js
-export default async function handler(req, res) {
-  res.setHeader("Access-Control-Allow-Origin", "https://treeoflifa.se");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card", "swish"],
-      line_items: req.body.items,
-      mode: "payment",
-      success_url: "https://treeoflifa.se/success",
-      cancel_url: "https://treeoflifa.se/cancel",
-    });
-
-    res.status(200).json({ id: session.id });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-}
 
 import fs from 'fs';
 import path from 'path';
@@ -32,6 +7,7 @@ import Stripe from 'stripe';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
+  // Tillåt bara POST
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Endast POST tillåten' });
   }
@@ -39,7 +15,7 @@ export default async function handler(req, res) {
   try {
     const { items, method, customer } = req.body; // customer = namn, adress, email, telefon
 
-    // 1️⃣ Logga ordern lokalt (kan bytas till riktig databas)
+    // 1️⃣ Spara ordern lokalt (kan bytas till databas)
     const orderData = {
       id: `order_${Date.now()}`,
       date: new Date().toISOString(),
@@ -57,7 +33,7 @@ export default async function handler(req, res) {
     existingOrders.push(orderData);
     fs.writeFileSync(logFile, JSON.stringify(existingOrders, null, 2));
 
-    // 2️⃣ Gör om till Stripe line items
+    // 2️⃣ Konvertera till Stripe line_items
     const lineItems = items.map(item => ({
       price_data: {
         currency: 'sek',
@@ -83,7 +59,8 @@ export default async function handler(req, res) {
       metadata: { order_id: orderData.id }
     });
 
-    res.status(200).json({ id: session.id });
+    // 5️⃣ Skicka tillbaka session.url så frontend kan redirecta
+    res.status(200).json({ url: session.url });
 
   } catch (err) {
     console.error(err);
