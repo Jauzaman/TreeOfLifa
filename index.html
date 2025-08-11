@@ -523,7 +523,7 @@
             // If card -> use Stripe Checkout
             if (selectedPayment.value === 'card') {
                 try {
-                    const stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+                    const stripe = Stripe(pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm);
 
                     // Build line items from cart
                     const items = cart.map(i => ({
