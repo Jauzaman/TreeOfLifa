@@ -671,15 +671,30 @@
         }
 
         // ===== Beställningshantering =====
-        async function placeOrder(event) {
-            event.preventDefault();
+        async function handleStripePayment(formData) {
+    try {
+        // Detta är en förenklad version för test
+        alert('Stripe-betalning startar... (Observera: Detta är test-läge)');
+        
+        // Simulera framgångsrik betalning för test
+        setTimeout(() => {
+            // Rensa kundvagn
+            cart = [];
+            updateCartDisplay();
             
-            try {
-                // Validera att kundvagn inte är tom
-                if (cart.length === 0) {
-                    alert('Din kundvagn är tom.');
-                    return;
-                }
+            // Stäng modaler
+            closeCheckout();
+            toggleCart();
+            
+            // Visa bekräftelse
+            showOrderConfirmation('Stripe (Test)');
+        }, 2000);
+        
+    } catch (error) {
+        console.error('Stripe-fel:', error);
+        alert('Fel vid Stripe-betalning.');
+    }
+}
 
                 // Hämta formulärdata
                 const form = document.getElementById('checkout-form');
