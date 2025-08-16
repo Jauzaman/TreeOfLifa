@@ -889,6 +889,18 @@
             }
         }
 
+         async function initializeStripe() {
+            try {
+                if (stripeInitialized) return true;
+                
+                if (typeof Stripe === 'undefined') {
+                    console.error('Stripe SDK not loaded');
+                    return false;
+                }
+
+                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+                elements = stripe.elements();
+                
         async function placeOrder(event) {
             try {
                 event.preventDefault();
