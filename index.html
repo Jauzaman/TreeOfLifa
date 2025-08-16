@@ -544,33 +544,6 @@
     </footer>
 
     <script>
-const checkoutBtn = document.getElementById("checkout-button");
-if (checkoutBtn) {
-    checkoutBtn.addEventListener("click", async () => {
-        // ...
-    });
-}      try {
-        const response = await fetch("http://localhost:3000/api/checkout-stripe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            items: [{ name: "Testprodukt", price: 100, quantity: 1 }]
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.url) {
-          // 👇 Redirect till Stripe Checkout
-          window.location.href = data.url;
-        } else {
-          alert("Kunde inte hämta Stripe-session: " + (data.error || "Okänt fel"));
-        }
-      } catch (error) {
-        console.error("Checkout error:", error);
-        alert("Något gick fel vid checkout");
-      }
-    });
        async function handleCheckout() {
   const response = await fetch('http://localhost:3000/api/checkout-stripe', {
     method: 'POST',
