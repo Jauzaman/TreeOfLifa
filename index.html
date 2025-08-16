@@ -823,39 +823,34 @@
 
         // ===== Payment Processing =====
         async function processStripePayment() {
-            if (!stripe || !cardElement) {
-                showStatusMessage('Stripe inte korrekt initialiserat', 'error');
-                return false;
-            }
+  try {
+    // Skicka varukorgens innehåll till din backend på Vercel
+    const response = await fetch(`${BACKEND_URL}/api/checkout-stripe`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        items: cart.map(item => ({
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity
+        }))
+      })
+    });
 
-            try {
-                setPaymentProcessing(true);
-                showStatusMessage('Behandlar kortbetalning...', 'info');
+    const data = await response.json();
 
-                // Skapa betalningsmetod
-                const {error, paymentMethod} = await stripe.createPaymentMethod({
-                    type: 'card',
-                    card: cardElement,
-                    billing_details: {
-                        name: document.getElementById('namn').value,
-                        email: document.getElementById('email').value,
-                        phone: document.getElementById('telefon').value,
-                        address: {
-                            line1: document.getElementById('adress').value,
-                            postal_code: document.getElementById('postnummer').value,
-                            city: document.getElementById('stad').value,
-                            country: 'SE'
-                        }
-                    }
-                });
+    if (data.url) {
+      // ✅ Skickar kunden till Stripe Checkout
+      window.location.href = data.url;
+    } else {
+      alert("Kunde inte hämta Stripe-session: " + (data.error || "Okänt fel"));
+    }
+  } catch (error) {
+    console.error("Checkout error:", error);
+    alert("Något gick fel vid checkout");
+  }
+}
 
-                if (error) {
-                    console.error('Stripe fel:', error);
-                    document.getElementById('card-errors').textContent = error.message;
-                    showStatusMessage('Kortuppgifterna är ogiltiga. Kontrollera och försök igen.', 'error');
-                    setPaymentProcessing(false);
-                    return false;
-                }
 
                 console.log('Stripe PaymentMethod skapad:', paymentMethod);
 
