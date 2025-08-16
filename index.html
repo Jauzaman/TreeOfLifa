@@ -545,13 +545,18 @@
 
     <script>
        async function handleCheckout() {
-  const response = await fetch('http://localhost:3000/create-checkout-session', {
+  const response = await fetch('http://localhost:3000/api/checkout-stripe', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      items: [{ name: "Testprodukt", price: 100, quantity: 1 }]
+    })
   });
+
   const data = await response.json();
-  window.location.href = data.url; // Redirectar användaren till Stripe
+  window.location.href = data.url; // 👈 Redirect till Stripe
 }
+
 
         // ===== Konfiguration =====
         // VIKTIGT: Byt ut dessa med dina riktiga keys
