@@ -5,6 +5,12 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>TreeOfLifa - Naturliga Luffasvampar</title>
 
+    <!-- Stripe SDK -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <!-- PayPal SDK -->
+    <script src="https://www.paypal.com/sdk/js?client-id=test&currency=SEK"></script>
+
     <style>
         /* ===== Reset & Base ===== */
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -496,31 +502,23 @@
                         <div><strong>Kort</strong><br><small>Betala säkert med kort</small></div>
                     </div>
 
-                    <div class="payment-method" onclick="selectPayment(event,'swish')">
-                        <input type="radio" name="payment" value="swish">
-                        <span class="payment-icon">📱</span>
-                        <div><strong>Swish</strong><br><small>Betala snabbt med Swish</small></div>
+                    <div class="payment-method" onclick="selectPayment(event,'paypal')">
+                        <input type="radio" name="payment" value="paypal">
+                        <span class="payment-icon">💰</span>
+                        <div><strong>PayPal</strong><br><small>Betala säkert med PayPal</small></div>
                     </div>
                 </div>
 
                 <div id="card-details" style="display: none; margin-top: 0.6rem;">
                     <div class="form-group">
-                        <label>Kortuppgifter</label>
-                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" maxlength="19" pattern="[0-9\s]*" onkeyup="formatCardNumber(this)" />
-                        <div class="card-row">
-                            <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5" onkeyup="formatExpiry(this)" />
-                            <input type="text" id="card-cvc" placeholder="CVC" maxlength="3" pattern="[0-9]*" />
-                        </div>
-                        <input type="text" id="card-name" placeholder="Namn på kortet" style="margin-top: 0.5rem;" />
+                        <label>Kortuppgifter (hanteras säkert av Stripe)</label>
+                        <div id="card-element" style="padding: 0.7rem; border: 2px solid #e8e8e8; border-radius: 8px; background: white;"></div>
+                        <div id="card-errors" role="alert" style="color: #fa755a; margin-top: 0.5rem;"></div>
                     </div>
                 </div>
 
-                <div id="swish-details" style="display: none; margin-top: 0.6rem;">
-                    <div class="form-group">
-                        <label>Swish-information</label>
-                        <p style="color: #666; font-size: 0.9rem;">Du kommer att få en push-notis från Swish för att godkänna betalningen.</p>
-                    </div>
-                </div>
+                <!-- PayPal Button Container -->
+                <div id="paypal-button-container" style="display: none; margin-top: 1rem;"></div>
 
                 <div style="margin-top: 1rem; padding: 0.9rem; background: #f8fffe; border-radius: 10px;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
@@ -557,6 +555,14 @@
         let cart = [];
         let isCartOpen = false;
         let isProcessingPayment = false;
+        let stripe = null;
+        let elements = null;
+        let cardElement = null;
+        let stripeInitialized = false;
+
+        // ===== Configuration =====
+        const STRIPE_PUBLISHABLE_KEY = "pk_test_51QMaGPQ2W4lqdp6blnxdZ4PI582jLSsnjDznejPKX3wSDDQ8PKEQVaZnqPeY22L0pekbSN7nyAt05B7OKqDDPyeg00QM3TiCAA";
+        const BACKEND_URL = 'https://tree-of-lifa.vercel.app';
 
         // ===== Utility Functions =====
         function escapeHtml(text) {
@@ -584,6 +590,124 @@
         }
 
         // ===== Card Formatting Functions =====
+        async function initializeStripe() {
+            try {
+                if (stripeInitialized) return true;
+                
+                if (typeof Stripe === 'undefined') {
+                    console.error('Stripe SDK not loaded');
+                    return false;
+                }
+
+                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+                elements = stripe.elements();
+                
+                cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            fontSize: '16px',
+                            color: '#424770',
+                            '::placeholder': {
+                                color: '#aab7c4',
+                            },
+                        },
+                        invalid: {
+                            color: '#9e2146',
+                        },
+                    },
+                });
+
+                cardElement.mount('#card-element');
+                
+                cardElement.on('change', (event) => {
+                    const displayError = document.getElementById('card-errors');
+                    if (event.error) {
+                        displayError.textContent = event.error.message;
+                    } else {
+                        displayError.textContent = '';
+                    }
+                });
+
+                stripeInitialized = true;
+                return true;
+            } catch (error) {
+                console.error('Error initializing Stripe:', error);
+                return false;
+            }
+        }
+
+        async function initializePayPal() {
+            try {
+                if (typeof paypal === 'undefined') {
+                    console.error('PayPal SDK not loaded');
+                    return false;
+                }
+
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const total = subtotal + 49; // Including shipping
+
+                await paypal.Buttons({
+                    createOrder: (data, actions) => {
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: (total / 10).toFixed(2), // Convert SEK to approximate EUR for demo
+                                    currency_code: 'EUR'
+                                },
+                                description: 'TreeOfLifa Natural Products'
+                            }]
+                        });
+                    },
+                    onApprove: async (data, actions) => {
+                        try {
+                            const order = await actions.order.capture();
+                            console.log('PayPal payment successful:', order);
+                            
+                            const orderData = {
+                                orderId: 'ORD-' + Date.now(),
+                                transactionId: order.id,
+                                items: cart.map(item => ({...item})),
+                                subtotal: subtotal,
+                                shipping: 49,
+                                total: total,
+                                paymentMethod: 'paypal',
+                                customer: {
+                                    name: document.getElementById('namn').value,
+                                    address: document.getElementById('adress').value,
+                                    postalCode: document.getElementById('postnummer').value,
+                                    city: document.getElementById('stad').value,
+                                    email: document.getElementById('email').value,
+                                    phone: document.getElementById('telefon').value
+                                },
+                                timestamp: new Date().toISOString()
+                            };
+
+                            showSuccessMessage(orderData);
+                            
+                            // Clear cart and close
+                            cart = [];
+                            updateCartDisplay();
+                            closeCheckout();
+                            toggleCart();
+                            
+                        } catch (error) {
+                            console.error('PayPal capture error:', error);
+                            showStatusMessage('PayPal-betalningen misslyckades. Försök igen.', 'error');
+                        }
+                    },
+                    onError: (err) => {
+                        console.error('PayPal error:', err);
+                        showStatusMessage('PayPal-betalningen misslyckades. Försök igen.', 'error');
+                    }
+                }).render('#paypal-button-container');
+
+                return true;
+            } catch (error) {
+                console.error('Error initializing PayPal:', error);
+                return false;
+            }
+        }
+
         function formatCardNumber(input) {
             let x = input.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
             let formattedNumber = x.match(/.{1,4}/g)?.join(' ') || x;
