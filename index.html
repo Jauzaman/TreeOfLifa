@@ -1108,19 +1108,44 @@
 
                 const paymentMethod = selectedPayment.value;
 
-                if (paymentMethod === 'card') {
-                    await processStripePayment();
-                } else {
-                    // PayPal is handled by its own buttons
-                    showStatusMessage('Använd PayPal-knappen för att slutföra betalningen', 'info');
-                }
-
-            } catch (error) {
-                console.error('Error placing order:', error);
-                showStatusMessage('Ett fel uppstod vid beställningen. Försök igen.', 'error');
-                setPaymentProcessing(false);
-            }
-        }
+               if (paymentMethod === 'card') {
+    await processStripePayment();
+} else if (paymentMethod === 'paypal') {
+    // PayPal is handled by its own buttons
+    showStatusMessage('Använd PayPal-knappen för att slutföra betalningen', 'info');
+} else if (paymentMethod === 'swish') {
+    // Process Swish payment
+    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const total = subtotal + 49;
+    const orderId = 'SWISH-' + Date.now();
+    
+    showStatusMessage(`Swish-betalning: ${total} kr till 123 164 91 77. Skriv "${orderId}" som meddelande.`, 'info');
+    
+    setTimeout(() => {
+        const orderData = {
+            orderId: orderId,
+            transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
+            items: cart.map(item => ({...item})),
+            subtotal, shipping: 49, total,
+            paymentMethod: 'swish',
+            customer: {
+                name: document.getElementById('namn').value,
+                address: document.getElementById('adress').value,
+                postalCode: document.getElementById('postnummer').value,
+                city: document.getElementById('stad').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('telefon').value
+            },
+            timestamp: new Date().toISOString()
+        };
+        
+        showSuccessMessage(orderData);
+        cart = [];
+        updateCartDisplay();
+        closeCheckout();
+        toggleCart();
+    }, 3000);
+}
 
         async function processStripePayment() {
             try {
