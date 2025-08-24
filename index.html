@@ -1360,6 +1360,27 @@
         }
 
         // ===== Event Listeners =====
+                // ===== Navigation Functions =====
+function showPage(pageId) {
+    try {
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(page => {
+            page.classList.remove('active');
+        });
+
+        // Show selected page
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) {
+            targetPage.classList.add('active');
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    } catch (error) {
+        console.error('Error navigating to page:', error);
+    }
+}
+
+// ===== Event Listeners ===== 
+document.addEventListener('DOMContentLoaded', function() {
         document.addEventListener('DOMContentLoaded', function() {
             console.log('TreeOfLifa website loaded');
             
