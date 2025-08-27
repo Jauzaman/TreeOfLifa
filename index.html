@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+       <!DOCTYPE html>
 <html lang="sv">
 <head>
     <meta charset="utf-8" />
@@ -221,6 +221,64 @@
             transform: translateY(-2px);
         }
 
+        /* ===== Checkout modal ===== */
+        .checkout-modal { 
+            position: fixed; inset: 0; display: none; 
+            align-items: center; justify-content: center; 
+            background: rgba(0,0,0,0.6); z-index: 1400; padding: 20px; 
+        }
+        .checkout-modal.show { display: flex; }
+        .checkout-content { 
+            width: 520px; max-width: 100%; max-height: 90vh; overflow: auto; 
+            background: #fff; border-radius: 12px; padding: 1rem 1.2rem; 
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label {
+            display: block; margin-bottom: 0.5rem; font-weight: 500;
+        }
+        .form-group input, .form-group select { 
+            width: 100%; padding: 0.7rem; border-radius: 8px; 
+            border: 2px solid #e8e8e8; font-family: inherit;
+        }
+
+        .payment-method { 
+            display: flex; gap: 0.7rem; align-items: center; 
+            padding: 0.8rem; border-radius: 10px; border: 2px solid #e8e8e8; 
+            margin-bottom: 0.6rem; cursor: pointer; 
+            transition: all 0.2s ease;
+        }
+        .payment-method:hover {
+            border-color: #4a7c59;
+        }
+        .payment-method.selected { 
+            border-color: #4a7c59; background: #f8fffe; 
+        }
+
+        .card-row {
+            display: flex; gap: 0.5rem; margin-top: 0.5rem;
+        }
+        .card-row input {
+            flex: 1;
+        }
+
+        .order-button {
+            width: 100%; padding: 0.9rem; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%); 
+            color: white; font-weight: 700; cursor: pointer; font-family: inherit;
+            transition: transform 0.2s ease;
+        }
+        .order-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .close-cart {
+            background: none; border: none; font-size: 1.5rem; 
+            cursor: pointer; color: #666; transition: color 0.2s ease;
+        }
+        .close-cart:hover {
+            color: #333;
+        }
+
         /* ===== Footer ===== */
         footer { 
             background: #2d4a2b; color: #fff; padding: 2rem 5%; margin-top: 2rem; 
@@ -229,7 +287,68 @@
             max-width: 1200px; margin: 0 auto; text-align: center; 
         }
 
+        /* ===== Success message ===== */
+        .success-message {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            background: #4a7c59; color: white; padding: 2rem; border-radius: 12px;
+            text-align: center; z-index: 1500; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        /* ===== Error/Status messages ===== */
+        .error-message {
+            background: #ff6b6b;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        .info-message {
+            background: #4a7c59;
+            color: white;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+        }
+
+        /* ===== Payment status indicators ===== */
+        .payment-processing {
+            opacity: 0.7;
+            pointer-events: none;
+        }
+
+        /* ===== Stripe Elements styling ===== */
+        #card-element {
+            padding: 0.7rem; 
+            border: 2px solid #e8e8e8; 
+            border-radius: 8px; 
+            background: white;
+            min-height: 40px;
+        }
+
+        #card-element.StripeElement--focus {
+            border-color: #4a7c59;
+            box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+        }
+
+        #card-element.StripeElement--invalid {
+            border-color: #fa755a;
+        }
+
+        #card-errors {
+            color: #fa755a;
+            margin-top: 0.5rem;
+            font-size: 0.9rem;
+        }
+
         /* ===== Responsive ===== */
+        @media (max-width: 900px) {
+            .product-image { height: 200px; }
+            .checkout-content { width: 92%; }
+        }
+        
         @media (max-width: 768px) {
             .nav-links { 
                 display: none; position: absolute; top: 64px; right: 12px; 
@@ -241,8 +360,16 @@
             .menu-toggle { display: block; }
             .hero { padding-top: 100px; }
             .product-image { height: 180px; }
+            .checkout-content { 
+                width: 100%; height: 100%; border-radius: 0; max-height: 100vh; 
+            }
             .cart-sidebar { width: 100%; right: -110%; }
             .cart-sidebar.open { right: 0; }
+        }
+        
+        @media (max-width: 420px) {
+            .hero h1 { font-size: 1.6rem; }
+            .product-image { height: 160px; }
         }
     </style>
 </head>
@@ -268,7 +395,7 @@
         </nav>
     </header>
 
-    <!-- Hem page -->
+    <!-- Hem page (hero) -->
     <main>
         <section id="hem" class="page active" style="padding-top: 80px;">
             <div class="hero">
@@ -301,7 +428,7 @@
                 <h2>Vårt Naturliga Sortiment</h2>
                 <p>Upptäck vår exklusiva kollektion av handplockade, ekologiska luffasvampar. Varje produkt är noggrant utvald för att ge dig den bästa naturliga exfolieringen.</p>
 
-                <div class="products-grid">
+                <div class="products-grid" id="products-grid">
                     <div class="product-card">
                         <div class="product-image">
                             <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4031.JPG" alt="Mindre Lifa" />
@@ -316,7 +443,7 @@
 
                     <div class="product-card">
                         <div class="product-image">
-                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG" alt="Större Lifa" />
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG" alt="Luffasvamp" />
                         </div>                     
                         <div class="product-info">
                             <h3>Större Lifah</h3>
@@ -363,7 +490,7 @@
         </div>
 
         <div class="cart-content" id="cart-content">
-            <div class="empty-cart" style="text-align: center; padding: 2rem;">
+            <div class="empty-cart" id="empty-cart" style="text-align: center; padding: 2rem;">
                 <div style="font-size: 2.2rem; color: #ccc;">🛒</div>
                 <p>Din kundvagn är tom</p>
             </div>
@@ -375,6 +502,77 @@
         </div>
     </aside>
 
+    <!-- Checkout modal -->
+    <div class="checkout-modal" id="checkout-modal" aria-hidden="true">
+        <div class="checkout-content" role="dialog" aria-labelledby="checkout-heading">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                <h2 id="checkout-heading">Slutför ditt köp</h2>
+                <button class="close-cart" onclick="closeCheckout()">×</button>
+            </div>
+
+            <div id="payment-status" style="margin-bottom: 1rem;"></div>
+
+            <form id="checkout-form" onsubmit="placeOrder(event)">
+                <div class="form-group">
+                    <label>Leveransadress</label>
+                    <input type="text" id="namn" name="namn" placeholder="Namn" required />
+                    <input type="text" id="adress" name="adress" placeholder="Adress" style="margin-top: 0.5rem;" required />
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <input type="text" id="postnummer" name="postnummer" placeholder="Postnummer" required />
+                        <input type="text" id="stad" name="stad" placeholder="Stad" required />
+                    </div>
+                    <input type="email" id="email" name="email" placeholder="E-post" style="margin-top: 0.5rem;" required />
+                    <input type="tel" id="telefon" name="telefon" placeholder="Telefon" style="margin-top: 0.5rem;" required />
+                </div>
+
+                <div class="payment-methods">
+                    <h3 style="margin-bottom: 0.6rem;">Välj betalmetod</h3>
+
+                    <div class="payment-method" onclick="selectPayment(event,'card')">
+                        <input type="radio" name="payment" value="card">
+                        <span class="payment-icon">💳</span>
+                        <div><strong>Kort</strong><br><small>Betala säkert med kort</small></div>
+                    </div>
+
+                    <div class="payment-method" onclick="selectPayment(event,'swish')">
+                        <input type="radio" name="payment" value="swish">
+                        <span class="payment-icon">📱</span>
+                        <div><strong>Swish</strong><br><small>Betala med Swish - 123 164 91 77</small></div>
+                    </div>
+                </div>
+
+                <div id="card-details" style="display: none; margin-top: 0.6rem;">
+                    <div class="form-group">
+                        <label>Kortuppgifter</label>
+                        <div id="card-element"></div>
+                        <div id="card-errors" role="alert"></div>
+                    </div>
+                </div>
+
+                <!-- PayPal Button Container -->
+                <div id="paypal-button-container" style="display: none; margin-top: 1rem;"></div>
+
+                <div style="margin-top: 1rem; padding: 0.9rem; background: #f8fffe; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span>Produkter:</span>
+                        <span id="checkout-subtotal">0 kr</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span>Frakt:</span>
+                        <span>49 kr</span>
+                    </div>
+                    <hr style="border: none; height: 1px; background: #e8e8e8; margin: 0.6rem 0;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                        <span>Totalt:</span>
+                        <span id="checkout-total">49 kr</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="order-button" id="submit-button" style="margin-top: 1rem;">Slutför beställning</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="footer-content">
@@ -385,182 +583,23 @@
     </footer>
 
     <script>
-        // Global state
+        // ===== Global State =====
         let cart = [];
         let isCartOpen = false;
+        let isProcessingPayment = false;
+        let stripe = null;
+        let elements = null;
+        let cardElement = null;
+        let stripeInitialized = false;
 
-        // Navigation functions
-        function showPage(pageId) {
-            console.log('Showing page:', pageId);
-            
-            // Hide all pages
-            document.querySelectorAll('.page').forEach(page => {
-                page.classList.remove('active');
-            });
+        // ===== Configuration =====
+        const STRIPE_PUBLISHABLE_KEY = "pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm";
+        const BACKEND_URL = 'https://tree-of-lifa.vercel.app'; // Ersätt med din faktiska Vercel URL
 
-            // Show selected page
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.add('active');
-                closeNav();
-                window.scrollTo({top: 0, behavior: 'smooth'});
-            }
-        }
-
-        function toggleNav() {
-            const nav = document.getElementById('nav-links');
-            if (nav) {
-                nav.classList.toggle('show');
-            }
-        }
-
-        function closeNav() {
-            const nav = document.getElementById('nav-links');
-            if (nav) {
-                nav.classList.remove('show');
-            }
-        }
-
-        // Cart functions
-        function addToCart(name, price) {
-            const existing = cart.find(item => item.name === name);
-            if (existing) {
-                existing.quantity += 1;
-            } else {
-                cart.push({ name, price, quantity: 1 });
-            }
-            
-            updateCartDisplay();
-            showCartNotification(name);
-        }
-
-        function removeFromCart(name) {
-            cart = cart.filter(item => item.name !== name);
-            updateCartDisplay();
-        }
-
-        function updateQuantity(name, change) {
-            const item = cart.find(i => i.name === name);
-            if (item) {
-                item.quantity += change;
-                if (item.quantity <= 0) {
-                    removeFromCart(name);
-                } else {
-                    updateCartDisplay();
-                }
-            }
-        }
-
-        function updateCartDisplay() {
-            const cartCount = document.getElementById('cart-count');
-            const cartContent = document.getElementById('cart-content');
-            const cartTotal = document.getElementById('cart-total');
-            const totalAmountEl = document.getElementById('total-amount');
-
-            const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-            const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-
-            cartCount.textContent = itemCount;
-
-            if (cart.length === 0) {
-                cartTotal.style.display = 'none';
-                cartContent.innerHTML = `
-                    <div class="empty-cart" style="text-align:center; padding:2rem;">
-                        <div style="font-size:2.2rem; color:#ccc;">🛒</div>
-                        <p>Din kundvagn är tom</p>
-                    </div>
-                `;
-            } else {
-                cartTotal.style.display = 'block';
-                cartContent.innerHTML = cart.map(item => `
-                    <div class="cart-item">
-                        <div>
-                            <strong>${item.name}</strong>
-                            <div style="color:#777">${item.price} kr</div>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                            <div class="quantity-controls">
-                                <button class="quantity-btn" onclick="updateQuantity('${item.name}', -1)">−</button>
-                                <span style="margin:0 6px;">${item.quantity}</span>
-                                <button class="quantity-btn" onclick="updateQuantity('${item.name}', 1)">+</button>
-                            </div>
-                            <button style="background:none; border:none; color:#999; cursor:pointer;" 
-                                    onclick="removeFromCart('${item.name}')">
-                                Ta bort
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-                
-                totalAmountEl.textContent = `Totalt: ${total} kr`;
-            }
-        }
-
-        function showCartNotification(productName) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed; top: 100px; right: 20px; 
-                background: #4a7c59; color: white; 
-                padding: 1rem; border-radius: 8px; 
-                z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                transform: translateX(100%); transition: transform 0.3s ease;
-            `;
-            notification.textContent = `${productName} tillagd i kundvagnen!`;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(0)';
-            }, 100);
-            
-            setTimeout(() => {
-                notification.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (document.body.contains(notification)) {
-                        document.body.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        function toggleCart() {
-            const overlay = document.getElementById('cart-overlay');
-            const sidebar = document.getElementById('cart-sidebar');
-            
-            isCartOpen = !isCartOpen;
-            
-            if (isCartOpen) {
-                overlay.classList.add('show');
-                sidebar.classList.add('open');
-                sidebar.setAttribute('aria-hidden', 'false');
-                document.body.style.overflow = 'hidden';
-            } else {
-                overlay.classList.remove('show');
-                sidebar.classList.remove('open');
-                sidebar.setAttribute('aria-hidden', 'true');
-                document.body.style.overflow = '';
-            }
-        }
-
-        function showCheckout() {
-            alert('Checkout funktionalitet kommer snart! Tack för ditt intresse.');
-        }
-
-        // Event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('TreeOfLifa website loaded');
-            
-            // Close mobile nav when clicking outside
-            document.addEventListener('click', function(event) {
-                const nav = document.getElementById('nav-links');
-                const menuToggle = document.getElementById('menu-toggle');
-                
-                if (nav && nav.classList.contains('show') && 
-                    !nav.contains(event.target) && 
-                    event.target !== menuToggle) {
-                    closeNav();
-                }
-            });
-        });
-    </script>
-</body>
-</html>
+        // ===== Utility Functions =====
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '
