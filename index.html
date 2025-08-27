@@ -1,4 +1,4 @@
-       <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sv">
 <head>
     <meta charset="utf-8" />
@@ -594,10 +594,9 @@
 
         // ===== Configuration =====
         const STRIPE_PUBLISHABLE_KEY = "pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm";
-        const BACKEND_URL = 'https://tree-of-lifa.vercel.app'; // Ersätt med din faktiska Vercel URL
-// ===== Missing JavaScript Functions =====
+        const BACKEND_URL = 'https://tree-of-lifa.vercel.app';
 
-// ===== Utility Functions =====
+        // ===== Utility Functions =====
         function escapeHtml(text) {
             const map = {
                 '&': '&amp;',
@@ -611,6 +610,8 @@
 
         // ===== Page Navigation =====
         function showPage(pageId) {
+            console.log('showPage called with:', pageId);
+            
             // Hide all pages
             const pages = document.querySelectorAll('.page');
             pages.forEach(page => {
@@ -774,21 +775,17 @@
         }
 
         function selectPayment(event, method) {
-            // Remove selection from all payment methods
             document.querySelectorAll('.payment-method').forEach(el => {
                 el.classList.remove('selected');
             });
             
-            // Add selection to clicked method
             event.currentTarget.classList.add('selected');
             
-            // Update radio button
             const radio = event.currentTarget.querySelector('input[type="radio"]');
             if (radio) {
                 radio.checked = true;
             }
             
-            // Show/hide card details
             const cardDetails = document.getElementById('card-details');
             if (cardDetails) {
                 cardDetails.style.display = method === 'card' ? 'block' : 'none';
@@ -818,165 +815,26 @@
             }
         }
 
-        async function placeOrder(event) {
+        function placeOrder(event) {
             event.preventDefault();
             
             if (isProcessingPayment) return;
             
             const selectedPayment = document.querySelector('input[name="payment"]:checked');
             if (!selectedPayment) {
-                showPaymentStatus('Välj en betalmetod', 'error');
+                alert('Välj en betalmetod');
                 return;
             }
             
-            // Get form data
-            const formData = new FormData(document.getElementById('checkout-form'));
-            const orderData = {
-                customer: {
-                    name: formData.get('namn'),
-                    address: formData.get('adress'),
-                    postalCode: formData.get('postnummer'),
-                    city: formData.get('stad'),
-                    email: formData.get('email'),
-                    phone: formData.get('telefon')
-                },
-                items: cart,
-                paymentMethod: selectedPayment.value,
-                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 49
-            };
-            
-            // Handle different payment methods
-            if (selectedPayment.value === 'card') {
-                await processCardPayment(orderData);
-            } else if (selectedPayment.value === 'swish') {
-                processSwishPayment(orderData);
+            if (selectedPayment.value === 'swish') {
+                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 49;
+                alert(`Swish-betalning: Skicka ${total} kr till 123 164 91 77`);
             }
-        }
-
-        async function processCardPayment(orderData) {
-            if (!stripe || !cardElement) {
-                showPaymentStatus('Kortbetalning kunde inte initialiseras', 'error');
-                return;
-            }
-            
-            isProcessingPayment = true;
-            showPaymentStatus('Behandlar betalning...', 'info');
-            
-            try {
-                // Create payment intent on backend
-                const response = await fetch(`${BACKEND_URL}/create-payment-intent`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(orderData)
-                });
-                
-                const { clientSecret, error } = await response.json();
-                
-                if (error) {
-                    throw new Error(error);
-                }
-                
-                // Confirm payment with Stripe
-                const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-                    payment_method: {
-                        card: cardElement,
-                        billing_details: {
-                            name: orderData.customer.name,
-                            email: orderData.customer.email,
-                        }
-                    }
-                });
-                
-                if (stripeError) {
-                    throw new Error(stripeError.message);
-                }
-                
-                if (paymentIntent.status === 'succeeded') {
-                    showOrderSuccess();
-                    clearCart();
-                }
-                
-            } catch (error) {
-                showPaymentStatus(`Betalning misslyckades: ${error.message}`, 'error');
-            } finally {
-                isProcessingPayment = false;
-            }
-        }
-
-        function processSwishPayment(orderData) {
-            // For Swish, show instructions and submit order
-            const total = orderData.total;
-            const swishNumber = '123 164 91 77';
-            
-            showPaymentStatus(`Swish-betalning: Skicka ${total} kr till ${swishNumber}. Efter betalning kommer din beställning att behandlas.`, 'info');
-            
-            // Submit order to backend
-            submitOrder(orderData);
-        }
-
-        async function submitOrder(orderData) {
-            try {
-                const response = await fetch(`${BACKEND_URL}/submit-order`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(orderData)
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    showOrderSuccess();
-                    clearCart();
-                } else {
-                    throw new Error(result.error || 'Kunde inte skicka beställning');
-                }
-                
-            } catch (error) {
-                showPaymentStatus(`Fel vid beställning: ${error.message}`, 'error');
-            }
-        }
-
-        function showPaymentStatus(message, type) {
-            const statusEl = document.getElementById('payment-status');
-            if (statusEl) {
-                statusEl.innerHTML = `<div class="${type}-message">${message}</div>`;
-            }
-        }
-
-        function showOrderSuccess() {
-            closeCheckout();
-            toggleCart();
-            
-            // Show success message
-            const successDiv = document.createElement('div');
-            successDiv.className = 'success-message';
-            successDiv.innerHTML = `
-                <h3>Tack för din beställning!</h3>
-                <p>Vi kommer att kontakta dig inom kort med leveransinformation.</p>
-                <button onclick="this.parentElement.remove()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: none; border: 2px solid white; color: white; border-radius: 4px; cursor: pointer;">Stäng</button>
-            `;
-            document.body.appendChild(successDiv);
-            
-            // Auto-remove success message after 10 seconds
-            setTimeout(() => {
-                if (successDiv.parentElement) {
-                    successDiv.remove();
-                }
-            }, 10000);
-        }
-
-        function clearCart() {
-            cart = [];
-            updateCartDisplay();
-            updateCartCount();
         }
 
         // ===== Initialize on page load =====
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
             updateCartCount();
             updateCartDisplay();
         });
