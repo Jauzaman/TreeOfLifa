@@ -597,258 +597,389 @@
         const BACKEND_URL = 'https://tree-of-lifa.vercel.app'; // Ersätt med din faktiska Vercel URL
 // ===== Missing JavaScript Functions =====
 
-function escapeHtml(text) {
-    const map = {
-        '&': '&amp;',
-        '<': '&lt;',
-        '>': '&gt;',
-        '"': '&quot;',
-        "'": '&#039;'
-    };
-    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-}
-
-// ===== Page Navigation =====
-function showPage(pageId) {
-    // Hide all pages
-    const pages = document.querySelectorAll('.page');
-    pages.forEach(page => {
-        page.classList.remove('active');
-    });
-    
-    // Show the selected page
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.add('active');
-    }
-    
-    // Close mobile menu if open
-    const navLinks = document.getElementById('nav-links');
-    if (navLinks) {
-        navLinks.classList.remove('show');
-    }
-}
-
-// ===== Mobile Navigation =====
-function toggleNav() {
-    const navLinks = document.getElementById('nav-links');
-    if (navLinks) {
-        navLinks.classList.toggle('show');
-    }
-}
-
-// ===== Cart Functions =====
-function toggleCart() {
-    const overlay = document.getElementById('cart-overlay');
-    const sidebar = document.getElementById('cart-sidebar');
-    
-    if (overlay && sidebar) {
-        isCartOpen = !isCartOpen;
-        
-        if (isCartOpen) {
-            overlay.classList.add('show');
-            sidebar.classList.add('open');
-            sidebar.setAttribute('aria-hidden', 'false');
-        } else {
-            overlay.classList.remove('show');
-            sidebar.classList.remove('open');
-            sidebar.setAttribute('aria-hidden', 'true');
+// ===== Utility Functions =====
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
-    }
-}
 
-function addToCart(name, price) {
-    const existingItem = cart.find(item => item.name === name);
-    
-    if (existingItem) {
-        existingItem.quantity += 1;
-    } else {
-        cart.push({ name, price, quantity: 1 });
-    }
-    
-    updateCartDisplay();
-    updateCartCount();
-}
-
-function updateCartCount() {
-    const cartCount = document.getElementById('cart-count');
-    if (cartCount) {
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        cartCount.textContent = totalItems;
-    }
-}
-
-function updateCartDisplay() {
-    const cartContent = document.getElementById('cart-content');
-    const cartTotal = document.getElementById('cart-total');
-    const emptyCart = document.getElementById('empty-cart');
-    const totalAmount = document.getElementById('total-amount');
-    
-    if (!cartContent || !cartTotal || !emptyCart || !totalAmount) return;
-    
-    if (cart.length === 0) {
-        emptyCart.style.display = 'block';
-        cartTotal.style.display = 'none';
-        cartContent.innerHTML = `
-            <div class="empty-cart" style="text-align: center; padding: 2rem;">
-                <div style="font-size: 2.2rem; color: #ccc;">🛒</div>
-                <p>Din kundvagn är tom</p>
-            </div>
-        `;
-    } else {
-        emptyCart.style.display = 'none';
-        cartTotal.style.display = 'block';
-        
-        let cartHTML = '';
-        let total = 0;
-        
-        cart.forEach((item, index) => {
-            const itemTotal = item.price * item.quantity;
-            total += itemTotal;
+        // ===== Page Navigation =====
+        function showPage(pageId) {
+            // Hide all pages
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => {
+                page.classList.remove('active');
+            });
             
-            cartHTML += `
-                <div class="cart-item">
-                    <div>
-                        <div>${escapeHtml(item.name)}</div>
-                        <div style="color: #666; font-size: 0.9rem;">${item.price} kr</div>
-                    </div>
-                    <div class="quantity-controls">
-                        <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">−</button>
-                        <span style="margin: 0 0.5rem;">${item.quantity}</span>
-                        <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
-                    </div>
-                </div>
-            `;
-        });
-        
-        cartContent.innerHTML = cartHTML;
-        totalAmount.textContent = `Totalt: ${total} kr`;
-    }
-}
-
-function updateQuantity(index, change) {
-    if (index < 0 || index >= cart.length) return;
-    
-    cart[index].quantity += change;
-    
-    if (cart[index].quantity <= 0) {
-        cart.splice(index, 1);
-    }
-    
-    updateCartDisplay();
-    updateCartCount();
-}
-
-// ===== Checkout Functions =====
-function showCheckout() {
-    const modal = document.getElementById('checkout-modal');
-    if (modal) {
-        modal.classList.add('show');
-        modal.setAttribute('aria-hidden', 'false');
-        updateCheckoutSummary();
-        initializeStripe();
-    }
-}
-
-function closeCheckout() {
-    const modal = document.getElementById('checkout-modal');
-    if (modal) {
-        modal.classList.remove('show');
-        modal.setAttribute('aria-hidden', 'true');
-    }
-}
-
-function updateCheckoutSummary() {
-    const subtotalEl = document.getElementById('checkout-subtotal');
-    const totalEl = document.getElementById('checkout-total');
-    
-    if (!subtotalEl || !totalEl) return;
-    
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const shipping = 49;
-    const total = subtotal + shipping;
-    
-    subtotalEl.textContent = `${subtotal} kr`;
-    totalEl.textContent = `${total} kr`;
-}
-
-function selectPayment(event, method) {
-    // Remove selection from all payment methods
-    document.querySelectorAll('.payment-method').forEach(el => {
-        el.classList.remove('selected');
-    });
-    
-    // Add selection to clicked method
-    event.currentTarget.classList.add('selected');
-    
-    // Update radio button
-    const radio = event.currentTarget.querySelector('input[type="radio"]');
-    if (radio) {
-        radio.checked = true;
-    }
-    
-    // Show/hide card details
-    const cardDetails = document.getElementById('card-details');
-    if (cardDetails) {
-        cardDetails.style.display = method === 'card' ? 'block' : 'none';
-    }
-}
-
-function initializeStripe() {
-    if (stripeInitialized) return;
-    
-    try {
-        stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-        elements = stripe.elements();
-        
-        cardElement = elements.create('card');
-        cardElement.mount('#card-element');
-        
-        cardElement.on('change', ({error}) => {
-            const displayError = document.getElementById('card-errors');
-            if (displayError) {
-                displayError.textContent = error ? error.message : '';
+            // Show the selected page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
             }
+            
+            // Close mobile menu if open
+            const navLinks = document.getElementById('nav-links');
+            if (navLinks) {
+                navLinks.classList.remove('show');
+            }
+        }
+
+        // ===== Mobile Navigation =====
+        function toggleNav() {
+            const navLinks = document.getElementById('nav-links');
+            if (navLinks) {
+                navLinks.classList.toggle('show');
+            }
+        }
+
+        // ===== Cart Functions =====
+        function toggleCart() {
+            const overlay = document.getElementById('cart-overlay');
+            const sidebar = document.getElementById('cart-sidebar');
+            
+            if (overlay && sidebar) {
+                isCartOpen = !isCartOpen;
+                
+                if (isCartOpen) {
+                    overlay.classList.add('show');
+                    sidebar.classList.add('open');
+                    sidebar.setAttribute('aria-hidden', 'false');
+                } else {
+                    overlay.classList.remove('show');
+                    sidebar.classList.remove('open');
+                    sidebar.setAttribute('aria-hidden', 'true');
+                }
+            }
+        }
+
+        function addToCart(name, price) {
+            const existingItem = cart.find(item => item.name === name);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ name, price, quantity: 1 });
+            }
+            
+            updateCartDisplay();
+            updateCartCount();
+        }
+
+        function updateCartCount() {
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) {
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItems;
+            }
+        }
+
+        function updateCartDisplay() {
+            const cartContent = document.getElementById('cart-content');
+            const cartTotal = document.getElementById('cart-total');
+            const emptyCart = document.getElementById('empty-cart');
+            const totalAmount = document.getElementById('total-amount');
+            
+            if (!cartContent || !cartTotal || !emptyCart || !totalAmount) return;
+            
+            if (cart.length === 0) {
+                emptyCart.style.display = 'block';
+                cartTotal.style.display = 'none';
+                cartContent.innerHTML = `
+                    <div class="empty-cart" style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 2.2rem; color: #ccc;">🛒</div>
+                        <p>Din kundvagn är tom</p>
+                    </div>
+                `;
+            } else {
+                emptyCart.style.display = 'none';
+                cartTotal.style.display = 'block';
+                
+                let cartHTML = '';
+                let total = 0;
+                
+                cart.forEach((item, index) => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    
+                    cartHTML += `
+                        <div class="cart-item">
+                            <div>
+                                <div>${escapeHtml(item.name)}</div>
+                                <div style="color: #666; font-size: 0.9rem;">${item.price} kr</div>
+                            </div>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">−</button>
+                                <span style="margin: 0 0.5rem;">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                cartContent.innerHTML = cartHTML;
+                totalAmount.textContent = `Totalt: ${total} kr`;
+            }
+        }
+
+        function updateQuantity(index, change) {
+            if (index < 0 || index >= cart.length) return;
+            
+            cart[index].quantity += change;
+            
+            if (cart[index].quantity <= 0) {
+                cart.splice(index, 1);
+            }
+            
+            updateCartDisplay();
+            updateCartCount();
+        }
+
+        // ===== Checkout Functions =====
+        function showCheckout() {
+            const modal = document.getElementById('checkout-modal');
+            if (modal) {
+                modal.classList.add('show');
+                modal.setAttribute('aria-hidden', 'false');
+                updateCheckoutSummary();
+                initializeStripe();
+            }
+        }
+
+        function closeCheckout() {
+            const modal = document.getElementById('checkout-modal');
+            if (modal) {
+                modal.classList.remove('show');
+                modal.setAttribute('aria-hidden', 'true');
+            }
+        }
+
+        function updateCheckoutSummary() {
+            const subtotalEl = document.getElementById('checkout-subtotal');
+            const totalEl = document.getElementById('checkout-total');
+            
+            if (!subtotalEl || !totalEl) return;
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = 49;
+            const total = subtotal + shipping;
+            
+            subtotalEl.textContent = `${subtotal} kr`;
+            totalEl.textContent = `${total} kr`;
+        }
+
+        function selectPayment(event, method) {
+            // Remove selection from all payment methods
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Add selection to clicked method
+            event.currentTarget.classList.add('selected');
+            
+            // Update radio button
+            const radio = event.currentTarget.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+            }
+            
+            // Show/hide card details
+            const cardDetails = document.getElementById('card-details');
+            if (cardDetails) {
+                cardDetails.style.display = method === 'card' ? 'block' : 'none';
+            }
+        }
+
+        function initializeStripe() {
+            if (stripeInitialized) return;
+            
+            try {
+                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+                elements = stripe.elements();
+                
+                cardElement = elements.create('card');
+                cardElement.mount('#card-element');
+                
+                cardElement.on('change', ({error}) => {
+                    const displayError = document.getElementById('card-errors');
+                    if (displayError) {
+                        displayError.textContent = error ? error.message : '';
+                    }
+                });
+                
+                stripeInitialized = true;
+            } catch (error) {
+                console.error('Stripe initialization failed:', error);
+            }
+        }
+
+        async function placeOrder(event) {
+            event.preventDefault();
+            
+            if (isProcessingPayment) return;
+            
+            const selectedPayment = document.querySelector('input[name="payment"]:checked');
+            if (!selectedPayment) {
+                showPaymentStatus('Välj en betalmetod', 'error');
+                return;
+            }
+            
+            // Get form data
+            const formData = new FormData(document.getElementById('checkout-form'));
+            const orderData = {
+                customer: {
+                    name: formData.get('namn'),
+                    address: formData.get('adress'),
+                    postalCode: formData.get('postnummer'),
+                    city: formData.get('stad'),
+                    email: formData.get('email'),
+                    phone: formData.get('telefon')
+                },
+                items: cart,
+                paymentMethod: selectedPayment.value,
+                total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 49
+            };
+            
+            // Handle different payment methods
+            if (selectedPayment.value === 'card') {
+                await processCardPayment(orderData);
+            } else if (selectedPayment.value === 'swish') {
+                processSwishPayment(orderData);
+            }
+        }
+
+        async function processCardPayment(orderData) {
+            if (!stripe || !cardElement) {
+                showPaymentStatus('Kortbetalning kunde inte initialiseras', 'error');
+                return;
+            }
+            
+            isProcessingPayment = true;
+            showPaymentStatus('Behandlar betalning...', 'info');
+            
+            try {
+                // Create payment intent on backend
+                const response = await fetch(`${BACKEND_URL}/create-payment-intent`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const { clientSecret, error } = await response.json();
+                
+                if (error) {
+                    throw new Error(error);
+                }
+                
+                // Confirm payment with Stripe
+                const { error: stripeError, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: orderData.customer.name,
+                            email: orderData.customer.email,
+                        }
+                    }
+                });
+                
+                if (stripeError) {
+                    throw new Error(stripeError.message);
+                }
+                
+                if (paymentIntent.status === 'succeeded') {
+                    showOrderSuccess();
+                    clearCart();
+                }
+                
+            } catch (error) {
+                showPaymentStatus(`Betalning misslyckades: ${error.message}`, 'error');
+            } finally {
+                isProcessingPayment = false;
+            }
+        }
+
+        function processSwishPayment(orderData) {
+            // For Swish, show instructions and submit order
+            const total = orderData.total;
+            const swishNumber = '123 164 91 77';
+            
+            showPaymentStatus(`Swish-betalning: Skicka ${total} kr till ${swishNumber}. Efter betalning kommer din beställning att behandlas.`, 'info');
+            
+            // Submit order to backend
+            submitOrder(orderData);
+        }
+
+        async function submitOrder(orderData) {
+            try {
+                const response = await fetch(`${BACKEND_URL}/submit-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showOrderSuccess();
+                    clearCart();
+                } else {
+                    throw new Error(result.error || 'Kunde inte skicka beställning');
+                }
+                
+            } catch (error) {
+                showPaymentStatus(`Fel vid beställning: ${error.message}`, 'error');
+            }
+        }
+
+        function showPaymentStatus(message, type) {
+            const statusEl = document.getElementById('payment-status');
+            if (statusEl) {
+                statusEl.innerHTML = `<div class="${type}-message">${message}</div>`;
+            }
+        }
+
+        function showOrderSuccess() {
+            closeCheckout();
+            toggleCart();
+            
+            // Show success message
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success-message';
+            successDiv.innerHTML = `
+                <h3>Tack för din beställning!</h3>
+                <p>Vi kommer att kontakta dig inom kort med leveransinformation.</p>
+                <button onclick="this.parentElement.remove()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: none; border: 2px solid white; color: white; border-radius: 4px; cursor: pointer;">Stäng</button>
+            `;
+            document.body.appendChild(successDiv);
+            
+            // Auto-remove success message after 10 seconds
+            setTimeout(() => {
+                if (successDiv.parentElement) {
+                    successDiv.remove();
+                }
+            }, 10000);
+        }
+
+        function clearCart() {
+            cart = [];
+            updateCartDisplay();
+            updateCartCount();
+        }
+
+        // ===== Initialize on page load =====
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCartCount();
+            updateCartDisplay();
         });
-        
-        stripeInitialized = true;
-    } catch (error) {
-        console.error('Stripe initialization failed:', error);
-    }
-}
-
-function placeOrder(event) {
-    event.preventDefault();
-    
-    if (isProcessingPayment) return;
-    
-    const selectedPayment = document.querySelector('input[name="payment"]:checked');
-    if (!selectedPayment) {
-        alert('Välj en betalmetod');
-        return;
-    }
-    
-    // Handle different payment methods
-    if (selectedPayment.value === 'card') {
-        processCardPayment();
-    } else if (selectedPayment.value === 'swish') {
-        processSwishPayment();
-    }
-}
-
-function processCardPayment() {
-    // Implement Stripe payment processing
-    console.log('Processing card payment...');
-    // This would need to be implemented with your backend
-}
-
-function processSwishPayment() {
-    // Show Swish instructions
-    alert('Swish-betalning: Skicka ' + (cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 49) + ' kr till 123 164 91 77');
-}
-
-// ===== Initialize on page load =====
-document.addEventListener('DOMContentLoaded', function() {
-    updateCartCount();
-    updateCartDisplay();
-});
+    </script>
+</body>
+</html>
