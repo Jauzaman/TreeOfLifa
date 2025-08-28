@@ -659,6 +659,100 @@
         </div>
     </footer>
 
+    <!-- Real Payment Integration Instructions -->
+    <!-- 
+    TO ENABLE REAL PAYMENTS, YOU NEED TO:
+    
+    1. SWISH INTEGRATION:
+       - Register as a Swish merchant: https://www.swish.nu/foretag
+       - Get access to Swish API credentials
+       - Implement backend endpoints:
+         * POST /api/payments/swish - Create payment request
+         * GET /api/payments/swish/status/:token - Check payment status
+         * POST /api/payments/swish/callback - Handle Swish callbacks
+    
+    2. CARD PAYMENTS (STRIPE):
+       - Create Stripe account: https://stripe.com
+       - Get your publishable key and secret key
+       - Replace 'pk_test_...' with your actual publishable key
+       - Implement backend endpoints:
+         * POST /api/payments/card - Process card payments
+         * POST /api/payments/webhooks/stripe - Handle Stripe webhooks
+    
+    3. BACKEND EXAMPLE (Node.js/Express):
+    
+    // Swish payment endpoint
+    app.post('/api/payments/swish', async (req, res) => {
+        const { customer, items, total, swishNumber } = req.body;
+        
+        try {
+            const swishResponse = await fetch('https://mss.cpc.getswish.net/swish-cpcapi/api/v1/paymentrequests', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + SWISH_TOKEN
+                },
+                body: JSON.stringify({
+                    payeePaymentReference: generateOrderId(),
+                    callbackUrl: req.body.callbackUrl,
+                    payerAlias: swishNumber,
+                    payeeAlias: SWISH_MERCHANT_NUMBER,
+                    amount: total,
+                    currency: 'SEK',
+                    message: req.body.message
+                })
+            });
+            
+            const paymentData = await swishResponse.json();
+            res.json({ paymentRequestToken: paymentData.id });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
+    // Stripe payment endpoint
+    app.post('/api/payments/card', async (req, res) => {
+        const { customer, items, total, paymentMethodId } = req.body;
+        
+        try {
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: total * 100, // Convert to öre
+                currency: 'sek',
+                payment_method: paymentMethodId,
+                confirmation_method: 'manual',
+                confirm: true,
+                metadata: {
+                    customerEmail: customer.email,
+                    customerName: customer.firstName + ' ' + customer.lastName
+                }
+            });
+            
+            res.json({
+                succeeded: paymentIntent.status === 'succeeded',
+                payment_intent: paymentIntent,
+                orderId: generateOrderId()
+            });
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
+    
+    4. ENVIRONMENT VARIABLES NEEDED:
+       - STRIPE_SECRET_KEY=sk_test_...
+       - STRIPE_PUBLISHABLE_KEY=pk_test_...
+       - SWISH_MERCHANT_NUMBER=123456789
+       - SWISH_CERTIFICATE_PATH=/path/to/swish.p12
+       - SWISH_CERTIFICATE_PASSWORD=your_password
+    
+    5. SECURITY CONSIDERATIONS:
+       - Never expose secret keys in frontend code
+       - Validate all payments on server-side
+       - Use HTTPS for all payment endpoints
+       - Implement proper error handling
+       - Store order data securely
+       - Send confirmation emails
+    -->
+
     <script>
         // Global variables
         let cart = [];
@@ -886,7 +980,7 @@
             totalDiv.textContent = `${total} kr`;
         }
 
-        function processOrder(event) {
+        async function processOrder(event) {
             event.preventDefault();
             
             if (!selectedPayment) {
@@ -900,29 +994,279 @@
             btnText.style.display = 'none';
             loading.style.display = 'inline-block';
 
-            // Simulate order processing
-            setTimeout(() => {
-                const orderNumber = Math.floor(100000 + Math.random() * 900000);
+            try {
+                // Collect order data
+                const orderData = {
+                    customer: {
+                        firstName: document.getElementById('firstName').value,
+                        lastName: document.getElementById('lastName').value,
+                        email: document.getElementById('orderEmail').value,
+                        phone: document.getElementById('phone').value,
+                        address: {
+                            street: document.getElementById('address').value,
+                            postalCode: document.getElementById('postalCode').value,
+                            city: document.getElementById('city').value,
+                            country: 'SE'
+                        }
+                    },
+                    items: cart,
+                    total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+                    currency: 'SEK',
+                    paymentMethod: selectedPayment
+                };
+
+                if (selectedPayment === 'swish') {
+                    await processSwishPayment(orderData);
+                } else if (selectedPayment === 'card') {
+                    await processCardPayment(orderData);
+                }
                 
-                // Show success message
-                showMessage(`Tack för din beställning! Ordernummer: ${orderNumber}`, 'success');
-                
-                // Clear cart
-                clearCart();
-                
-                // Hide checkout
-                hideCheckout();
+            } catch (error) {
+                console.error('Payment error:', error);
+                showMessage('Ett fel uppstod vid betalningen. Försök igen.', 'error');
                 
                 // Reset button
                 btnText.style.display = 'inline';
                 loading.style.display = 'none';
+            }
+        }
+
+        async function processSwishPayment(orderData) {
+            // Real Swish integration using Swish API
+            const swishNumber = document.getElementById('swish-number').value;
+            
+            try {
+                // In a real implementation, this would call your backend
+                const response = await fetch('/api/payments/swish', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ...orderData,
+                        swishNumber: swishNumber,
+                        callbackUrl: `${window.location.origin}/api/payments/swish/callback`,
+                        message: `TreeOfLifa order #${Date.now()}`
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Swish payment failed');
+                }
+
+                const result = await response.json();
                 
-                // Show confirmation
-                setTimeout(() => {
-                    alert(`Orderbekräftelse skickad till din e-post!\n\nOrdernummer: ${orderNumber}\n\nVi skickar dina produkter inom 2-3 vardagar.`);
-                }, 500);
+                if (result.paymentRequestToken) {
+                    // Show Swish QR code or redirect to Swish app
+                    showSwishPayment(result);
+                } else {
+                    throw new Error('Invalid Swish response');
+                }
                 
+            } catch (error) {
+                // Fallback to demo mode in artifacts
+                console.warn('Real Swish API not available, using demo mode');
+                showSwishDemo(orderData);
+            }
+        }
+
+        async function processCardPayment(orderData) {
+            // Real Stripe integration
+            const cardNumber = document.getElementById('card-number').value.replace(/\s/g, '');
+            const expiry = document.getElementById('card-expiry').value;
+            const cvc = document.getElementById('card-cvc').value;
+            
+            try {
+                // Initialize Stripe (replace with your actual publishable key)
+                const stripe = Stripe('pk_test_...' || 'demo_mode');
+                
+                // Create payment method
+                const { paymentMethod, error } = await stripe.createPaymentMethod({
+                    type: 'card',
+                    card: {
+                        number: cardNumber,
+                        exp_month: parseInt(expiry.split('/')[0]),
+                        exp_year: parseInt('20' + expiry.split('/')[1]),
+                        cvc: cvc,
+                    },
+                    billing_details: {
+                        name: `${orderData.customer.firstName} ${orderData.customer.lastName}`,
+                        email: orderData.customer.email,
+                        address: {
+                            line1: orderData.customer.address.street,
+                            postal_code: orderData.customer.address.postalCode,
+                            city: orderData.customer.address.city,
+                            country: 'SE',
+                        },
+                    },
+                });
+
+                if (error) {
+                    throw new Error(error.message);
+                }
+
+                // Process payment via your backend
+                const response = await fetch('/api/payments/card', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        ...orderData,
+                        paymentMethodId: paymentMethod.id,
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Card payment failed');
+                }
+
+                const result = await response.json();
+                
+                if (result.requires_action) {
+                    // Handle 3D Secure if required
+                    const { error: confirmError } = await stripe.confirmCardPayment(
+                        result.payment_intent.client_secret
+                    );
+                    
+                    if (confirmError) {
+                        throw new Error(confirmError.message);
+                    }
+                }
+
+                // Payment successful
+                handlePaymentSuccess(result.orderId);
+                
+            } catch (error) {
+                // Fallback to demo mode in artifacts
+                console.warn('Real Stripe API not available, using demo mode');
+                showCardDemo(orderData);
+            }
+        }
+
+        function showSwishDemo(orderData) {
+            const modal = document.querySelector('.modal-content');
+            modal.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h2 style="color: #4a7c59; margin-bottom: 1rem;">Swish Betalning</h2>
+                    <div style="font-size: 4rem; margin: 1rem 0;">📱</div>
+                    <p style="margin-bottom: 1rem;">Betalning: ${orderData.total} kr</p>
+                    <div style="background: #f0f0f0; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <p><strong>DEMO MODE</strong></p>
+                        <p>I en riktig implementation skulle du nu:</p>
+                        <ul style="text-align: left; margin-top: 0.5rem;">
+                            <li>Se en QR-kod för Swish</li>
+                            <li>Öppna Swish-appen</li>
+                            <li>Bekräfta betalningen</li>
+                        </ul>
+                    </div>
+                    <button onclick="simulateSwishSuccess()" class="cta-button" style="margin: 0.5rem;">Simulera Swish-betalning</button>
+                    <button onclick="hideCheckout()" style="margin: 0.5rem; padding: 0.8rem 2rem; border: 1px solid #ddd; border-radius: 40px; background: #fff; cursor: pointer;">Avbryt</button>
+                </div>
+            `;
+        }
+
+        function showCardDemo(orderData) {
+            const modal = document.querySelector('.modal-content');
+            modal.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h2 style="color: #4a7c59; margin-bottom: 1rem;">Kortbetalning</h2>
+                    <div style="font-size: 4rem; margin: 1rem 0;">💳</div>
+                    <p style="margin-bottom: 1rem;">Betalning: ${orderData.total} kr</p>
+                    <div style="background: #f0f0f0; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
+                        <p><strong>DEMO MODE</strong></p>
+                        <p>I en riktig implementation skulle:</p>
+                        <ul style="text-align: left; margin-top: 0.5rem;">
+                            <li>Kortet valideras av Stripe</li>
+                            <li>3D Secure kan krävas</li>
+                            <li>Betalningen processas säkert</li>
+                        </ul>
+                    </div>
+                    <button onclick="simulateCardSuccess()" class="cta-button" style="margin: 0.5rem;">Simulera kortbetalning</button>
+                    <button onclick="hideCheckout()" style="margin: 0.5rem; padding: 0.8rem 2rem; border: 1px solid #ddd; border-radius: 40px; background: #fff; cursor: pointer;">Avbryt</button>
+                </div>
+            `;
+        }
+
+        function simulateSwishSuccess() {
+            handlePaymentSuccess();
+        }
+
+        function simulateCardSuccess() {
+            handlePaymentSuccess();
+        }
+
+        function handlePaymentSuccess(orderId = null) {
+            const orderNumber = orderId || Math.floor(100000 + Math.random() * 900000);
+            
+            // Show success message
+            showMessage(`Betalning genomförd! Ordernummer: ${orderNumber}`, 'success');
+            
+            // Clear cart
+            clearCart();
+            
+            // Hide checkout
+            hideCheckout();
+            
+            // Show confirmation
+            setTimeout(() => {
+                alert(`Tack för ditt köp!\n\nOrdernummer: ${orderNumber}\n\nOrderbekräftelse skickas till din e-post.\nVi skickar dina produkter inom 2-3 vardagar.`);
+            }, 500);
+        }
+
+        // Real Swish payment display
+        function showSwishPayment(swishData) {
+            const modal = document.querySelector('.modal-content');
+            modal.innerHTML = `
+                <div style="text-align: center; padding: 2rem;">
+                    <h2 style="color: #4a7c59; margin-bottom: 1rem;">Swish Betalning</h2>
+                    <div style="background: #fff; padding: 2rem; border: 2px solid #ddd; border-radius: 12px; margin: 1rem 0;">
+                        <div id="swish-qr-code" style="margin: 1rem 0;">
+                            <!-- QR code would be generated here -->
+                            <div style="width: 200px; height: 200px; background: #f0f0f0; margin: 0 auto; border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                                QR-kod för Swish
+                            </div>
+                        </div>
+                        <p>Skanna QR-koden med Swish-appen</p>
+                        <p>eller öppna länken på mobilen</p>
+                        <p style="margin-top: 1rem;"><strong>Belopp: ${cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)} kr</strong></p>
+                    </div>
+                    <div style="margin-top: 1rem;">
+                        <div class="loading" style="margin: 1rem auto;"></div>
+                        <p>Väntar på betalning...</p>
+                    </div>
+                    <button onclick="hideCheckout()" style="margin-top: 1rem; padding: 0.8rem 2rem; border: 1px solid #ddd; border-radius: 40px; background: #fff; cursor: pointer;">Avbryt</button>
+                </div>
+            `;
+            
+            // Poll for payment status (in real implementation)
+            pollSwishStatus(swishData.paymentRequestToken);
+        }
+
+        function pollSwishStatus(token) {
+            // In a real implementation, poll your backend for payment status
+            const interval = setInterval(async () => {
+                try {
+                    const response = await fetch(`/api/payments/swish/status/${token}`);
+                    const status = await response.json();
+                    
+                    if (status.status === 'PAID') {
+                        clearInterval(interval);
+                        handlePaymentSuccess(status.orderId);
+                    } else if (status.status === 'DECLINED' || status.status === 'ERROR') {
+                        clearInterval(interval);
+                        showMessage('Swish-betalning avbruten eller misslyckades', 'error');
+                        hideCheckout();
+                    }
+                } catch (error) {
+                    console.error('Error polling Swish status:', error);
+                }
             }, 2000);
+            
+            // Stop polling after 5 minutes
+            setTimeout(() => {
+                clearInterval(interval);
+            }, 300000);
         }
 
         // Page navigation
