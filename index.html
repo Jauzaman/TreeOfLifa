@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="sv">
 <head>
-    <meta charset="utf-8" />
+    <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>TreeOfLifa - Naturliga Luffasvampar</title>
 
@@ -48,7 +48,6 @@
             text-decoration: none; display: flex; align-items: center; gap: 8px; 
             cursor: pointer;
         }
-        .logo::before { content: "🌿"; }
 
         .nav-links { 
             display: flex; gap: 1.2rem; list-style: none; 
@@ -58,10 +57,6 @@
             cursor: pointer; transition: color 0.3s ease;
         }
         .nav-links a:hover { color: #4a7c59; }
-        .menu-toggle { 
-            display: none; background: none; border: none; 
-            font-size: 1.6rem; cursor: pointer; 
-        }
 
         .cart-icon { 
             position: relative; cursor: pointer; font-size: 1.4rem; 
@@ -73,6 +68,21 @@
             background: #ff6b6b; color: #fff; width: 20px; height: 20px; 
             border-radius: 50%; display: flex; align-items: center; 
             justify-content: center; font-weight: 700; font-size: 0.8rem; 
+        }
+
+        /* Mobile menu */
+        .mobile-menu-btn {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            cursor: pointer;
+            padding: 8px;
+        }
+        .mobile-menu-btn span {
+            width: 25px;
+            height: 3px;
+            background: #2d4a2b;
+            transition: 0.3s ease;
         }
 
         /* ===== Hero ===== */
@@ -142,9 +152,6 @@
         }
         .product-image img { 
             width: 100%; height: 100%; object-fit: cover; display: block; 
-        }
-        .product-image.no-image {
-            font-size: 3rem; color: #4a7c59;
         }
 
         .product-info { 
@@ -216,58 +223,9 @@
             background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%); 
             color: white; cursor: pointer; font-weight: 700; font-family: inherit;
             transition: transform 0.2s ease;
+            margin-top: 1rem;
         }
         .checkout-button:hover {
-            transform: translateY(-2px);
-        }
-
-        /* ===== Checkout modal ===== */
-        .checkout-modal { 
-            position: fixed; inset: 0; display: none; 
-            align-items: center; justify-content: center; 
-            background: rgba(0,0,0,0.6); z-index: 1400; padding: 20px; 
-        }
-        .checkout-modal.show { display: flex; }
-        .checkout-content { 
-            width: 520px; max-width: 100%; max-height: 90vh; overflow: auto; 
-            background: #fff; border-radius: 12px; padding: 1rem 1.2rem; 
-        }
-        .form-group { margin-bottom: 1rem; }
-        .form-group label {
-            display: block; margin-bottom: 0.5rem; font-weight: 500;
-        }
-        .form-group input, .form-group select { 
-            width: 100%; padding: 0.7rem; border-radius: 8px; 
-            border: 2px solid #e8e8e8; font-family: inherit;
-        }
-
-        .payment-method { 
-            display: flex; gap: 0.7rem; align-items: center; 
-            padding: 0.8rem; border-radius: 10px; border: 2px solid #e8e8e8; 
-            margin-bottom: 0.6rem; cursor: pointer; 
-            transition: all 0.2s ease;
-        }
-        .payment-method:hover {
-            border-color: #4a7c59;
-        }
-        .payment-method.selected { 
-            border-color: #4a7c59; background: #f8fffe; 
-        }
-
-        .card-row {
-            display: flex; gap: 0.5rem; margin-top: 0.5rem;
-        }
-        .card-row input {
-            flex: 1;
-        }
-
-        .order-button {
-            width: 100%; padding: 0.9rem; border-radius: 12px; border: none;
-            background: linear-gradient(135deg, #4a7c59 0%, #7fb069 100%); 
-            color: white; font-weight: 700; cursor: pointer; font-family: inherit;
-            transition: transform 0.2s ease;
-        }
-        .order-button:hover {
             transform: translateY(-2px);
         }
 
@@ -279,6 +237,68 @@
             color: #333;
         }
 
+        /* ===== Checkout modal ===== */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .modal.show { display: flex; }
+
+        .modal-content {
+            background: #fff; padding: 2rem; border-radius: 16px;
+            max-width: 500px; width: 90%; max-height: 80vh; overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        .form-group label {
+            display: block; margin-bottom: 0.5rem; color: #2d4a2b; font-weight: 500;
+        }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 8px;
+            font-family: inherit; transition: border-color 0.2s ease;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none; border-color: #4a7c59;
+        }
+
+        .payment-methods {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1rem 0;
+        }
+        .payment-method {
+            padding: 1rem; border: 2px solid #eee; border-radius: 8px;
+            cursor: pointer; text-align: center; transition: all 0.2s ease;
+        }
+        .payment-method:hover {
+            border-color: #4a7c59;
+        }
+        .payment-method.selected {
+            border-color: #4a7c59; background: #f8fffe;
+        }
+
+        /* ===== Success/Error messages ===== */
+        .message {
+            position: fixed; top: 100px; right: 20px; padding: 1rem 1.5rem;
+            border-radius: 8px; z-index: 3000; max-width: 300px;
+            transform: translateX(400px); transition: transform 0.3s ease;
+        }
+        .message.show {
+            transform: translateX(0);
+        }
+        .message.success {
+            background: #d4edda; color: #155724; border: 1px solid #c3e6cb;
+        }
+        .message.error {
+            background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;
+        }
+
+        /* ===== Contact form ===== */
+        .contact-form {
+            max-width: 600px; margin: 2rem auto; background: #fff;
+            padding: 2rem; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        }
+
         /* ===== Footer ===== */
         footer { 
             background: #2d4a2b; color: #fff; padding: 2rem 5%; margin-top: 2rem; 
@@ -286,111 +306,63 @@
         .footer-content { 
             max-width: 1200px; margin: 0 auto; text-align: center; 
         }
-
-        /* ===== Success message ===== */
-        .success-message {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            background: #4a7c59; color: white; padding: 2rem; border-radius: 12px;
-            text-align: center; z-index: 1500; box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        .footer-links {
+            display: flex; justify-content: center; gap: 2rem; margin: 1rem 0;
+            flex-wrap: wrap;
+        }
+        .footer-links a {
+            color: #7fb069; text-decoration: none; transition: color 0.2s ease;
+        }
+        .footer-links a:hover {
+            color: #fff;
         }
 
-        /* ===== Error/Status messages ===== */
-        .error-message {
-            background: #ff6b6b;
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            text-align: center;
+        /* ===== Loading spinner ===== */
+        .loading {
+            display: inline-block; width: 20px; height: 20px;
+            border: 2px solid #f3f3f3; border-top: 2px solid #4a7c59;
+            border-radius: 50%; animation: spin 1s linear infinite;
         }
-
-        .info-message {
-            background: #4a7c59;
-            color: white;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            text-align: center;
-        }
-
-        /* ===== Payment status indicators ===== */
-        .payment-processing {
-            opacity: 0.7;
-            pointer-events: none;
-        }
-
-        /* ===== Stripe Elements styling ===== */
-        #card-element {
-            padding: 0.7rem; 
-            border: 2px solid #e8e8e8; 
-            border-radius: 8px; 
-            background: white;
-            min-height: 40px;
-        }
-
-        #card-element.StripeElement--focus {
-            border-color: #4a7c59;
-            box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
-        }
-
-        #card-element.StripeElement--invalid {
-            border-color: #fa755a;
-        }
-
-        #card-errors {
-            color: #fa755a;
-            margin-top: 0.5rem;
-            font-size: 0.9rem;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* ===== Responsive ===== */
-        @media (max-width: 900px) {
-            .product-image { height: 200px; }
-            .checkout-content { width: 92%; }
-        }
-        
         @media (max-width: 768px) {
-            .nav-links { 
-                display: none; position: absolute; top: 64px; right: 12px; 
-                background: #fff; flex-direction: column; padding: 0.8rem; 
-                gap: 0.6rem; box-shadow: 0 8px 30px rgba(0,0,0,0.06); 
-                border-radius: 8px; 
-            }
-            .nav-links.show { display: flex; }
-            .menu-toggle { display: block; }
-            .hero { padding-top: 100px; }
-            .product-image { height: 180px; }
-            .checkout-content { 
-                width: 100%; height: 100%; border-radius: 0; max-height: 100vh; 
-            }
+            .nav-links { display: none; }
+            .mobile-menu-btn { display: flex; }
+            
+            .hero h1 { font-size: 2rem; }
             .cart-sidebar { width: 100%; right: -110%; }
             .cart-sidebar.open { right: 0; }
-        }
-        
-        @media (max-width: 420px) {
-            .hero h1 { font-size: 1.6rem; }
-            .product-image { height: 160px; }
+            
+            .payment-methods { grid-template-columns: 1fr; }
+            .footer-links { flex-direction: column; gap: 1rem; }
         }
     </style>
 </head>
 <body>
-
     <!-- Header -->
     <header>
         <nav>
-            <div class="logo" onclick="showPage('hem')">TreeOfLifa</div>
+            <div class="logo" onclick="showPage('hem')">🌿 TreeOfLifa</div>
 
-            <ul class="nav-links" id="nav-links">
+            <ul class="nav-links">
                 <li><a onclick="showPage('hem')">Hem</a></li>
                 <li><a onclick="showPage('om-oss')">Om oss</a></li>
                 <li><a onclick="showPage('produkter')">Produkter</a></li>
+                <li><a onclick="showPage('kontakt')">Kontakt</a></li>
             </ul>
 
+            <div class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <span></span><span></span><span></span>
+            </div>
+
             <div style="display: flex; align-items: center; gap: 8px;">
-                <div class="cart-icon" onclick="toggleCart()" aria-label="Öppna kundvagn">
+                <div class="cart-icon" onclick="toggleCart()">
                     🛒 <span class="cart-count" id="cart-count">0</span>
                 </div>
-                <button class="menu-toggle" id="menu-toggle" aria-label="Meny" onclick="toggleNav()">☰</button>
             </div>
         </nav>
     </header>
@@ -409,6 +381,24 @@
             <section class="section">
                 <h2>Varför Välja TreeOfLifa?</h2>
                 <p>Vi tror på naturens kraft att vårda och förnya din hud. Våra luffasvampar odlas med kärlek och respekt för miljön, vilket ger dig den bästa naturliga exfolieringen för en strålande, hälsosam hy.</p>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 2rem;">
+                    <div style="text-align: center; padding: 1.5rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🌱</div>
+                        <h3 style="color: #4a7c59; margin-bottom: 0.5rem;">100% Naturlig</h3>
+                        <p>Inga kemikalier eller konstgjorda tillsatser</p>
+                    </div>
+                    <div style="text-align: center; padding: 1.5rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">🌍</div>
+                        <h3 style="color: #4a7c59; margin-bottom: 0.5rem;">Miljövänlig</h3>
+                        <p>Biologiskt nedbrytbar och hållbar</p>
+                    </div>
+                    <div style="text-align: center; padding: 1.5rem;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">✨</div>
+                        <h3 style="color: #4a7c59; margin-bottom: 0.5rem;">Effektiv</h3>
+                        <p>Perfekt exfoliering för alla hudtyper</p>
+                    </div>
+                </div>
             </section>
         </section>
 
@@ -419,6 +409,17 @@
                 <p>TreeOfLifa grundades ur en passion för naturlig skönhet och hållbar livsstil. Vi startade vår resa med en enkel övertygelse: att naturen erbjuder de bästa lösningarna för hudvård.</p>
                 <br>
                 <p>Vårt team består av naturentusiaster som arbetar direkt med lokala odlare för att säkerställa att varje luffasvamp är av högsta kvalitet. Vi tror på transparent handel och miljövänliga metoder i varje steg av vår process.</p>
+                
+                <div style="margin-top: 3rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    <div style="background: #fff; padding: 2rem; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06);">
+                        <h3 style="color: #4a7c59; margin-bottom: 1rem;">Vår Mission</h3>
+                        <p>Att göra naturlig hudvård tillgänglig för alla samtidigt som vi respekterar vår planet.</p>
+                    </div>
+                    <div style="background: #fff; padding: 2rem; border-radius: 16px; box-shadow: 0 8px 30px rgba(0,0,0,0.06);">
+                        <h3 style="color: #4a7c59; margin-bottom: 1rem;">Våra Värderingar</h3>
+                        <p>Hållbarhet, kvalitet och kundens välbefinnande står alltid i centrum för allt vi gör.</p>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -428,14 +429,14 @@
                 <h2>Vårt Naturliga Sortiment</h2>
                 <p>Upptäck vår exklusiva kollektion av handplockade, ekologiska luffasvampar. Varje produkt är noggrant utvald för att ge dig den bästa naturliga exfolieringen.</p>
 
-                <div class="products-grid" id="products-grid">
+                <div class="products-grid">
                     <div class="product-card">
                         <div class="product-image">
                             <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4031.JPG" alt="Mindre Lifa" />
                         </div>
                         <div class="product-info">
                             <h3>Mindre Lifah</h3>
-                            <p>Vår populäraste luffasvamp, lite kompaktare, perfekt för daglig användning.</p>
+                            <p>Vår populäraste luffasvamp, lite kompaktare, perfekt för daglig användning och känslig hud.</p>
                             <div class="price">50 kr</div>
                             <button class="buy-button" onclick="addToCart('Mindre Lifah', 50)">Lägg i kundvagn</button>
                         </div>
@@ -447,7 +448,7 @@
                         </div>                     
                         <div class="product-info">
                             <h3>Större Lifah</h3>
-                            <p>Extra tjock och hållbar luffasvamp för djup rengöring.</p>
+                            <p>Extra tjock och hållbar luffasvamp för djup rengöring och intensiv exfoliering.</p>
                             <div class="price">75 kr</div>
                             <button class="buy-button" onclick="addToCart('Större Lifah', 75)">Lägg i kundvagn</button>
                         </div>
@@ -459,7 +460,7 @@
                         </div>
                         <div class="product-info">
                             <h3>Aleppotvål</h3>
-                            <p>En mild 100% naturlig tvål som är gjord på ett urgammalt recept.</p>
+                            <p>En mild 100% naturlig tvål gjord på ett urgammalt recept med olivolja och lagerolja.</p>
                             <div class="price">50 kr</div>
                             <button class="buy-button" onclick="addToCart('Aleppotvål', 50)">Lägg i kundvagn</button>
                         </div>
@@ -471,11 +472,51 @@
                         </div>
                         <div class="product-info">
                             <h3>Presentset</h3>
-                            <p>Komplett set i en fin presentask, perfekt som gåva.</p>
+                            <p>Komplett set med luffasvamp och Aleppotvål i en fin presentask, perfekt som gåva.</p>
                             <div class="price">145 kr</div>
                             <button class="buy-button" onclick="addToCart('Presentset', 145)">Lägg i kundvagn</button>
                         </div>
                     </div>
+                </div>
+
+                <div style="margin-top: 3rem; text-align: center;">
+                    <h3 style="color: #4a7c59; margin-bottom: 1rem;">Användningstips</h3>
+                    <p style="max-width: 600px; margin: 0 auto;">Blöt din luffasvamp i varmt vatten innan användning. Använd cirkulära rörelser för bäst resultat. Låt torka helt mellan användningarna för längre hållbarhet.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Kontakt -->
+        <section id="kontakt" class="page" style="padding-top: 80px;">
+            <div class="section">
+                <h2>Kontakta Oss</h2>
+                <p>Vi älskar att höra från våra kunder! Har du frågor eller feedback? Hör gärna av dig.</p>
+
+                <div class="contact-form">
+                    <form onsubmit="sendMessage(event)">
+                        <div class="form-group">
+                            <label for="name">Namn *</label>
+                            <input type="text" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">E-post *</label>
+                            <input type="email" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="subject">Ämne</label>
+                            <input type="text" id="subject">
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Meddelande *</label>
+                            <textarea id="message" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="cta-button" style="width: 100%;">Skicka Meddelande</button>
+                    </form>
+                </div>
+
+                <div style="text-align: center; margin-top: 2rem;">
+                    <p><strong>E-post:</strong> tree.of.liifa@gmail.com</p>
+                    <p><strong>Svarstid:</strong> Vi svarar vanligtvis inom 24 timmar</p>
                 </div>
             </div>
         </section>
@@ -483,249 +524,177 @@
 
     <!-- Cart overlay & sidebar -->
     <div class="cart-overlay" id="cart-overlay" onclick="toggleCart()"></div>
-    <aside class="cart-sidebar" id="cart-sidebar" aria-hidden="true">
+    <aside class="cart-sidebar" id="cart-sidebar">
         <div class="cart-header">
             <h2>Kundvagn</h2>
             <button class="close-cart" onclick="toggleCart()">×</button>
         </div>
 
         <div class="cart-content" id="cart-content">
-            <div class="empty-cart" id="empty-cart" style="text-align: center; padding: 2rem;">
+            <div style="text-align: center; padding: 2rem;">
                 <div style="font-size: 2.2rem; color: #ccc;">🛒</div>
                 <p>Din kundvagn är tom</p>
             </div>
         </div>
 
         <div class="cart-total" id="cart-total" style="display: none;">
-            <div class="total-amount" id="total-amount">Totalt: 0 kr</div>
+            <div id="total-amount" style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">Totalt: 0 kr</div>
+            <div style="font-size: 0.9rem; color: #666; margin-bottom: 1rem;">Frakt ingår</div>
             <button class="checkout-button" onclick="showCheckout()">Gå till kassan</button>
         </div>
     </aside>
 
-    <!-- Checkout modal -->
-    <div class="checkout-modal" id="checkout-modal" aria-hidden="true">
-        <div class="checkout-content" role="dialog" aria-labelledby="checkout-heading">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
-                <h2 id="checkout-heading">Slutför ditt köp</h2>
-                <button class="close-cart" onclick="closeCheckout()">×</button>
-            </div>
-
-            <div id="payment-status" style="margin-bottom: 1rem;"></div>
-
-            <form id="checkout-form" onsubmit="placeOrder(event)">
-                <div class="form-group">
-                    <label>Leveransadress</label>
-                    <input type="text" id="namn" name="namn" placeholder="Namn" required />
-                    <input type="text" id="adress" name="adress" placeholder="Adress" style="margin-top: 0.5rem;" required />
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                        <input type="text" id="postnummer" name="postnummer" placeholder="Postnummer" required />
-                        <input type="text" id="stad" name="stad" placeholder="Stad" required />
-                    </div>
-                    <input type="email" id="email" name="email" placeholder="E-post" style="margin-top: 0.5rem;" required />
-                    <input type="tel" id="telefon" name="telefon" placeholder="Telefon" style="margin-top: 0.5rem;" required />
-                </div>
-
-                <div class="payment-methods">
-                    <h3 style="margin-bottom: 0.6rem;">Välj betalmetod</h3>
-
-                    <div class="payment-method" onclick="selectPayment(event,'card')">
-                        <input type="radio" name="payment" value="card">
-                        <span class="payment-icon">💳</span>
-                        <div><strong>Kort</strong><br><small>Betala säkert med kort</small></div>
-                    </div>
-
-                    <div class="payment-method" onclick="selectPayment(event,'swish')">
-                        <input type="radio" name="payment" value="swish">
-                        <span class="payment-icon">📱</span>
-                        <div><strong>Swish</strong><br><small>Betala med Swish - 123 164 91 77</small></div>
-                    </div>
-                </div>
-
-                <div id="card-details" style="display: none; margin-top: 0.6rem;">
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkout-modal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem; color: #4a7c59;">Slutför ditt köp</h2>
+            
+            <form onsubmit="processOrder(event)">
+                <h3 style="margin-bottom: 1rem; color: #2d4a2b;">Leveransuppgifter</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group">
-                        <label>Kortuppgifter</label>
-                        <div id="card-element"></div>
-                        <div id="card-errors" role="alert"></div>
+                        <label for="firstName">Förnamn *</label>
+                        <input type="text" id="firstName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Efternamn *</label>
+                        <input type="text" id="lastName" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">Adress *</label>
+                    <input type="text" id="address" required>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="postalCode">Postnummer *</label>
+                        <input type="text" id="postalCode" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="city">Stad *</label>
+                        <input type="text" id="city" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Telefon</label>
+                    <input type="tel" id="phone">
+                </div>
+                
+                <div class="form-group">
+                    <label for="orderEmail">E-post *</label>
+                    <input type="email" id="orderEmail" required>
+                </div>
+
+                <h3 style="margin: 2rem 0 1rem 0; color: #2d4a2b;">Betalningsmetod</h3>
+                
+                <div class="payment-methods">
+                    <div class="payment-method" onclick="selectPayment('swish')">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">📱</div>
+                        <div>Swish</div>
+                    </div>
+                    <div class="payment-method" onclick="selectPayment('card')">
+                        <div style="font-size: 2rem; margin-bottom: 0.5rem;">💳</div>
+                        <div>Kort</div>
                     </div>
                 </div>
 
-                <!-- PayPal Button Container -->
-                <div id="paypal-button-container" style="display: none; margin-top: 1rem;"></div>
+                <div id="payment-details" style="display: none; margin-top: 1rem;">
+                    <!-- Payment details will be inserted here -->
+                </div>
 
-                <div style="margin-top: 1rem; padding: 0.9rem; background: #f8fffe; border-radius: 10px;">
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
-                        <span>Produkter:</span>
-                        <span id="checkout-subtotal">0 kr</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
-                        <span>Frakt:</span>
-                        <span>49 kr</span>
-                    </div>
-                    <hr style="border: none; height: 1px; background: #e8e8e8; margin: 0.6rem 0;">
-                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
-                        <span>Totalt:</span>
-                        <span id="checkout-total">49 kr</span>
+                <div id="order-summary" style="background: #f8fffe; padding: 1rem; border-radius: 8px; margin: 1.5rem 0;">
+                    <h4 style="color: #4a7c59; margin-bottom: 0.5rem;">Ordersammanfattning</h4>
+                    <div id="summary-items"></div>
+                    <div style="border-top: 1px solid #ddd; margin-top: 0.5rem; padding-top: 0.5rem;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>Frakt:</span>
+                            <span>Ingår</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-weight: 700; margin-top: 0.5rem;">
+                            <span>Totalt:</span>
+                            <span id="final-total">0 kr</span>
+                        </div>
                     </div>
                 </div>
 
-                <button type="submit" class="order-button" id="submit-button" style="margin-top: 1rem;">Slutför beställning</button>
+                <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                    <button type="button" onclick="hideCheckout()" style="flex: 1; padding: 0.9rem; border: 1px solid #ddd; border-radius: 8px; background: #fff; cursor: pointer;">Avbryt</button>
+                    <button type="submit" class="checkout-button" style="flex: 2; margin: 0;">
+                        <span id="order-btn-text">Slutför beställning</span>
+                        <span id="order-loading" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
             </form>
         </div>
     </div>
+
+    <!-- Success/Error Messages -->
+    <div class="message" id="message"></div>
 
     <!-- Footer -->
     <footer>
         <div class="footer-content">
             <h3 style="color: #7fb069; margin-bottom: 0.6rem;">TreeOfLifa</h3>
             <p>Naturlig skönhet, hållbar framtid</p>
-            <p style="margin-top: 0.4rem;">Kontakta oss: tree.of.liifa@gmail.com</p>
+            
+            <div class="footer-links">
+                <a href="#" onclick="showPage('hem')">Hem</a>
+                <a href="#" onclick="showPage('om-oss')">Om oss</a>
+                <a href="#" onclick="showPage('produkter')">Produkter</a>
+                <a href="#" onclick="showPage('kontakt')">Kontakt</a>
+            </div>
+            
+            <p style="margin-top: 1rem;">
+                <strong>Kontakt:</strong> tree.of.liifa@gmail.com<br>
+                <strong>Följ oss:</strong> Naturlig hudvård för en bättre värld
+            </p>
+            
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #4a7c59; font-size: 0.9rem; color: #7fb069;">
+                © 2024 TreeOfLifa. Alla rättigheter förbehållna.
+            </div>
         </div>
     </footer>
 
     <script>
-        // ===== Global State =====
+        // Global variables
         let cart = [];
         let isCartOpen = false;
-        let isProcessingPayment = false;
-        let stripe = null;
-        let elements = null;
-        let cardElement = null;
-        let stripeInitialized = false;
+        let selectedPayment = '';
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded - initializing...');
+            loadCart();
+            updateCartCount();
+            updateCartDisplay();
+            console.log('Initialization complete');
+        });
 
-        // ===== Configuration =====
-        const STRIPE_PUBLISHABLE_KEY = "pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm";
-        const BACKEND_URL = 'https://tree-of-lifa.vercel.app';
-
-        // ===== Utility Functions =====
-        function escapeHtml(text) {
-            const map = {
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                '"': '&quot;',
-                "'": '&#039;'
-            };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
-
-        // ===== Page Navigation =====
-        function showPage(pageId) {
-            console.log('showPage called with:', pageId);
-            
-            // Hide all pages
-            const pages = document.querySelectorAll('.page');
-            pages.forEach(page => {
-                page.classList.remove('active');
-            });
-            
-            // Show the selected page
-            const targetPage = document.getElementById(pageId);
-            if (targetPage) {
-                targetPage.classList.add('active');
-            }
-            
-            // Close mobile menu if open
-            const navLinks = document.getElementById('nav-links');
-            if (navLinks) {
-                navLinks.classList.remove('show');
-            }
-        }
-
-        // ===== Mobile Navigation =====
-        function toggleNav() {
-            const navLinks = document.getElementById('nav-links');
-            if (navLinks) {
-                navLinks.classList.toggle('show');
-            }
-        }
-
-        // ===== Cart Functions =====
-        function toggleCart() {
-            const overlay = document.getElementById('cart-overlay');
-            const sidebar = document.getElementById('cart-sidebar');
-            
-            if (overlay && sidebar) {
-                isCartOpen = !isCartOpen;
-                
-                if (isCartOpen) {
-                    overlay.classList.add('show');
-                    sidebar.classList.add('open');
-                    sidebar.setAttribute('aria-hidden', 'false');
-                } else {
-                    overlay.classList.remove('show');
-                    sidebar.classList.remove('open');
-                    sidebar.setAttribute('aria-hidden', 'true');
-                }
-            }
-        }
-
+        // Cart functions
         function addToCart(name, price) {
+            console.log('Adding to cart:', name, price);
+            
             const existingItem = cart.find(item => item.name === name);
             
             if (existingItem) {
                 existingItem.quantity += 1;
             } else {
-                cart.push({ name, price, quantity: 1 });
-            }
-            
-            updateCartDisplay();
-            updateCartCount();
-        }
-
-        function updateCartCount() {
-            const cartCount = document.getElementById('cart-count');
-            if (cartCount) {
-                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-                cartCount.textContent = totalItems;
-            }
-        }
-
-        function updateCartDisplay() {
-            const cartContent = document.getElementById('cart-content');
-            const cartTotal = document.getElementById('cart-total');
-            const emptyCart = document.getElementById('empty-cart');
-            const totalAmount = document.getElementById('total-amount');
-            
-            if (!cartContent || !cartTotal || !emptyCart || !totalAmount) return;
-            
-            if (cart.length === 0) {
-                emptyCart.style.display = 'block';
-                cartTotal.style.display = 'none';
-                cartContent.innerHTML = `
-                    <div class="empty-cart" style="text-align: center; padding: 2rem;">
-                        <div style="font-size: 2.2rem; color: #ccc;">🛒</div>
-                        <p>Din kundvagn är tom</p>
-                    </div>
-                `;
-            } else {
-                emptyCart.style.display = 'none';
-                cartTotal.style.display = 'block';
-                
-                let cartHTML = '';
-                let total = 0;
-                
-                cart.forEach((item, index) => {
-                    const itemTotal = item.price * item.quantity;
-                    total += itemTotal;
-                    
-                    cartHTML += `
-                        <div class="cart-item">
-                            <div>
-                                <div>${escapeHtml(item.name)}</div>
-                                <div style="color: #666; font-size: 0.9rem;">${item.price} kr</div>
-                            </div>
-                            <div class="quantity-controls">
-                                <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">−</button>
-                                <span style="margin: 0 0.5rem;">${item.quantity}</span>
-                                <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
-                            </div>
-                        </div>
-                    `;
+                cart.push({ 
+                    id: Date.now(), 
+                    name, 
+                    price, 
+                    quantity: 1 
                 });
-                
-                cartContent.innerHTML = cartHTML;
-                totalAmount.textContent = `Totalt: ${total} kr`;
             }
+            
+            saveCart();
+            updateCartCount();
+            updateCartDisplay();
+            showMessage(`${name} har lagts till i kundvagnen!`, 'success');
         }
 
         function updateQuantity(index, change) {
@@ -737,106 +706,356 @@
                 cart.splice(index, 1);
             }
             
+            saveCart();
             updateCartDisplay();
             updateCartCount();
         }
 
-        // ===== Checkout Functions =====
-        function showCheckout() {
-            const modal = document.getElementById('checkout-modal');
-            if (modal) {
-                modal.classList.add('show');
-                modal.setAttribute('aria-hidden', 'false');
-                updateCheckoutSummary();
-                initializeStripe();
+        function removeFromCart(index) {
+            if (index >= 0 && index < cart.length) {
+                cart.splice(index, 1);
+                saveCart();
+                updateCartDisplay();
+                updateCartCount();
             }
         }
 
-        function closeCheckout() {
-            const modal = document.getElementById('checkout-modal');
-            if (modal) {
-                modal.classList.remove('show');
-                modal.setAttribute('aria-hidden', 'true');
+        function updateCartCount() {
+            const cartCount = document.getElementById('cart-count');
+            if (cartCount) {
+                const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItems;
+                cartCount.style.display = totalItems > 0 ? 'flex' : 'none';
             }
         }
 
-        function updateCheckoutSummary() {
-            const subtotalEl = document.getElementById('checkout-subtotal');
-            const totalEl = document.getElementById('checkout-total');
+        function updateCartDisplay() {
+            const cartContent = document.getElementById('cart-content');
+            const cartTotal = document.getElementById('cart-total');
             
-            if (!subtotalEl || !totalEl) return;
+            if (!cartContent || !cartTotal) return;
             
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            const shipping = 49;
-            const total = subtotal + shipping;
-            
-            subtotalEl.textContent = `${subtotal} kr`;
-            totalEl.textContent = `${total} kr`;
-        }
-
-        function selectPayment(event, method) {
-            document.querySelectorAll('.payment-method').forEach(el => {
-                el.classList.remove('selected');
-            });
-            
-            event.currentTarget.classList.add('selected');
-            
-            const radio = event.currentTarget.querySelector('input[type="radio"]');
-            if (radio) {
-                radio.checked = true;
-            }
-            
-            const cardDetails = document.getElementById('card-details');
-            if (cardDetails) {
-                cardDetails.style.display = method === 'card' ? 'block' : 'none';
-            }
-        }
-
-        function initializeStripe() {
-            if (stripeInitialized) return;
-            
-            try {
-                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-                elements = stripe.elements();
+            if (cart.length === 0) {
+                cartContent.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 2.2rem; color: #ccc;">🛒</div>
+                        <p>Din kundvagn är tom</p>
+                    </div>
+                `;
+                cartTotal.style.display = 'none';
+            } else {
+                let cartHTML = '';
+                let total = 0;
                 
-                cardElement = elements.create('card');
-                cardElement.mount('#card-element');
-                
-                cardElement.on('change', ({error}) => {
-                    const displayError = document.getElementById('card-errors');
-                    if (displayError) {
-                        displayError.textContent = error ? error.message : '';
-                    }
+                cart.forEach((item, index) => {
+                    const itemTotal = item.price * item.quantity;
+                    total += itemTotal;
+                    
+                    cartHTML += `
+                        <div class="cart-item">
+                            <div>
+                                <div style="font-weight: 500;">${item.name}</div>
+                                <div style="color: #666; font-size: 0.9rem;">${item.price} kr</div>
+                            </div>
+                            <div class="quantity-controls">
+                                <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">−</button>
+                                <span style="margin: 0 0.5rem;">${item.quantity}</span>
+                                <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
+                                <button class="quantity-btn" onclick="removeFromCart(${index})" style="background: #ffe6e6; color: #d32f2f; margin-left: 0.5rem;">×</button>
+                            </div>
+                        </div>
+                    `;
                 });
                 
-                stripeInitialized = true;
-            } catch (error) {
-                console.error('Stripe initialization failed:', error);
+                cartContent.innerHTML = cartHTML;
+                document.getElementById('total-amount').textContent = `Totalt: ${total} kr`;
+                cartTotal.style.display = 'block';
             }
         }
 
-        function placeOrder(event) {
-            event.preventDefault();
+        function toggleCart() {
+            const overlay = document.getElementById('cart-overlay');
+            const sidebar = document.getElementById('cart-sidebar');
             
-            if (isProcessingPayment) return;
-            
-            const selectedPayment = document.querySelector('input[name="payment"]:checked');
-            if (!selectedPayment) {
-                alert('Välj en betalmetod');
-                return;
-            }
-            
-            if (selectedPayment.value === 'swish') {
-                const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 49;
-                alert(`Swish-betalning: Skicka ${total} kr till 123 164 91 77`);
+            if (overlay && sidebar) {
+                isCartOpen = !isCartOpen;
+                
+                if (isCartOpen) {
+                    overlay.classList.add('show');
+                    sidebar.classList.add('open');
+                } else {
+                    overlay.classList.remove('show');
+                    sidebar.classList.remove('open');
+                }
             }
         }
 
-        // ===== Initialize on page load =====
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM loaded, initializing...');
+        function clearCart() {
+            cart = [];
+            saveCart();
             updateCartCount();
             updateCartDisplay();
+        }
+
+        function saveCart() {
+            // Store in memory only - localStorage not supported in Claude.ai artifacts
+            console.log('Cart saved:', cart);
+        }
+
+        function loadCart() {
+            // In a real app, this would load from localStorage
+            // For now, cart starts empty
+            console.log('Cart loaded:', cart);
+        }
+
+        // Checkout functions
+        function showCheckout() {
+            if (cart.length === 0) {
+                showMessage('Din kundvagn är tom!', 'error');
+                return;
+            }
+
+            const modal = document.getElementById('checkout-modal');
+            modal.classList.add('show');
+            updateOrderSummary();
+            toggleCart(); // Close cart
+        }
+
+        function hideCheckout() {
+            const modal = document.getElementById('checkout-modal');
+            modal.classList.remove('show');
+            selectedPayment = '';
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+        }
+
+        function selectPayment(method) {
+            selectedPayment = method;
+            document.querySelectorAll('.payment-method').forEach(el => el.classList.remove('selected'));
+            event.target.closest('.payment-method').classList.add('selected');
+
+            const detailsDiv = document.getElementById('payment-details');
+            
+            if (method === 'swish') {
+                detailsDiv.innerHTML = `
+                    <div class="form-group">
+                        <label for="swish-number">Telefonnummer för Swish *</label>
+                        <input type="tel" id="swish-number" placeholder="070-123 45 67" required>
+                    </div>
+                `;
+                detailsDiv.style.display = 'block';
+            } else if (method === 'card') {
+                detailsDiv.innerHTML = `
+                    <div class="form-group">
+                        <label for="card-number">Kortnummer *</label>
+                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" required>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label for="card-expiry">Utgångsdatum *</label>
+                            <input type="text" id="card-expiry" placeholder="MM/ÅÅ" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="card-cvc">CVC *</label>
+                            <input type="text" id="card-cvc" placeholder="123" required>
+                        </div>
+                    </div>
+                `;
+                detailsDiv.style.display = 'block';
+            }
+        }
+
+        function updateOrderSummary() {
+            const summaryDiv = document.getElementById('summary-items');
+            const totalDiv = document.getElementById('final-total');
+            
+            let summaryHTML = '';
+            let total = 0;
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                summaryHTML += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.3rem;">
+                        <span>${item.name} × ${item.quantity}</span>
+                        <span>${itemTotal} kr</span>
+                    </div>
+                `;
+            });
+            
+            summaryDiv.innerHTML = summaryHTML;
+            totalDiv.textContent = `${total} kr`;
+        }
+
+        function processOrder(event) {
+            event.preventDefault();
+            
+            if (!selectedPayment) {
+                showMessage('Välj en betalningsmetod!', 'error');
+                return;
+            }
+
+            const btnText = document.getElementById('order-btn-text');
+            const loading = document.getElementById('order-loading');
+            
+            btnText.style.display = 'none';
+            loading.style.display = 'inline-block';
+
+            // Simulate order processing
+            setTimeout(() => {
+                const orderNumber = Math.floor(100000 + Math.random() * 900000);
+                
+                // Show success message
+                showMessage(`Tack för din beställning! Ordernummer: ${orderNumber}`, 'success');
+                
+                // Clear cart
+                clearCart();
+                
+                // Hide checkout
+                hideCheckout();
+                
+                // Reset button
+                btnText.style.display = 'inline';
+                loading.style.display = 'none';
+                
+                // Show confirmation
+                setTimeout(() => {
+                    alert(`Orderbekräftelse skickad till din e-post!\n\nOrdernummer: ${orderNumber}\n\nVi skickar dina produkter inom 2-3 vardagar.`);
+                }, 500);
+                
+            }, 2000);
+        }
+
+        // Page navigation
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // Show selected page
+            const targetPage = document.getElementById(pageId);
+            if (targetPage) {
+                targetPage.classList.add('active');
+            }
+            
+            // Close mobile menu if open
+            closeMobileMenu();
+        }
+
+        // Mobile menu functions
+        function toggleMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            if (navLinks.style.display === 'flex') {
+                closeMobileMenu();
+            } else {
+                navLinks.style.display = 'flex';
+                navLinks.style.position = 'absolute';
+                navLinks.style.top = '100%';
+                navLinks.style.left = '0';
+                navLinks.style.right = '0';
+                navLinks.style.background = 'rgba(255,255,255,0.98)';
+                navLinks.style.flexDirection = 'column';
+                navLinks.style.padding = '1rem';
+                navLinks.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            }
+        }
+
+        function closeMobileMenu() {
+            const navLinks = document.querySelector('.nav-links');
+            navLinks.style.display = '';
+            navLinks.style.position = '';
+            navLinks.style.top = '';
+            navLinks.style.left = '';
+            navLinks.style.right = '';
+            navLinks.style.background = '';
+            navLinks.style.flexDirection = '';
+            navLinks.style.padding = '';
+            navLinks.style.boxShadow = '';
+        }
+
+        // Contact form
+        function sendMessage(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+            
+            // Simulate sending message
+            const button = event.target.querySelector('button[type="submit"]');
+            const originalText = button.textContent;
+            button.innerHTML = '<span class="loading"></span> Skickar...';
+            button.disabled = true;
+            
+            setTimeout(() => {
+                showMessage('Tack för ditt meddelande! Vi återkommer inom 24 timmar.', 'success');
+                event.target.reset();
+                button.textContent = originalText;
+                button.disabled = false;
+            }, 1500);
+        }
+
+        // Message system
+        function showMessage(text, type = 'success') {
+            const messageDiv = document.getElementById('message');
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.classList.add('show');
+            
+            setTimeout(() => {
+                messageDiv.classList.remove('show');
+            }, 5000);
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('click', function(event) {
+            const modal = document.getElementById('checkout-modal');
+            if (event.target === modal) {
+                hideCheckout();
+            }
+        });
+
+        // Handle escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                if (isCartOpen) {
+                    toggleCart();
+                }
+                if (document.getElementById('checkout-modal').classList.contains('show')) {
+                    hideCheckout();
+                }
+                closeMobileMenu();
+            }
+        });
+
+        // Format inputs
+        document.addEventListener('input', function(event) {
+            if (event.target.id === 'card-number') {
+                let value = event.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+                event.target.value = formattedValue;
+            }
+            
+            if (event.target.id === 'card-expiry') {
+                let value = event.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                event.target.value = value;
+            }
+            
+            if (event.target.id === 'card-cvc') {
+                event.target.value = event.target.value.replace(/\D/g, '').substring(0, 3);
+            }
+            
+            if (event.target.id === 'postalCode') {
+                let value = event.target.value.replace(/\s/g, '');
+                if (value.length > 3) {
+                    value = value.substring(0, 3) + ' ' + value.substring(3, 5);
+                }
+                event.target.value = value;
+            }
         });
     </script>
 </body>
