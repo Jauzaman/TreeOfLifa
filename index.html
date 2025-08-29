@@ -695,7 +695,7 @@
 
                 console.log('Attempting to create payment intent for total:', total, 'SEK');
 
-                const response = await fetch(`${BACKEND_URL}/api/create-payment-intent`, {
+                const response = await fetch(`${BACKEND_URL}/api/create-payment-intent.js`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
