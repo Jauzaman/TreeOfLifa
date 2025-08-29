@@ -1,5 +1,13 @@
-// /api/create-payment-intent endpoint
-app.post('/api/create-payment-intent', async (req, res) => {
+import Stripe from 'stripe';
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+export default async function handler(req, res) {
+  // Endast tillåt POST-requests
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
     const { amount, currency, customer, items, metadata } = req.body;
     
@@ -9,14 +17,14 @@ app.post('/api/create-payment-intent', async (req, res) => {
       automatic_payment_methods: {
         enabled: true,
       },
-      customer: customer.email, // You might want to create a customer first
+      customer: customer.email,
       metadata,
     });
-
+    
     res.json({
       clientSecret: paymentIntent.client_secret
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-});
+}
