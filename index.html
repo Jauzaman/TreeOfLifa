@@ -1161,7 +1161,7 @@
                 const total = subtotal + 49; // Including shipping
 
                 // Create payment intent on your backend
-                const response = await fetch('http://localhost:3000/api/payments/card'), {
+const response = await fetch('http://localhost:3000/api/payments/card', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
