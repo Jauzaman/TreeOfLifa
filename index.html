@@ -608,6 +608,23 @@
         // ===== Configuration =====
         const STRIPE_PUBLISHABLE_KEY = "pk_test_51QMaGPQ2W4lqdp6blnxdZ4PI582jLSsnjDznejPKX3wSDDQ8PKEQVaZnqPeY22L0pekbSN7nyAt05B7OKqDDPyeg00QM3TiCAA";
         const BACKEND_URL = 'https://tree-of-lifa.vercel.app';
+        
+        // Development mode - set to true for testing without backend
+        const DEVELOPMENT_MODE = false;
+        
+        // Check if backend is available
+        async function checkBackendHealth() {
+            try {
+                const response = await fetch(`${BACKEND_URL}/health`, { 
+                    method: 'GET',
+                    signal: AbortSignal.timeout(5000) // 5 second timeout
+                });
+                return response.ok;
+            } catch (error) {
+                console.warn('Backend health check failed:', error.message);
+                return false;
+            }
+        }
 
         // ===== Utility Functions =====
         function escapeHtml(text) {
@@ -676,7 +693,9 @@
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const total = subtotal + 49;
 
-                const response = await fetch(`${BACKEND_URL}/api/create-payment-intent`, {
+                console.log('Attempting to create payment intent for total:', total, 'SEK');
+
+                const response = await fetch(`${BACKEND_URL}/api/checkout-stripe.js`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -685,9 +704,9 @@
                         amount: total * 100,
                         currency: 'sek',
                         customer: {
-                            name: document.getElementById('namn').value,
-                            email: document.getElementById('email').value,
-                            phone: document.getElementById('telefon').value
+                            name: document.getElementById('namn').value || 'Test Kund',
+                            email: document.getElementById('email').value || 'test@example.com',
+                            phone: document.getElementById('telefon').value || '123456789'
                         },
                         items: cart,
                         metadata: {
@@ -697,14 +716,27 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Serverfel: ${response.status}`);
+                    const errorText = await response.text().catch(() => 'Unknown error');
+                    throw new Error(`Backend error ${response.status}: ${errorText}`);
                 }
 
                 const data = await response.json();
                 clientSecret = data.clientSecret;
+                
+                if (!clientSecret) {
+                    throw new Error('No client secret received from backend');
+                }
+
+                console.log('Payment intent created successfully');
                 return data;
             } catch (error) {
                 console.error('Error creating payment intent:', error);
+                
+                // Check if it's a network/CORS issue
+                if (error.message.includes('fetch') || error.name === 'TypeError') {
+                    throw new Error('Kan inte ansluta till betalningsservern. Kontrollera att din backend körs på ' + BACKEND_URL);
+                }
+                
                 throw error;
             }
         }
@@ -1042,15 +1074,32 @@
                     if (submitButton) submitButton.style.display = 'block';
                     
                     showStatusMessage('Laddar betalningsformulär...', 'info');
-                    const initialized = await initializePaymentElement();
                     
-                    if (initialized) {
-                        showStatusMessage('Betalningsformulär klart!', 'info');
+                    try {
+                        const initialized = await initializePaymentElement();
+                        
+                        if (initialized) {
+                            showStatusMessage('Betalningsformulär klart!', 'info');
+                        }
+                    } catch (error) {
+                        console.error('Failed to initialize payment element:', error);
+                        
+                        // Show user-friendly error message
+                        showStatusMessage('Kortbetalning är för närvarande inte tillgänglig. Vänligen välj Swish eller kontakta oss direkt.', 'error');
+                        
+                        // Hide card payment details and show only the error
+                        if (paymentDetails) paymentDetails.style.display = 'none';
+                        
+                        // Automatically suggest Swish as alternative
+                        setTimeout(() => {
+                            showStatusMessage('Rekommendation: Använd Swish för att slutföra ditt köp.', 'info');
+                        }, 2000);
                     }
                     
                 } else if (paymentType === 'swish') {
                     if (paymentDetails) paymentDetails.style.display = 'none';
                     if (submitButton) submitButton.style.display = 'block';
+                    showStatusMessage('Swish är valt. Fyll i dina uppgifter och klicka "Slutför beställning".', 'info');
                 }
                 
             } catch (error) {
@@ -1134,7 +1183,15 @@
 
                 if (error) {
                     console.error('Payment confirmation error:', error);
-                    showStatusMessage(error.message, 'error');
+                    
+                    // Handle different types of errors
+                    if (error.code === 'payment_intent_authentication_failure') {
+                        showStatusMessage('Kortbetalningen misslyckades vid autentisering. Försök igen eller använd ett annat kort.', 'error');
+                    } else if (error.code === 'card_declined') {
+                        showStatusMessage('Kortet avvisades. Kontrollera dina kortuppgifter eller använd ett annat kort.', 'error');
+                    } else {
+                        showStatusMessage(`Betalningsfel: ${error.message}`, 'error');
+                    }
                     return;
                 }
 
@@ -1159,6 +1216,19 @@
                         timestamp: new Date().toISOString()
                     };
 
+                    // Try to save order to backend (optional)
+                    try {
+                        await fetch(`${BACKEND_URL}/api/orders`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(orderData)
+                        });
+                        console.log('Order saved to backend');
+                    } catch (saveError) {
+                        console.warn('Could not save order to backend:', saveError);
+                        // Don't fail the entire process if saving fails
+                    }
+
                     showSuccessMessage(orderData);
                     
                     cart = [];
@@ -1166,12 +1236,21 @@
                     closeCheckout();
                     toggleCart();
                 } else {
-                    showStatusMessage('Betalningen kunde inte slutföras.', 'error');
+                    showStatusMessage('Betalningen kunde inte slutföras. Status: ' + (paymentIntent?.status || 'unknown'), 'error');
                 }
 
             } catch (error) {
                 console.error('Stripe payment error:', error);
-                showStatusMessage('Fel vid kortbetalning: ' + error.message, 'error');
+                
+                if (error.message.includes('ansluta till betalningsservern')) {
+                    showStatusMessage(error.message, 'error');
+                    // Suggest alternative payment method
+                    setTimeout(() => {
+                        showStatusMessage('Rekommendation: Prova Swish istället, eller kontakta oss direkt på tree.of.liifa@gmail.com', 'info');
+                    }, 3000);
+                } else {
+                    showStatusMessage('Tekniskt fel vid kortbetalning. Försök igen eller välj Swish.', 'error');
+                }
             }
         }
 
