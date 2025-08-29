@@ -9,7 +9,7 @@
     <script src="https://js.stripe.com/v3/"></script>
     
     <!-- PayPal SDK -->
-<script src="https://www.paypal.com/sdk/js?client-id=BAA7xmM7_mZzcFjQ7TqjlWwvEYrMw0KYVJPdDT-jGnlRHJqJHKh_vOBJOu29cClq-jN10lW-q4yHnyKIcw&currency=SEK"></script>
+    <script src="https://www.paypal.com/sdk/js?client-id=BAA7xmM7_mZzcFjQ7TqjlWwvEYrMw0KYVJPdDT-jGnlRHJqJHKh_vOBJOu29cClq-jN10lW-q4yHnyKIcw&currency=SEK"></script>
 
     <style>
         /* ===== Reset & Base ===== */
@@ -419,6 +419,8 @@
                 <p>TreeOfLifa grundades ur en passion för naturlig skönhet och hållbar livsstil. Vi startade vår resa med en enkel övertygelse: att naturen erbjuder de bästa lösningarna för hudvård.</p>
                 <br>
                 <p>Vårt team består av naturentusiaster som arbetar direkt med lokala odlare för att säkerställa att varje luffasvamp är av högsta kvalitet. Vi tror på transparent handel och miljövänliga metoder i varje steg av vår process.</p>
+                <br>
+                <p>Alla våra produkter är 100% naturliga och biologiskt nedbrytbara. Vi använder inga kemikalier eller konstgjorda tillsatser - bara naturens egen kraft för att ge dig den bästa hudvårdsupplevelsen.</p>
             </div>
         </section>
 
@@ -431,8 +433,8 @@
                 <div class="products-grid" id="products-grid">
                     <div class="product-card">
                         <div class="product-image">
-    <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4031.JPG" alt="Mindre Lifa" />
-</div>
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4031.JPG" alt="Mindre Lifa" />
+                        </div>
                         <div class="product-info">
                             <h3>Mindre Lifah</h3>
                             <p>Vår populäraste luffasvamp, lite kompaktare, perfekt för daglig användning.</p>
@@ -442,9 +444,9 @@
                     </div>
 
                     <div class="product-card">
-<div class="product-image">
-    <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG" alt="Luffasvamp" />
-</div>                     
+                        <div class="product-image">
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG" alt="Luffasvamp" />
+                        </div>                     
                         <div class="product-info">
                             <h3>Större Lifah</h3>
                             <p>Extra tjock och hållbar luffasvamp för djup rengöring.</p>
@@ -454,9 +456,9 @@
                     </div>
 
                     <div class="product-card">
-<div class="product-image">
-    <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG" alt="Aleppotvål" />
-</div>
+                        <div class="product-image">
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG" alt="Aleppotvål" />
+                        </div>
                         <div class="product-info">
                             <h3>Aleppotvål</h3>
                             <p>En mild 100% naturlig tvål som är gjord på ett urgammalt recept.</p>
@@ -464,10 +466,12 @@
                             <button class="buy-button" onclick="addToCart('Aleppotvål', 50)">Lägg i kundvagn</button>
                         </div>
                     </div>
-<div class="product-image">
-    <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png" alt="Presentset" />
-</div>
-                    <div class="product-info">
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png" alt="Presentset" />
+                        </div>
+                        <div class="product-info">
                             <h3>Presentset</h3>
                             <p>Komplett set i en fin presentask, perfekt som gåva.</p>
                             <div class="price">145 kr</div>
@@ -533,12 +537,11 @@
                     </div>
 
                     <div class="payment-method" onclick="selectPayment(event,'swish')">
-    <input type="radio" name="payment" value="swish">
-    <span class="payment-icon">📱</span>
-    <div><strong>Swish</strong><br><small>Betala med Swish - 123 164 91 77</small></div>
-</div>
-
-                
+                        <input type="radio" name="payment" value="swish">
+                        <span class="payment-icon">📱</span>
+                        <div><strong>Swish</strong><br><small>Betala med Swish - 123 164 91 77</small></div>
+                    </div>
+                </div>
 
                 <div id="card-details" style="display: none; margin-top: 0.6rem;">
                     <div class="form-group">
@@ -593,7 +596,6 @@
 
         // ===== Configuration =====
         const STRIPE_PUBLISHABLE_KEY = "pk_test_51QMaGPQ2W4lqdp6blnxdZ4PI582jLSsnjDznejPKX3wSDDQ8PKEQVaZnqPeY22L0pekbSN7nyAt05B7OKqDDPyeg00QM3TiCAA";
-        const BACKEND_URL = 'https://tree-of-lifa.vercel.app'; // Ersätt med din faktiska Vercel URL
 
         // ===== Utility Functions =====
         function escapeHtml(text) {
@@ -1108,44 +1110,50 @@
 
                 const paymentMethod = selectedPayment.value;
 
-               if (paymentMethod === 'card') {
-    await processStripePayment();
-} else if (paymentMethod === 'paypal') {
-    // PayPal is handled by its own buttons
-    showStatusMessage('Använd PayPal-knappen för att slutföra betalningen', 'info');
-} else if (paymentMethod === 'swish') {
-    // Process Swish payment
-    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-    const total = subtotal + 49;
-    const orderId = 'SWISH-' + Date.now();
-    
-    showStatusMessage(`Swish-betalning: ${total} kr till 123 164 91 77. Skriv "${orderId}" som meddelande.`, 'info');
-    
-    setTimeout(() => {
-        const orderData = {
-            orderId: orderId,
-            transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
-            items: cart.map(item => ({...item})),
-            subtotal, shipping: 49, total,
-            paymentMethod: 'swish',
-            customer: {
-                name: document.getElementById('namn').value,
-                address: document.getElementById('adress').value,
-                postalCode: document.getElementById('postnummer').value,
-                city: document.getElementById('stad').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('telefon').value
-            },
-            timestamp: new Date().toISOString()
-        };
-        
-        showSuccessMessage(orderData);
-        cart = [];
-        updateCartDisplay();
-        closeCheckout();
-        toggleCart();
-    }, 3000);
-}
+                if (paymentMethod === 'card') {
+                    await processStripePayment();
+                } else if (paymentMethod === 'paypal') {
+                    // PayPal is handled by its own buttons
+                    showStatusMessage('Använd PayPal-knappen för att slutföra betalningen', 'info');
+                } else if (paymentMethod === 'swish') {
+                    // Process Swish payment
+                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const total = subtotal + 49;
+                    const orderId = 'SWISH-' + Date.now();
+                    
+                    showStatusMessage(`Swish-betalning: ${total} kr till 123 164 91 77. Skriv "${orderId}" som meddelande.`, 'info');
+                    
+                    setTimeout(() => {
+                        const orderData = {
+                            orderId: orderId,
+                            transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
+                            items: cart.map(item => ({...item})),
+                            subtotal, shipping: 49, total,
+                            paymentMethod: 'swish',
+                            customer: {
+                                name: document.getElementById('namn').value,
+                                address: document.getElementById('adress').value,
+                                postalCode: document.getElementById('postnummer').value,
+                                city: document.getElementById('stad').value,
+                                email: document.getElementById('email').value,
+                                phone: document.getElementById('telefon').value
+                            },
+                            timestamp: new Date().toISOString()
+                        };
+                        
+                        showSuccessMessage(orderData);
+                        cart = [];
+                        updateCartDisplay();
+                        closeCheckout();
+                        toggleCart();
+                    }, 3000);
+                }
+
+            } catch (error) {
+                console.error('Error placing order:', error);
+                showStatusMessage('Ett fel uppstod. Försök igen.', 'error');
+            }
+        }
 
         async function processStripePayment() {
             try {
@@ -1160,153 +1168,51 @@
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const total = subtotal + 49; // Including shipping
 
-                // Create payment intent on your backend
-const response = await fetch('http://localhost:3000/api/payments/card', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        amount: total * 100, // Stripe expects amount in öre (cents)
-                        currency: 'sek',
-                        customer: {
-                            name: document.getElementById('namn').value,
-                            email: document.getElementById('email').value,
-                            address: {
-                                line1: document.getElementById('adress').value,
-                                postal_code: document.getElementById('postnummer').value,
-                                city: document.getElementById('stad').value,
-                                country: 'SE'
-                            }
-                        },
-                        items: cart,
-                        metadata: {
-                            orderId: 'ORD-' + Date.now(),
-                            phone: document.getElementById('telefon').value
-                        }
-                    }),
-                });
-
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-
-                const { clientSecret } = await response.json();
+                // Since we don't have a working backend, we'll simulate the payment
+                showStatusMessage('Demo-läge: Simulerar kortbetalning...', 'info');
                 
-                showStatusMessage('Behandlar kortbetalning...', 'info');
-
-                // Confirm payment with Stripe
-                const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-                    payment_method: {
-                        card: cardElement,
-                        billing_details: {
-                            name: document.getElementById('namn').value,
-                            email: document.getElementById('email').value,
-                            address: {
-                                line1: document.getElementById('adress').value,
-                                postal_code: document.getElementById('postnummer').value,
-                                city: document.getElementById('stad').value,
-                                country: 'SE'
-                            }
-                        }
-                    }
-                });
-
-                if (error) {
-                    console.error('Payment confirmation error:', error);
-                    showStatusMessage(error.message, 'error');
-                    setPaymentProcessing(false);
-                    return;
-                }
-
-                if (paymentIntent.status === 'succeeded') {
-                    const orderData = {
-                        orderId: paymentIntent.metadata.orderId,
-                        transactionId: paymentIntent.id,
-                        items: cart.map(item => ({...item})),
-                        subtotal: subtotal,
-                        shipping: 49,
-                        total: total,
-                        paymentMethod: 'card',
-                        customer: {
-                            name: document.getElementById('namn').value,
-                            address: document.getElementById('adress').value,
-                            postalCode: document.getElementById('postnummer').value,
-                            city: document.getElementById('stad').value,
-                            email: document.getElementById('email').value,
-                            phone: document.getElementById('telefon').value
-                        },
-                        timestamp: new Date().toISOString()
-                    };
-
-                    showSuccessMessage(orderData);
+                setTimeout(() => {
+                    const success = Math.random() > 0.1; // 90% success rate in demo
                     
-                    // Clear cart and close
-                    cart = [];
-                    updateCartDisplay();
-                    closeCheckout();
-                    toggleCart();
-                } else {
-                    showStatusMessage('Betalningen kunde inte slutföras. Status: ' + paymentIntent.status, 'error');
-                }
+                    if (success) {
+                        const orderData = {
+                            orderId: 'DEMO-ORD-' + Date.now(),
+                            transactionId: 'DEMO-TXN-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
+                            items: cart.map(item => ({...item})),
+                            subtotal: subtotal,
+                            shipping: 49,
+                            total: total,
+                            paymentMethod: 'card',
+                            customer: {
+                                name: document.getElementById('namn').value,
+                                address: document.getElementById('adress').value,
+                                postalCode: document.getElementById('postnummer').value,
+                                city: document.getElementById('stad').value,
+                                email: document.getElementById('email').value,
+                                phone: document.getElementById('telefon').value
+                            },
+                            timestamp: new Date().toISOString()
+                        };
 
-                setPaymentProcessing(false);
+                        showSuccessMessage(orderData);
+                        
+                        // Clear cart and close
+                        cart = [];
+                        updateCartDisplay();
+                        closeCheckout();
+                        toggleCart();
+                    } else {
+                        showStatusMessage('Demo: Kortbetalningen nekades. Försök igen.', 'error');
+                    }
+                    
+                    setPaymentProcessing(false);
+                }, 2000);
 
             } catch (error) {
                 console.error('Stripe payment error:', error);
-                
-                // Fallback to demo mode if backend is not available
-                if (error.message.includes('fetch') || error.message.includes('Network')) {
-                    showStatusMessage('Backend ej tillgänglig - kör i demo-läge', 'info');
-                    await processDemoPayment();
-                } else {
-                    showStatusMessage('Ett fel uppstod vid kortbetalningen. Försök igen.', 'error');
-                    setPaymentProcessing(false);
-                }
-            }
-        }
-
-        async function processDemoPayment() {
-            // Demo fallback when no backend is available
-            showStatusMessage('Demo-läge: Simulerar betalning...', 'info');
-            
-            setTimeout(() => {
-                const success = Math.random() > 0.1; // 90% success rate in demo
-                
-                if (success) {
-                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    const orderData = {
-                        orderId: 'DEMO-ORD-' + Date.now(),
-                        transactionId: 'DEMO-TXN-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-                        items: cart.map(item => ({...item})),
-                        subtotal: subtotal,
-                        shipping: 49,
-                        total: subtotal + 49,
-                        paymentMethod: 'card',
-                        customer: {
-                            name: document.getElementById('namn').value,
-                            address: document.getElementById('adress').value,
-                            postalCode: document.getElementById('postnummer').value,
-                            city: document.getElementById('stad').value,
-                            email: document.getElementById('email').value,
-                            phone: document.getElementById('telefon').value
-                        },
-                        timestamp: new Date().toISOString()
-                    };
-
-                    showSuccessMessage(orderData);
-                    
-                    // Clear cart and close
-                    cart = [];
-                    updateCartDisplay();
-                    closeCheckout();
-                    toggleCart();
-                } else {
-                    showStatusMessage('Demo: Kortbetalningen nekades. Försök igen.', 'error');
-                }
-                
+                showStatusMessage('Ett fel uppstod vid kortbetalningen. Försök igen.', 'error');
                 setPaymentProcessing(false);
-            }, 2000);
+            }
         }
 
         function setPaymentProcessing(processing) {
@@ -1360,26 +1266,6 @@ const response = await fetch('http://localhost:3000/api/payments/card', {
         }
 
         // ===== Event Listeners =====
-                // ===== Navigation Functions =====
-function showPage(pageId) {
-    try {
-        // Hide all pages
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-
-        // Show selected page
-        const targetPage = document.getElementById(pageId);
-        if (targetPage) {
-            targetPage.classList.add('active');
-            window.scrollTo({top: 0, behavior: 'smooth'});
-        }
-    } catch (error) {
-        console.error('Error navigating to page:', error);
-    }
-}
-
-// ===== Event Listeners ===== 
         document.addEventListener('DOMContentLoaded', function() {
             console.log('TreeOfLifa website loaded');
             
