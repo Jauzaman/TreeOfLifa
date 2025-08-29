@@ -2,10 +2,11 @@ const Stripe = require('stripe');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export default async function handler(req, res) {
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  // Starkare CORS headers
+  res.setHeader('Access-Control-Allow-Origin', 'https://treeoflifa.se');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
@@ -26,6 +27,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Invalid amount' });
     }
 
+    console.log('Creating payment intent for amount:', amount);
+
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // SEK i ören
       currency: 'sek',
@@ -37,6 +40,8 @@ export default async function handler(req, res) {
         timestamp: new Date().toISOString()
       }
     });
+
+    console.log('Payment intent created successfully');
 
     res.json({
       clientSecret: paymentIntent.client_secret
