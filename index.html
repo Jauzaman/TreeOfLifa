@@ -596,6 +596,7 @@
 
         // ===== Configuration =====
         const STRIPE_PUBLISHABLE_KEY = "pk_test_51QMaGPQ2W4lqdp6blnxdZ4PI582jLSsnjDznejPKX3wSDDQ8PKEQVaZnqPeY22L0pekbSN7nyAt05B7OKqDDPyeg00QM3TiCAA";
+        const BACKEND_URL = 'https://tree-of-lifa.vercel.app'; // Din Vercel backend URL
 
         // ===== Utility Functions =====
         function escapeHtml(text) {
@@ -1168,49 +1169,112 @@
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const total = subtotal + 49; // Including shipping
 
-                // Since we don't have a working backend, we'll simulate the payment
-                showStatusMessage('Demo-läge: Simulerar kortbetalning...', 'info');
-                
-                setTimeout(() => {
-                    const success = Math.random() > 0.1; // 90% success rate in demo
-                    
-                    if (success) {
-                        const orderData = {
-                            orderId: 'DEMO-ORD-' + Date.now(),
-                            transactionId: 'DEMO-TXN-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
-                            items: cart.map(item => ({...item})),
-                            subtotal: subtotal,
-                            shipping: 49,
-                            total: total,
-                            paymentMethod: 'card',
-                            customer: {
-                                name: document.getElementById('namn').value,
-                                address: document.getElementById('adress').value,
-                                postalCode: document.getElementById('postnummer').value,
+                // Create payment intent on your backend
+                const response = await fetch(`${BACKEND_URL}/api/payments/card`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        amount: total * 100, // Stripe expects amount in öre (cents)
+                        currency: 'sek',
+                        customer: {
+                            name: document.getElementById('namn').value,
+                            email: document.getElementById('email').value,
+                            address: {
+                                line1: document.getElementById('adress').value,
+                                postal_code: document.getElementById('postnummer').value,
                                 city: document.getElementById('stad').value,
-                                email: document.getElementById('email').value,
-                                phone: document.getElementById('telefon').value
-                            },
-                            timestamp: new Date().toISOString()
-                        };
+                                country: 'SE'
+                            }
+                        },
+                        items: cart,
+                        metadata: {
+                            orderId: 'ORD-' + Date.now(),
+                            phone: document.getElementById('telefon').value
+                        }
+                    }),
+                });
 
-                        showSuccessMessage(orderData);
-                        
-                        // Clear cart and close
-                        cart = [];
-                        updateCartDisplay();
-                        closeCheckout();
-                        toggleCart();
-                    } else {
-                        showStatusMessage('Demo: Kortbetalningen nekades. Försök igen.', 'error');
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({}));
+                    throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const { clientSecret } = await response.json();
+                
+                showStatusMessage('Behandlar kortbetalning...', 'info');
+
+                // Confirm payment with Stripe
+                const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: {
+                            name: document.getElementById('namn').value,
+                            email: document.getElementById('email').value,
+                            address: {
+                                line1: document.getElementById('adress').value,
+                                postal_code: document.getElementById('postnummer').value,
+                                city: document.getElementById('stad').value,
+                                country: 'SE'
+                            }
+                        }
                     }
-                    
+                });
+
+                if (error) {
+                    console.error('Payment confirmation error:', error);
+                    showStatusMessage(error.message, 'error');
                     setPaymentProcessing(false);
-                }, 2000);
+                    return;
+                }
+
+                if (paymentIntent.status === 'succeeded') {
+                    const orderData = {
+                        orderId: paymentIntent.metadata.orderId || 'ORD-' + Date.now(),
+                        transactionId: paymentIntent.id,
+                        items: cart.map(item => ({...item})),
+                        subtotal: subtotal,
+                        shipping: 49,
+                        total: total,
+                        paymentMethod: 'card',
+                        customer: {
+                            name: document.getElementById('namn').value,
+                            address: document.getElementById('adress').value,
+                            postalCode: document.getElementById('postnummer').value,
+                            city: document.getElementById('stad').value,
+                            email: document.getElementById('email').value,
+                            phone: document.getElementById('telefon').value
+                        },
+                        timestamp: new Date().toISOString()
+                    };
+
+                    showSuccessMessage(orderData);
+                    
+                    // Clear cart and close
+                    cart = [];
+                    updateCartDisplay();
+                    closeCheckout();
+                    toggleCart();
+                } else {
+                    showStatusMessage('Betalningen kunde inte slutföras. Status: ' + paymentIntent.status, 'error');
+                }
+
+                setPaymentProcessing(false);
 
             } catch (error) {
                 console.error('Stripe payment error:', error);
-                showStatusMessage('Ett fel uppstod vid kortbetalningen. Försök igen.', 'error');
+                
+                // Check if it's a network/backend error and provide more helpful feedback
+                if (error.message.includes('fetch') || error.message.includes('Network') || error.message.includes('HTTP')) {
+                    showStatusMessage('Kunde inte ansluta till betalningsservern. Kontrollera din internetanslutning och försök igen.', 'error');
+                } else if (error.message.includes('404')) {
+                    showStatusMessage('Betalnings-endpoint hittades inte. Kontrollera backend-konfigurationen.', 'error');
+                } else if (error.message.includes('500')) {
+                    showStatusMessage('Serverfel på backend. Kontrollera backend-loggarna.', 'error');
+                } else {
+                    showStatusMessage('Ett fel uppstod vid kortbetalningen: ' + error.message, 'error');
+                }
                 setPaymentProcessing(false);
             }
         }
