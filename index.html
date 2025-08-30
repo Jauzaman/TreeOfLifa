@@ -77,7 +77,7 @@
 
         /* ===== Hero ===== */
         .hero { 
-            padding-top: 100px; min-height: 60vh; 
+            padding-top: 100px; min-height: 50vh; 
             display: flex; align-items: center; justify-content: center; 
             text-align: center; 
             background: linear-gradient(135deg, #f8fffe 0%, #e8f5e8 100%); 
@@ -366,7 +366,7 @@
             }
             .nav-links.show { display: flex; }
             .menu-toggle { display: block; }
-            .hero { padding-top: 100px; }
+            .hero { padding-top: 100px; min-height: 40vh; }
             .product-image { height: 180px; }
             .checkout-content { 
                 width: 100%; height: 100%; border-radius: 0; max-height: 100vh; 
@@ -410,13 +410,69 @@
                 <div>
                     <h1>Naturens Rena Skönhet</h1>
                     <p class="subtitle">Upptäck våra handplockade, ekologiska luffasvampar för en naturlig hudvård</p>
-                    <button class="cta-button" onclick="showPage('produkter')">Utforska Produkter</button>
+                    <button class="cta-button" onclick="document.getElementById('products-section').scrollIntoView({ behavior: 'smooth' })">Utforska Produkter</button>
                 </div>
             </div>
 
             <section class="section">
                 <h2>Varför Välja TreeOfLifa?</h2>
                 <p>Vi tror på naturens kraft att vårda och förnya din hud. Våra luffasvampar odlas med kärlek och respekt för miljön, vilket ger dig den bästa naturliga exfolieringen för en strålande, hälsosam hy.</p>
+            </section>
+
+            <!-- Products Section on Homepage -->
+            <section id="products-section" class="section">
+                <h2>Vårt Naturliga Sortiment</h2>
+                <p>Upptäck vår exklusiva kollektion av handplockade, ekologiska luffasvampar. Varje produkt är noggrant utvald för att ge dig den bästa naturliga exfolieringen.</p>
+
+                <div class="products-grid">
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4031.JPG" alt="Mindre Lifah" />
+                        </div>
+                        <div class="product-info">
+                            <h3>Mindre Lifah</h3>
+                            <p>Vår populäraste luffasvamp, lite kompaktare, perfekt för daglig användning.</p>
+                            <div class="price">50 kr</div>
+                            <button class="buy-button" onclick="addToCart('Mindre Lifah', 50)">Lägg i kundvagn</button>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG" alt="Större Lifah" />
+                        </div>                     
+                        <div class="product-info">
+                            <h3>Större Lifah</h3>
+                            <p>Extra tjock och hållbar luffasvamp för djup rengöring.</p>
+                            <div class="price">75 kr</div>
+                            <button class="buy-button" onclick="addToCart('Större Lifah', 75)">Lägg i kundvagn</button>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG" alt="Aleppotvål" />
+                        </div>
+                        <div class="product-info">
+                            <h3>Aleppotvål</h3>
+                            <p>En mild 100% naturlig tvål som är gjord på ett urgammalt recept.</p>
+                            <div class="price">50 kr</div>
+                            <button class="buy-button" onclick="addToCart('Aleppotvål', 50)">Lägg i kundvagn</button>
+                        </div>
+                    </div>
+
+                    <div class="product-card">
+                        <div class="product-image">
+                            <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png" alt="Presentset" />
+                        </div>
+                        <div class="product-info">
+                            <h3>Presentset</h3>
+                            <p>Komplett set i en fin presentask, perfekt som gåva.</p>
+                            <div class="price">145 kr</div>
+                            <button class="buy-button" onclick="addToCart('Presentset', 145)">Lägg i kundvagn</button>
+                        </div>
+                    </div>
+                </div>
             </section>
         </section>
 
@@ -606,7 +662,7 @@
         let clientSecret = null;
 
         // ===== Configuration =====
-        const STRIPE_PUBLISHABLE_KEY = "pk_test_51QMaGPQ2W4lqdp6blnxdZ4PI582jLSsnjDznejPKX3wSDDQ8PKEQVaZnqPeY22L0pekbSN7nyAt05B7OKqDDPyeg00QM3TiCAA";
+        const STRIPE_PUBLISHABLE_KEY = "pk_live_51QMaGPQ2W4lqdp6bGjycLPoHe8MU18dxSB1Cl24PjI4Asb17IGeSg8ShrOlg1uGOcHPzgiWBh5YCit6dpcDRcjET00rHmOAljm";
         const BACKEND_URL = 'https://tree-of-lifa.vercel.app';
         
         // Development mode - set to true for testing without backend
