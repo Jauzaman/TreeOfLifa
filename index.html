@@ -704,61 +704,106 @@
         }
 
         // ===== Email Functions =====
-        async function sendOrderEmails(orderData) {
-            try {
-                // Kontrollera att EmailJS är konfigurerat
-                if (EMAILJS_CONFIG.PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
-                    console.warn('EmailJS inte konfigurerat - ingen email skickas');
-                    showStatusMessage('Beställning mottagen! (Email-konfiguration saknas)', 'info');
-                    return;
-                }
+       async function sendOrderEmails(orderData) {
+    try {
+        // Kontrollera att EmailJS är konfigurerat
+        if (EMAILJS_CONFIG.PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
+            console.warn('EmailJS inte konfigurerat - ingen email skickas');
+            showStatusMessage('Beställning mottagen! (Email-konfiguration saknas)', 'info');
+            return;
+        }
 
-                const itemsList = orderData.items.map(item => 
-                    `${item.name} x ${item.quantity} (${item.price * item.quantity} kr)`
-                ).join('\n');
+        // Validera orderData
+        if (!orderData || !orderData.items || !orderData.customer) {
+            throw new Error('Ofullständig orderdata');
+        }
 
-                // Email till butiksägaren
-                const ownerEmailData = {
-                    to_email: 'tree.of.liifa@gmail.com',
-                    order_id: orderData.orderId,
-                    customer_name: orderData.customer.name,
-                    customer_email: orderData.customer.email,
-                    customer_phone: orderData.customer.phone,
-                    customer_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
-                    order_items: itemsList,
-                    order_total: orderData.total + ' kr',
-                    payment_method: orderData.paymentMethod.toUpperCase(),
-                    order_date: new Date().toLocaleString('sv-SE'),
-                    transaction_id: orderData.transactionId || 'Ej tillämpligt'
-                };
+        const itemsList = orderData.items.map(item => 
+            `${item.name} x ${item.quantity} (${item.price * item.quantity} kr)`
+        ).join('\n');
 
-                // Email till kunden
-                const customerEmailData = {
-                    to_email: orderData.customer.email,
-                    customer_name: orderData.customer.name,
-                    order_id: orderData.orderId,
-                    order_items: itemsList,
-                    order_total: orderData.total + ' kr',
-                    payment_method: orderData.paymentMethod === 'swish' ? 'Swish' : 'Kortbetalning',
-                    shipping_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
-                    swish_number: orderData.paymentMethod === 'swish' ? '123 164 91 77' : '',
-                    swish_reference: orderData.paymentMethod === 'swish' ? orderData.orderId : ''
-                };
+        // EXAKT data som matchar EmailJS templates
+        const ownerEmailData = {
+            to_email: 'tree.of.liifa@gmail.com',
+            order_id: orderData.orderId,
+            customer_name: orderData.customer.name,
+            customer_email: orderData.customer.email,
+            customer_phone: orderData.customer.phone,
+            customer_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
+            order_items: itemsList,
+            order_total: orderData.total + ' kr',
+            payment_method: orderData.paymentMethod.toUpperCase(),
+            order_date: new Date().toLocaleString('sv-SE'),
+            transaction_id: orderData.transactionId || 'Ej tillämpligt'
+        };
 
-                // Skicka emails parallellt
-                await Promise.all([
-                    emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.OWNER_TEMPLATE_ID, ownerEmailData),
-                    emailjs.send(EMAILJS_CONFIG.SERVICE_ID, EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID, customerEmailData)
-                ]);
+        const customerEmailData = {
+            to_email: orderData.customer.email,
+            customer_name: orderData.customer.name,
+            order_id: orderData.orderId,
+            order_items: itemsList,
+            order_total: orderData.total + ' kr',
+            payment_method: orderData.paymentMethod === 'swish' ? 'Swish' : 'Kortbetalning',
+            shipping_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
+            order_date: new Date().toLocaleString('sv-SE'),
+            // Endast för Swish
+            swish_number: orderData.paymentMethod === 'swish' ? '123 164 91 77' : '',
+            swish_reference: orderData.paymentMethod === 'swish' ? orderData.orderId : ''
+        };
 
-                console.log('Emails skickade framgångsrikt');
-                showStatusMessage('Beställning skickad! Bekräftelse-email skickat.', 'info');
+        console.log('Skickar emails med data:', {
+            ownerData: ownerEmailData,
+            customerData: customerEmailData
+        });
 
-            } catch (error) {
-                console.error('Email error:', error);
+        // Skicka emails med fördröjning för att undvika rate limit
+        try {
+            // Email till butiksägare först
+            const ownerResult = await emailjs.send(
+                EMAILJS_CONFIG.SERVICE_ID, 
+                EMAILJS_CONFIG.OWNER_TEMPLATE_ID, 
+                ownerEmailData
+            );
+            console.log('Ägar-email skickat:', ownerResult);
+
+            // Vänta 2 sekunder för att undvika rate limit
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Email till kund
+            const customerResult = await emailjs.send(
+                EMAILJS_CONFIG.SERVICE_ID, 
+                EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID, 
+                customerEmailData
+            );
+            console.log('Kund-email skickat:', customerResult);
+
+            showStatusMessage('Beställning skickad! Bekräftelse-email skickat.', 'info');
+
+        } catch (emailError) {
+            console.error('EmailJS fel:', emailError);
+            
+            // Specifik felhantering baserat på status
+            if (emailError.status === 400) {
+                console.error('Status 400: Kontrollera template-variabler och data-format');
+                showStatusMessage('Beställning mottagen, men kunde inte skicka bekräftelse-email (datafel).', 'info');
+            } else if (emailError.status === 418) {
+                console.error('Status 418: Rate limit eller ogiltigt Service/Template ID');
+                showStatusMessage('Beställning mottagen, men kunde inte skicka bekräftelse-email (servertrafik).', 'info');
+            } else if (emailError.status === 403) {
+                console.error('Status 403: Ogiltig Public Key eller otillåten domän');
+                showStatusMessage('Beställning mottagen, men kunde inte skicka bekräftelse-email (behörighetsfel).', 'info');
+            } else {
+                console.error('Okänt EmailJS fel:', emailError);
                 showStatusMessage('Beställning mottagen, men kunde inte skicka bekräftelse-email.', 'info');
             }
         }
+
+    } catch (error) {
+        console.error('Allmänt email-fel:', error);
+        showStatusMessage('Beställning mottagen, men kunde inte skicka bekräftelse-email.', 'info');
+    }
+}
+
 
         // ===== Stripe Initialization =====
         async function initializeStripe() {
@@ -1344,6 +1389,34 @@
 
             console.log('TreeOfLifa website fully loaded');
         });
+        // Lägg till dessa efter din andra JavaScript-kod
+async function testEmailJS() {
+    console.log('Testar EmailJS...');
+    
+    const testData = {
+        to_email: 'tree.of.liifa@gmail.com',
+        order_id: 'TEST-' + Date.now(),
+        customer_name: 'Test Kund',
+        customer_email: 'din-egen-email@example.com', // Byt till din email
+        order_items: 'Test Produkt x1 (50 kr)',
+        order_total: '99 kr',
+        payment_method: 'TEST',
+        order_date: new Date().toLocaleString('sv-SE')
+    };
+
+    try {
+        const result = await emailjs.send(
+            EMAILJS_CONFIG.SERVICE_ID,
+            EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID,
+            testData
+        );
+        console.log('Test lyckades:', result);
+        alert('Test email skickat!');
+    } catch (error) {
+        console.error('Test misslyckades:', error);
+        alert(`Fel: ${error.status} - ${error.text}`);
+    }
+}
     </script>
 </body>
 </html>
