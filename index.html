@@ -704,7 +704,7 @@
         }
 
         // ===== Email Functions =====
-       async function sendOrderEmails(orderData) {
+      async function sendOrderEmails(orderData) {
     try {
         // Kontrollera att EmailJS är konfigurerat
         if (EMAILJS_CONFIG.PUBLIC_KEY === 'YOUR_PUBLIC_KEY') {
@@ -722,65 +722,64 @@
             `${item.name} x ${item.quantity} (${item.price * item.quantity} kr)`
         ).join('\n');
 
-        // EXAKT data som matchar EmailJS templates
-       const ownerEmailData = {
-    email: 'tree.of.liifa@gmail.com',  // ✅ RÄTT!
-    order_id: orderData.orderId,
-    customer_name: orderData.customer.name,
-    customer_email: orderData.customer.email,
-    customer_phone: orderData.customer.phone,
-    customer_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
-    order_items: itemsList,
-    order_total: orderData.total + ' kr',
-    payment_method: orderData.paymentMethod.toUpperCase(),
-    order_date: new Date().toLocaleString('sv-SE'),
-    transaction_id: orderData.transactionId || 'Ej tillämpligt'
-};
+        // Email till ägaren - KORRIGERAT
+        const ownerEmailData = {
+            email: 'tree.of.liifa@gmail.com',
+            order_id: orderData.orderId,
+            customer_name: orderData.customer.name,
+            customer_email: orderData.customer.email,
+            customer_phone: orderData.customer.phone,
+            customer_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
+            order_items: itemsList,
+            order_total: orderData.total + ' kr',
+            payment_method: orderData.paymentMethod.toUpperCase(),
+            order_date: new Date().toLocaleString('sv-SE'),
+            transaction_id: orderData.transactionId || 'Ej tillämpligt'
+        };
 
+        // Email till kunden - KORRIGERAT
         const customerEmailData = {
-    email: orderData.customer.email,  // EN rad, med komma
-    customer_name: orderData.customer.name,  // Du saknade detta
-    order_id: orderData.orderId,
-    order_items: itemsList,
-    order_total: orderData.total + ' kr',
-    payment_method: orderData.paymentMethod === 'swish' ? 'Swish' : 'Kortbetalning',
-    shipping_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
-    order_date: new Date().toLocaleString('sv-SE'),
-    // Endast för Swish
-    swish_number: orderData.paymentMethod === 'swish' ? '123 164 91 77' : '',
-    swish_reference: orderData.paymentMethod === 'swish' ? orderData.orderId : ''
-};
+            email: orderData.customer.email,
+            customer_name: orderData.customer.name,
+            order_id: orderData.orderId,
+            order_items: itemsList,
+            order_total: orderData.total + ' kr',
+            payment_method: orderData.paymentMethod === 'swish' ? 'Swish' : 'Kortbetalning',
+            shipping_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
+            order_date: new Date().toLocaleString('sv-SE'),
+            swish_number: orderData.paymentMethod === 'swish' ? '123 164 91 77' : '',
+            swish_reference: orderData.paymentMethod === 'swish' ? orderData.orderId : ''
+        };
 
         console.log('Skickar emails med data:', {
             ownerData: ownerEmailData,
             customerData: customerEmailData
         });
 
-        // Skicka emails med fördröjning för att undvika rate limit
         try {
-            // Email till butiksägare först
-            const result = await emailjs.send(
-    EMAILJS_CONFIG.SERVICE_ID,
-    EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID,
-    testData,
-    {
-        publicKey: EMAILJS_CONFIG.PUBLIC_KEY,
-    }
-);
+            // Email till butiksägare först - KORRIGERADE VARIABELNAMN
+            const ownerResult = await emailjs.send(
+                EMAILJS_CONFIG.SERVICE_ID,
+                EMAILJS_CONFIG.OWNER_TEMPLATE_ID,  // OWNER template för ägaren!
+                ownerEmailData,
+                {
+                    publicKey: EMAILJS_CONFIG.PUBLIC_KEY,
+                }
+            );
             console.log('Ägar-email skickat:', ownerResult);
 
             // Vänta 2 sekunder för att undvika rate limit
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // Email till kund
-            const result = await emailjs.send(
-    EMAILJS_CONFIG.SERVICE_ID,
-    EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID,
-    testData,
-    {
-        publicKey: EMAILJS_CONFIG.PUBLIC_KEY,
-    }
-);
+            // Email till kund - KORRIGERADE VARIABELNAMN
+            const customerResult = await emailjs.send(
+                EMAILJS_CONFIG.SERVICE_ID,
+                EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID,  // CUSTOMER template för kunden!
+                customerEmailData,
+                {
+                    publicKey: EMAILJS_CONFIG.PUBLIC_KEY,
+                }
+            );
             console.log('Kund-email skickat:', customerResult);
 
             showStatusMessage('Beställning skickad! Bekräftelse-email skickat.', 'info');
