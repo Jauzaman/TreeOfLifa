@@ -12,7 +12,7 @@
     <script src="https://www.paypal.com/sdk/js?client-id=BAA7xmM7_mZzcFjQ7TqjlWwvEYrMw0KYVJPdDT-jGnlRHJqJHKh_vOBJOu29cClq-jN10lW-q4yHnyKIcw&currency=SEK"></script>
 
     <!-- EmailJS SDK -->
-    <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
     <style>
         /* ===== Reset & Base ===== */
@@ -738,8 +738,8 @@
         };
 
         const customerEmailData = {
-            to_email: orderData.customer.email,
-            customer_name: orderData.customer.name,
+            email: 'tree.of.liifa@gmail.com'
+email: orderData.customer.email
             order_id: orderData.orderId,
             order_items: itemsList,
             order_total: orderData.total + ' kr',
@@ -759,22 +759,28 @@
         // Skicka emails med fördröjning för att undvika rate limit
         try {
             // Email till butiksägare först
-            const ownerResult = await emailjs.send(
-                EMAILJS_CONFIG.SERVICE_ID, 
-                EMAILJS_CONFIG.OWNER_TEMPLATE_ID, 
-                ownerEmailData
-            );
+            const result = await emailjs.send(
+    EMAILJS_CONFIG.SERVICE_ID,
+    EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID,
+    testData,
+    {
+        publicKey: EMAILJS_CONFIG.PUBLIC_KEY,
+    }
+);
             console.log('Ägar-email skickat:', ownerResult);
 
             // Vänta 2 sekunder för att undvika rate limit
             await new Promise(resolve => setTimeout(resolve, 2000));
 
             // Email till kund
-            const customerResult = await emailjs.send(
-                EMAILJS_CONFIG.SERVICE_ID, 
-                EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID, 
-                customerEmailData
-            );
+            const result = await emailjs.send(
+    EMAILJS_CONFIG.SERVICE_ID,
+    EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID,
+    testData,
+    {
+        publicKey: EMAILJS_CONFIG.PUBLIC_KEY,
+    }
+);
             console.log('Kund-email skickat:', customerResult);
 
             showStatusMessage('Beställning skickad! Bekräftelse-email skickat.', 'info');
@@ -1357,7 +1363,9 @@
             // Initiera EmailJS
             try {
                 if (EMAILJS_CONFIG.PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
-                    emailjs.init(EMAILJS_CONFIG.PUBLIC_KEY);
+                    emailjs.init({
+    publicKey: 'YWbtKc2OQUYDxl7j5',
+});
                     console.log('EmailJS initialized');
                 } else {
                     console.warn('⚠️ EmailJS inte konfigurerat - uppdatera EMAILJS_CONFIG');
@@ -1406,10 +1414,13 @@ async function testEmailJS() {
 
     try {
         const result = await emailjs.send(
-            EMAILJS_CONFIG.SERVICE_ID,
-            EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID,
-            testData
-        );
+    EMAILJS_CONFIG.SERVICE_ID,
+    EMAILJS_CONFIG.CUSTOMER_TEMPLATE_ID,
+    testData,
+    {
+        publicKey: EMAILJS_CONFIG.PUBLIC_KEY,
+    }
+);
         console.log('Test lyckades:', result);
         alert('Test email skickat!');
     } catch (error) {
