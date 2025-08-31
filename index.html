@@ -723,33 +723,33 @@
         ).join('\n');
 
         // EXAKT data som matchar EmailJS templates
-        const ownerEmailData = {
-            to_email: 'tree.of.liifa@gmail.com',
-            order_id: orderData.orderId,
-            customer_name: orderData.customer.name,
-            customer_email: orderData.customer.email,
-            customer_phone: orderData.customer.phone,
-            customer_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
-            order_items: itemsList,
-            order_total: orderData.total + ' kr',
-            payment_method: orderData.paymentMethod.toUpperCase(),
-            order_date: new Date().toLocaleString('sv-SE'),
-            transaction_id: orderData.transactionId || 'Ej tillämpligt'
-        };
+       const ownerEmailData = {
+    email: 'tree.of.liifa@gmail.com',  // ✅ RÄTT!
+    order_id: orderData.orderId,
+    customer_name: orderData.customer.name,
+    customer_email: orderData.customer.email,
+    customer_phone: orderData.customer.phone,
+    customer_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
+    order_items: itemsList,
+    order_total: orderData.total + ' kr',
+    payment_method: orderData.paymentMethod.toUpperCase(),
+    order_date: new Date().toLocaleString('sv-SE'),
+    transaction_id: orderData.transactionId || 'Ej tillämpligt'
+};
 
         const customerEmailData = {
-            email: 'tree.of.liifa@gmail.com'
-email: orderData.customer.email
-            order_id: orderData.orderId,
-            order_items: itemsList,
-            order_total: orderData.total + ' kr',
-            payment_method: orderData.paymentMethod === 'swish' ? 'Swish' : 'Kortbetalning',
-            shipping_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
-            order_date: new Date().toLocaleString('sv-SE'),
-            // Endast för Swish
-            swish_number: orderData.paymentMethod === 'swish' ? '123 164 91 77' : '',
-            swish_reference: orderData.paymentMethod === 'swish' ? orderData.orderId : ''
-        };
+    email: orderData.customer.email,  // EN rad, med komma
+    customer_name: orderData.customer.name,  // Du saknade detta
+    order_id: orderData.orderId,
+    order_items: itemsList,
+    order_total: orderData.total + ' kr',
+    payment_method: orderData.paymentMethod === 'swish' ? 'Swish' : 'Kortbetalning',
+    shipping_address: `${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}`,
+    order_date: new Date().toLocaleString('sv-SE'),
+    // Endast för Swish
+    swish_number: orderData.paymentMethod === 'swish' ? '123 164 91 77' : '',
+    swish_reference: orderData.paymentMethod === 'swish' ? orderData.orderId : ''
+};
 
         console.log('Skickar emails med data:', {
             ownerData: ownerEmailData,
@@ -1402,15 +1402,15 @@ async function testEmailJS() {
     console.log('Testar EmailJS...');
     
     const testData = {
-        to_email: 'tree.of.liifa@gmail.com',
-        order_id: 'TEST-' + Date.now(),
-        customer_name: 'Test Kund',
-        customer_email: 'din-egen-email@example.com', // Byt till din email
-        order_items: 'Test Produkt x1 (50 kr)',
-        order_total: '99 kr',
-        payment_method: 'TEST',
-        order_date: new Date().toLocaleString('sv-SE')
-    };
+    email: 'tree.of.liifa@gmail.com',  // ✅ RÄTT!
+    order_id: 'TEST-' + Date.now(),
+    customer_name: 'Test Kund',
+    customer_email: 'din-egen-email@example.com',
+    order_items: 'Test Produkt x1 (50 kr)',
+    order_total: '99 kr',
+    payment_method: 'TEST',
+    order_date: new Date().toLocaleString('sv-SE')
+};
 
     try {
         const result = await emailjs.send(
