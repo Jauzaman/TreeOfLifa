@@ -826,7 +826,7 @@
 
                 console.log('Creating payment intent:', paymentData);
 
-                const response = await fetch(`${API_BASE_URL}/create-payment-intent`, {
+                const response = await fetch(`${API_BASE_URL}/api/create-payment-intent`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(paymentData)
