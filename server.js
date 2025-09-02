@@ -52,7 +52,7 @@ app.use((req, res, next) => {
 let inventory = {
     'Mindre Lifah': { stock: 25, reserved: 0 },
     'Större Lifah': { stock: 15, reserved: 0 },
-    'Aleppotvål': { stock: 0, reserved: 0 },
+    'Aleppotvål': { stock: 30, reserved: 0 },
     'Presentset': { stock: 10, reserved: 0 }
 };
 
