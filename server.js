@@ -25,6 +25,11 @@ console.log('✅ Stripe konfigurerad med key:', process.env.STRIPE_SECRET_KEY.su
 // Skapa Express-app
 const app = express();
 
+// Serve static frontend files from root and images folders
+app.use(express.static(path.join(__dirname, '.')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/imagess', express.static(path.join(__dirname, 'imagess')));
+
 // CORS-konfiguration
 const corsOptions = {
     origin: [
