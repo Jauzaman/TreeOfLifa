@@ -28,6 +28,9 @@ Thumbs.db
 *.swo
 *~
 
+# Prevent committing real frontend config
+config.js
+
 # IDE
 .vscode/
 .idea/
