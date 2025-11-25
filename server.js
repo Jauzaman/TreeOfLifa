@@ -34,6 +34,8 @@ app.use('/imagess', express.static(path.join(__dirname, 'imagess')));
 const corsOptions = {
     origin: [
         'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
         'http://localhost:3000',
         'http://127.0.0.1:5500'
     ],
