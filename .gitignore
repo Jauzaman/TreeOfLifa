@@ -1,21 +1,3 @@
-# Environment Variables - NEVER commit these!
-.env
-.env.*
-!.env.example
-
-# Security Keys
-*.pem
-*.key
-*.cert
-*.p12
-
-# Sensitive Data Files
-inventory.json
-orders.json
-logs/
-*.log
-
-# Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
