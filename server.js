@@ -25,10 +25,7 @@ console.log('✅ Stripe konfigurerad med key:', process.env.STRIPE_SECRET_KEY.su
 // Skapa Express-app
 const app = express();
 
-// Serve static frontend files from root and images folders
-app.use(express.static(path.join(__dirname, '.')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
-app.use('/imagess', express.static(path.join(__dirname, 'imagess')));
+// ...existing code...
 
 // CORS-konfiguration
 const corsOptions = {
@@ -272,7 +269,7 @@ app.post('/api/inventory/update', rateLimit(5, 60000), (req, res) => {
 // ----- BETALNINGS-API ENDPOINTS ----- //
 
 // UPPDATERAD: Payment Intent med lagerreservation - Rate limited
-app.post("/create-payment-intent", rateLimit(10, 60000), async (req, res) => {
+app.post("/api/create-payment-intent", rateLimit(10, 60000), async (req, res) => {
     try {
         const { amount, currency, customer, items, metadata } = req.body;
 
@@ -738,5 +735,10 @@ loadInventory().then(() => {
         });
     });
 });
+
+// Serve static frontend files from root and images folders (after API routes)
+app.use(express.static(path.join(__dirname, '.')));
+app.use('/images', express.static(path.join(__dirname, 'images')));
+app.use('/imagess', express.static(path.join(__dirname, 'imagess')));
 
 module.exports = app;

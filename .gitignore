@@ -28,6 +28,9 @@ Thumbs.db
 *.swo
 *~
 
+# Prevent committing frontend secrets
+config.js
+
 # Prevent committing real frontend config
 config.js
 
