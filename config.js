@@ -6,5 +6,5 @@ window.APP_CONFIG = {
     STRIPE_PUBLISHABLE_KEY: '{{STRIPE_PUBLISHABLE_KEY}}',
     PAYPAL_CLIENT_ID: '{{PAYPAL_CLIENT_ID}}',
     API_BASE_URL: 'https://treeoflifa-production.up.railway.app',
-    APP_URL: 'https://treeoflifa-production.up.railway.app'
+    APP_URL: 'https://treeoflifa.se'
 };
