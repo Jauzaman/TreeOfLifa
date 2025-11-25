@@ -204,7 +204,7 @@ function completeOrder(reservedItems) {
 }
 
 // Konfigurera Gmail SMTP transport
-const transporter = nodemailer.createTransporter({
+const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
         user: 'tree.of.liifa@gmail.com',
