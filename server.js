@@ -9,6 +9,9 @@ const nodemailer = require("nodemailer");
 const fs = require('fs').promises;
 const path = require('path');
 
+// Simple rate limiting (in-memory - for production use Redis)
+const rateLimitMap = new Map();
+
 // Validera miljövariabler
 if (!process.env.STRIPE_SECRET_KEY) {
     console.error('⚠ STRIPE_SECRET_KEY är inte definierad i .env filen');
@@ -41,6 +44,53 @@ app.use('/webhook', express.raw({ type: 'application/json' }));
 
 // Vanlig JSON middleware för andra routes
 app.use(express.json({ limit: '10mb' }));
+
+// Security headers middleware
+app.use((req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+});
+
+// Simple rate limiting middleware
+function rateLimit(maxRequests, windowMs) {
+    return (req, res, next) => {
+        const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const now = Date.now();
+        
+        if (!rateLimitMap.has(ip)) {
+            rateLimitMap.set(ip, []);
+        }
+        
+        const requests = rateLimitMap.get(ip).filter(time => now - time < windowMs);
+        
+        if (requests.length >= maxRequests) {
+            return res.status(429).json({ 
+                error: 'För många förfrågningar. Försök igen senare.',
+                type: 'rate_limit_exceeded'
+            });
+        }
+        
+        requests.push(now);
+        rateLimitMap.set(ip, requests);
+        next();
+    };
+}
+
+// Clean up rate limit map every hour
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, requests] of rateLimitMap.entries()) {
+        const validRequests = requests.filter(time => now - time < 3600000);
+        if (validRequests.length === 0) {
+            rateLimitMap.delete(ip);
+        } else {
+            rateLimitMap.set(ip, validRequests);
+        }
+    }
+}, 3600000);
 
 // Logging middleware
 app.use((req, res, next) => {
@@ -180,14 +230,18 @@ app.get('/api/inventory', (req, res) => {
     res.json(publicInventory);
 });
 
-// Uppdatera lager (admin endpoint)
-app.post('/api/inventory/update', (req, res) => {
+// Uppdatera lager (admin endpoint) - Protected with rate limiting
+app.post('/api/inventory/update', rateLimit(5, 60000), (req, res) => {
     try {
         const { productName, newStock, adminKey } = req.body;
         
         // Enkel admin-autentisering (i produktion: använd proper auth)
         if (adminKey !== process.env.ADMIN_KEY) {
-            return res.status(401).json({ error: 'Ogiltig admin-nyckel' });
+            // Add delay to prevent brute force
+            setTimeout(() => {
+                return res.status(401).json({ error: 'Ogiltig admin-nyckel' });
+            }, 2000);
+            return;
         }
         
         if (!inventory[productName]) {
@@ -210,8 +264,8 @@ app.post('/api/inventory/update', (req, res) => {
 
 // ----- BETALNINGS-API ENDPOINTS ----- //
 
-// UPPDATERAD: Payment Intent med lagerreservation
-app.post("/create-payment-intent", async (req, res) => {
+// UPPDATERAD: Payment Intent med lagerreservation - Rate limited
+app.post("/create-payment-intent", rateLimit(10, 60000), async (req, res) => {
     try {
         const { amount, currency, customer, items, metadata } = req.body;
 
@@ -317,8 +371,8 @@ app.post("/create-payment-intent", async (req, res) => {
     }
 });
 
-// UPPDATERAD: Hantera beställningar med lagerhantering
-app.post('/api/orders', async (req, res) => {
+// UPPDATERAD: Hantera beställningar med lagerhantering - Rate limited
+app.post('/api/orders', rateLimit(10, 60000), async (req, res) => {
     try {
         const orderData = req.body;
         
