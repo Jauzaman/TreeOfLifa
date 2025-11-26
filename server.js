@@ -269,7 +269,7 @@ app.post('/api/inventory/update', rateLimit(5, 60000), (req, res) => {
 // ----- BETALNINGS-API ENDPOINTS ----- //
 
 // UPPDATERAD: Payment Intent med lagerreservation
-app.post("/create-payment-intent", async (req, res) => {
+app.post("/api/create-payment-intent", async (req, res) => {
     try {
         const { amount, currency, customer, items, metadata } = req.body;
 
