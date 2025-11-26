@@ -957,19 +957,20 @@
                     <input type="tel" id="telefon" name="telefon" placeholder="Telefon" style="margin-top: 0.5rem;" required />
                 </div>
 
+
                 <div class="payment-methods">
                     <h3 style="margin-bottom: 0.6rem;">Välj betalmetod</h3>
-
-                    <div class="payment-method" onclick="selectPayment('card')">
-                        <input type="radio" name="payment" value="card">
-                        <span>💳</span>
-                        <div><strong>Kortbetalning</strong><br><small>Betala säkert med kort (LIVE)</small></div>
-                    </div>
-
-                    <div class="payment-method" onclick="selectPayment('swish')">
-                        <input type="radio" name="payment" value="swish">
-                        <span>📱</span>
-                        <div><strong>Swish</strong><br><small>Betala med Swish - 123 164 91 77</small></div>
+                    <div id="payment-methods-container">
+                        <div class="payment-method" onclick="selectPayment('card')">
+                            <input type="radio" name="payment" value="card" disabled>
+                            <span>💳</span>
+                            <div><strong>Kortbetalning</strong><br><small>Betala säkert med kort (LIVE)</small></div>
+                        </div>
+                        <div class="payment-method" onclick="selectPayment('swish')">
+                            <input type="radio" name="payment" value="swish" disabled>
+                            <span>📱</span>
+                            <div><strong>Swish</strong><br><small>Betala med Swish - 123 164 91 77</small></div>
+                        </div>
                     </div>
                 </div>
 
@@ -1860,10 +1861,51 @@
         // ===== Event Listeners =====
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('TreeOfLifa website loaded');
-            
-            // Ladda lager först
             await loadInventory();
-            
+
+            // Step 1: Enable payment methods only after customer info is valid
+            const requiredFields = ['namn', 'adress', 'postnummer', 'stad', 'email', 'telefon'];
+            const paymentInputs = document.querySelectorAll('.payment-method input[type="radio"]');
+
+            function validateSwedishFields() {
+                const name = document.getElementById('namn').value.trim();
+                const address = document.getElementById('adress').value.trim();
+                const postnummer = document.getElementById('postnummer').value.trim();
+                const stad = document.getElementById('stad').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const telefon = document.getElementById('telefon').value.trim();
+
+                // Swedish phone: 0700000000 or 073-1234567
+                const phoneRegex = /^(07[0236]\d{7}|07[0236]-\d{6,7})$/;
+                // Swedish address: e.g. Klimpvägen 35
+                const addressRegex = /^[A-Za-zÅÄÖåäö\s]+\s\d+[A-Za-z]?$/;
+                // Name: at least 2 chars
+                const nameValid = name.length >= 2;
+                const addressValid = addressRegex.test(address);
+                const postnummerValid = /^\d{5}$/.test(postnummer);
+                const stadValid = stad.length >= 2;
+                const emailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+                const telefonValid = phoneRegex.test(telefon);
+
+                return nameValid && addressValid && postnummerValid && stadValid && emailValid && telefonValid;
+            }
+
+            function updatePaymentMethodState() {
+                const valid = validateSwedishFields();
+                paymentInputs.forEach(input => {
+                    input.disabled = !valid;
+                });
+            }
+
+            requiredFields.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', updatePaymentMethodState);
+                }
+            });
+
+            updatePaymentMethodState();
+
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
                     if (document.getElementById('checkout-modal').classList.contains('show')) {
@@ -1877,7 +1919,6 @@
             document.addEventListener('click', function(event) {
                 const nav = document.getElementById('nav-links');
                 const menuToggle = document.getElementById('menu-toggle');
-                
                 if (nav && nav.classList.contains('show') && 
                     !nav.contains(event.target) && 
                     event.target !== menuToggle) {
@@ -1885,9 +1926,7 @@
                 }
             });
 
-            // Uppdatera lager var 30:e sekund
             setInterval(loadInventory, 30000);
-
             console.log('TreeOfLifa website fully loaded with live payments and inventory system');
         });
     </script>
