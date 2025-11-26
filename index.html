@@ -858,12 +858,12 @@
     <!-- Header -->
     <header>
         <nav>
-            <div class="logo" id="logo-nav">TreeOfLifa</div>
+            <div class="logo" onclick="showPage('hem')">TreeOfLifa</div>
 
             <ul class="nav-links" id="nav-links">
-                <li><a href="#" id="nav-hem">Hem</a></li>
-                <li><a href="#" id="nav-om-oss">Om oss</a></li>
-                <li><a href="#" id="nav-produkter">Produkter</a></li>
+                <li><a onclick="showPage('hem')">Hem</a></li>
+                <li><a onclick="showPage('om-oss')">Om oss</a></li>
+                <li><a onclick="showPage('produkter')">Produkter</a></li>
             </ul>
 
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -995,23 +995,40 @@
 
                 <div id="payment-loading" class="payment-loading">
                     <div class="spinner"></div>
-                    <!-- Move main JS logic to end of body for global scope -->
-    <script>
-        // Produktdata (metadata - priserna och bilder)
-        const PRODUCTS = {
-            'Aleppotvål': {
-                price: 70,
-                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG',
-                description: 'En mild 100% naturlig tvål som är gjord på ett urgammalt recept.'
-            },
-            'Presentset': {
-                price: 145,
-                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png',
-                description: 'Komplett set i en fin presentask, perfekt som gåva.'
-            }
-            // Lägg till fler produkter här om nödvändigt
-        };
+                    <div>Behandlar betalning...</div>
+                </div>
 
+                <div style="margin-top: 1rem; padding: 0.9rem; background: #f8fffe; border-radius: 10px;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span>Produkter:</span>
+                        <span id="checkout-subtotal">0 kr</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem;">
+                        <span>Frakt:</span>
+                        <span>49 kr</span>
+                    </div>
+                    <hr style="border: none; height: 1px; background: #e8e8e8; margin: 0.6rem 0;">
+                    <div style="display: flex; justify-content: space-between; font-weight: 700;">
+                        <span>Totalt:</span>
+                        <span id="checkout-total">49 kr</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="order-button" id="submit-button" style="margin-top: 1rem;">Slutför beställning</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <h3 style="color: #7fb069; margin-bottom: 0.6rem;">TreeOfLifa</h3>
+            <p>Naturlig skönhet, hållbar framtid</p>
+            <p style="margin-top: 0.4rem;">Kontakta oss: tree.of.liifa@gmail.com</p>
+        </div>
+    </footer>
+
+    <script>
         // ===== KONFIGURATION =====
         // Load from config file - These values should be set during build/deployment
         const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || 'treeoflifa-production.up.railway.app';
@@ -1019,7 +1036,9 @@
         const PAYPAL_CLIENT_ID = window.APP_CONFIG?.PAYPAL_CLIENT_ID || '';
 
         // Security check - Ensure keys are configured
-        if (!STRIPE_PUBLISHABLE_KEY || STRIPE_PUBLISHABLE_KEY.includes('{{')) {/* Lines 1040-1041 omitted */}
+        if (!STRIPE_PUBLISHABLE_KEY || STRIPE_PUBLISHABLE_KEY.includes('{{')) {
+            console.error('⚠️ SECURITY WARNING: Stripe key not properly configured!');
+        }
 
         // ===== Global State =====
         let cart = [];
@@ -1033,86 +1052,47 @@
         let clientSecret = null;
         let reservationId = null;
 
-        // ===== Utility Functions =====
-        function escapeHtml(text) {/* Lines 1099-1103 omitted */}
-
-        function showStatusMessage(message, type = 'info') {/* Lines 1106-1116 omitted */}
-
-        function showLoadingIndicator(show = true) {/* Lines 1119-1135 omitted */}
-
-        // ===== API Functions =====
-        async function loadInventory() {/* Lines 1139-1160 omitted */}
-
-        // ===== Product Rendering =====
-        function renderProducts() {/* Lines 1164-1209 omitted */}
-
-        // ===== Stripe Initialization =====
-        async function initializeStripe() {/* Lines 1213-1230 omitted */}
-
-        // ===== Payment Intent Creation =====
-        async function createPaymentIntent() {/* Lines 1234-1293 omitted */}
-
-        // ===== Initialize Payment Element =====
-        async function initializePaymentElement() {/* Lines 1297-1332 omitted */}
-
-        // ===== Navigation Functions =====
-        function showPage(pageId) {/* Lines 1336-1350 omitted */}
-        window.showPage = showPage;
-
-        function toggleNav() {/* Lines 1354-1362 omitted */}
-
-        function closeNav() {/* Lines 1365-1373 omitted */}
-
-        // ===== Cart Functions =====
-        function addToCart(name, price) {/* Lines 1377-1409 omitted */}
-
-        function removeFromCart(name) {/* Lines 1412-1418 omitted */}
-
-        function updateQuantity(name, change) {/* Lines 1421-1447 omitted */}
-
-        function updateCartDisplay() {/* Lines 1450-1508 omitted */}
-
-        function updateCheckoutTotals(subtotal) {/* Lines 1511-1521 omitted */}
-
-        function showCartNotification(productName) {/* Lines 1524-1547 omitted */}
-
-        function toggleCart() {/* Lines 1550-1575 omitted */}
-
-        // ===== Checkout Functions =====
-        async function showCheckout() {/* Lines 1579-1608 omitted */}
-
-        function closeCheckout() {/* Lines 1611-1638 omitted */}
-
-        async function selectPayment(paymentType) {/* Lines 1641-1684 omitted */}
-
-        async function placeOrder(event) {/* Lines 1687-1726 omitted */}
-
-        async function processStripePayment() {/* Lines 1729-1782 omitted */}
-
-        async function processSwishPayment() {/* Lines 1785-1844 omitted */}
-
-        function showSuccessMessage(orderData) {/* Lines 1847-1871 omitted */}
-
-        // ===== Event Listeners =====
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Add navigation event listeners
-            document.getElementById('logo-nav').addEventListener('click', function(e) {
-                e.preventDefault();
-                showPage('hem');
-            });
-            document.getElementById('nav-hem').addEventListener('click', function(e) {
-                e.preventDefault();
-                showPage('hem');
-            });
-            document.getElementById('nav-om-oss').addEventListener('click', function(e) {
-                e.preventDefault();
-                showPage('om-oss');
-            });
-            document.getElementById('nav-produkter').addEventListener('click', function(e) {
-                e.preventDefault();
-                showPage('produkter');
-            });
-            // ...existing code...
+        // Produktdata (metadata - priserna och bilder)
+        const PRODUCTS = {
+        
+            'Kokosskrubb': { 
+                price: 25, 
+                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5805.jpg',
+                description: 'En skrubb gjord av kokosfiber. Perfekt för hud som behöver djuprengöras. Kan även klippas till tvålunderlägg.'
+            },
+            
+            'Lifa Handske': { 
+                price: 50, 
+                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5802.jpg',
+                description: 'Otroligt mysig duschkamrat som har en mjuk härlig sida och en liten del med lifa som är exfolierande.'
+            },
+            
+            'Tvålunderlägg Lifa': { 
+                price: 25, 
+                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5816.jpg',
+                description: 'Lifa Tvålunderlägg, perfekt under din tvål, mäter ca 5-7cm i diameter och 1cm tjocklek. Blekt.'
+            },
+            'Mindre Lifah': { 
+                price: 50, 
+                image: 'treeoflifa.png',
+                description: 'Vår populäraste luffasvamp, lite kompaktare, perfekt för daglig användning. Mäter ca 10cm längd och 5-8cm i diameter'
+            },
+            'Större Lifah': { 
+                price: 75, 
+                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG',
+                description: 'Extra tjock och hållbar luffasvamp för djup rengöring.'
+            },
+            'Aleppotvål': { 
+                price: 70, 
+                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG',
+                description: 'En mild 100% naturlig tvål som är gjord på ett urgammalt recept.'
+            },
+            'Presentset': { 
+                price: 145, 
+                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png',
+                description: 'Komplett set i en fin presentask, perfekt som gåva.'
+            }
+        };
 
         // ===== Utility Functions =====
         function escapeHtml(text) {
@@ -1894,28 +1874,6 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('TreeOfLifa website loaded');
             await loadInventory();
-
-            // TROUBLESHOOT: Force-close overlays and reset navigation on load
-            setTimeout(() => {
-                // Close cart overlay
-                const overlay = document.getElementById('cart-overlay');
-                const sidebar = document.getElementById('cart-sidebar');
-                if (overlay) overlay.classList.remove('show');
-                if (sidebar) {
-                    sidebar.classList.remove('open');
-                    sidebar.setAttribute('aria-hidden', 'true');
-                }
-                document.body.style.overflow = '';
-                // Close checkout modal
-                const modal = document.getElementById('checkout-modal');
-                if (modal) {
-                    modal.classList.remove('show');
-                    modal.setAttribute('aria-hidden', 'true');
-                }
-                // Reset nav menu
-                const nav = document.getElementById('nav-links');
-                if (nav) nav.classList.remove('show');
-            }, 300);
 
             // Step 1: Enable payment methods only after customer info is valid
             const requiredFields = ['namn', 'adress', 'postnummer', 'stad', 'email', 'telefon'];
