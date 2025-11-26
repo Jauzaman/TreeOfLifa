@@ -963,7 +963,7 @@
                     <div class="payment-method" onclick="selectPayment('card')">
                         <input type="radio" name="payment" value="card">
                         <span>💳</span>
-                        <div><strong>Kortbetalning</strong><br><small>Betala säkert med kort (LIVE)</small></div>
+                        <div><strong>Kortbetalning</strong><br><small>Betala säkert med kort</small></div>
                     </div>
 
                     <div class="payment-method" onclick="selectPayment('swish')">
@@ -976,7 +976,8 @@
                 <div id="payment-details" style="display: none; margin-top: 1rem;">
                     <div class="form-group">
                         <label>Kortuppgifter</label>
-                        <div id="payment-element"></div>
+                        <div id="card-info-message" style="color: #c1666b; font-weight: 500; margin-bottom: 1rem; display: block;">Vänligen fyll i uppgifter först</div>
+                        <div id="payment-element" style="pointer-events: none; opacity: 0.5;"></div>
                         <div id="payment-errors"></div>
                     </div>
                 </div>
@@ -1860,6 +1861,33 @@
 
         // ===== Event Listeners =====
         document.addEventListener('DOMContentLoaded', async function() {
+            // Enable card input only when customer info is valid
+            document.getElementById('checkout-form').addEventListener('input', function() {
+                const name = document.getElementById('namn').value.trim();
+                const address = document.getElementById('adress').value.trim();
+                const postnummer = document.getElementById('postnummer').value.trim();
+                const stad = document.getElementById('stad').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const telefon = document.getElementById('telefon').value.trim();
+                const phoneRegex = /^(07[0236]\d{7}|07[0236]-\d{6,7})$/;
+                const nameValid = name.length >= 2;
+                const addressValid = address.length > 0;
+                const postnummerValid = /^\d{5}$/.test(postnummer);
+                const stadValid = stad.length >= 2;
+                const emailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+                const telefonValid = phoneRegex.test(telefon);
+                const cardMsg = document.getElementById('card-info-message');
+                const paymentEl = document.getElementById('payment-element');
+                if (nameValid && addressValid && postnummerValid && stadValid && emailValid && telefonValid) {
+                    paymentEl.style.pointerEvents = '';
+                    paymentEl.style.opacity = '1';
+                    cardMsg.style.display = 'none';
+                } else {
+                    paymentEl.style.pointerEvents = 'none';
+                    paymentEl.style.opacity = '0.5';
+                    cardMsg.style.display = 'block';
+                }
+            });
             console.log('TreeOfLifa website loaded');
             
             // Ladda lager först
