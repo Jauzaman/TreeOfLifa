@@ -1234,6 +1234,12 @@
                     }
                 };
 
+                // NYTT: Validera att namn och e-post är ifyllda
+                if (!customerData.name || !customerData.email) {
+                    showStatusMessage('Fyll i namn och e-post innan du fortsätter.', 'error');
+                    throw new Error('Kunduppgifter saknas');
+                }
+
                 const paymentData = {
                     amount: total,
                     currency: 'sek',
@@ -1760,12 +1766,6 @@
                     updateCartDisplay();
                     closeCheckout();
                     toggleCart();
-                }
-
-            } catch (error) {
-                console.error('Stripe payment error:', error);
-                showStatusMessage('Kortbetalning misslyckades. Vänligen försök igen eller välj Swish.', 'error');
-            }
         }
 
         async function processSwishPayment() {

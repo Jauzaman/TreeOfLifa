@@ -1,8 +1,9 @@
+
 const Stripe = require('stripe');
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
-export default async function handler(req, res) {
-  // Starkare CORS headers
+module.exports = async (req, res) => {
+  // Secure CORS headers
   res.setHeader('Access-Control-Allow-Origin', 'https://treeoflifa.se');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -21,23 +22,26 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Stripe not configured' });
     }
 
-    const { amount, currency = 'sek' } = req.body;
+    const { amount, currency = 'sek', customer, metadata } = req.body;
 
-    if (!amount || amount < 1) {
-      return res.status(400).json({ error: 'Invalid amount' });
+    // Validate required fields
+    if (!amount || amount < 1 || !customer?.name || !customer?.email) {
+      return res.status(400).json({ error: 'Missing required payment or customer info' });
     }
 
     console.log('Creating payment intent for amount:', amount);
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100), // SEK i ören
-      currency: 'sek',
+      currency,
+      metadata,
+      receipt_email: customer.email,
+      shipping: {
+        name: customer.name,
+        address: customer.address
+      },
       automatic_payment_methods: {
         enabled: true,
-      },
-      metadata: {
-        website: 'treeoflifa.se',
-        timestamp: new Date().toISOString()
       }
     });
 
@@ -51,4 +55,4 @@ export default async function handler(req, res) {
     console.error('Stripe error:', error);
     res.status(500).json({ error: error.message });
   }
-}
+};
