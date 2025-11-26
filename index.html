@@ -965,7 +965,7 @@
                         <div class="payment-method" onclick="selectPayment('card')">
                             <input type="radio" name="payment" value="card" disabled>
                             <span>💳</span>
-                            <div><strong>Kortbetalning</strong><br><small>Betala säkert med kort (LIVE)</small></div>
+                            <div><strong>Kortbetalning</strong><br><small>Betala säkert med kort</small></div>
                         </div>
                         <div class="payment-method" onclick="selectPayment('swish')">
                             <input type="radio" name="payment" value="swish" disabled>
@@ -1878,11 +1878,9 @@
 
                 // Swedish phone: 0700000000 or 073-1234567
                 const phoneRegex = /^(07[0236]\d{7}|07[0236]-\d{6,7})$/;
-                // Swedish address: e.g. Klimpvägen 35
-                const addressRegex = /^[A-Za-zÅÄÖåäö\s]+\s\d+[A-Za-z]?$/;
-                // Name: at least 2 chars
+                // Relaxed address: any non-empty value
                 const nameValid = name.length >= 2;
-                const addressValid = addressRegex.test(address);
+                const addressValid = address.length > 0;
                 const postnummerValid = /^\d{5}$/.test(postnummer);
                 const stadValid = stad.length >= 2;
                 const emailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
