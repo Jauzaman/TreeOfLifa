@@ -949,13 +949,23 @@
                 <div class="form-group">
                     <label>Leveransadress</label>
                     <input type="text" id="namn" name="namn" placeholder="Namn" required />
+                    <div id="namn-error" class="error-message" style="display:none"></div>
                     <input type="text" id="adress" name="adress" placeholder="Adress" style="margin-top: 0.5rem;" required />
+                    <div id="adress-error" class="error-message" style="display:none"></div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                        <input type="text" id="postnummer" name="postnummer" placeholder="Postnummer" required />
-                        <input type="text" id="stad" name="stad" placeholder="Stad" required />
+                        <div style="flex:1;display:flex;flex-direction:column;">
+                            <input type="text" id="postnummer" name="postnummer" placeholder="Postnummer" required />
+                            <div id="postnummer-error" class="error-message" style="display:none"></div>
+                        </div>
+                        <div style="flex:1;display:flex;flex-direction:column;">
+                            <input type="text" id="stad" name="stad" placeholder="Stad" required />
+                            <div id="stad-error" class="error-message" style="display:none"></div>
+                        </div>
                     </div>
                     <input type="email" id="email" name="email" placeholder="E-post" style="margin-top: 0.5rem;" required />
+                    <div id="email-error" class="error-message" style="display:none"></div>
                     <input type="tel" id="telefon" name="telefon" placeholder="Telefon" style="margin-top: 0.5rem;" required />
+                    <div id="telefon-error" class="error-message" style="display:none"></div>
                 </div>
 
 
@@ -1898,36 +1908,41 @@
 
             requiredFields.forEach(id => {
                 const el = document.getElementById(id);
-                if (el) {
-                    el.addEventListener('input', updatePaymentMethodState);
-                }
-            });
+                // Get field values
+                const name = document.getElementById('namn').value.trim();
+                const address = document.getElementById('adress').value.trim();
+                const postnummer = document.getElementById('postnummer').value.trim();
+                const stad = document.getElementById('stad').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const telefon = document.getElementById('telefon').value.trim();
 
-            updatePaymentMethodState();
+                // Validation rules
+                const phoneRegex = /^(07[0236]\d{7}|07[0236]-\d{6,7})$/;
+                const nameValid = name.length >= 2;
+                const addressValid = address.length > 0;
+                const postnummerValid = /^\d{5}$/.test(postnummer);
+                const stadValid = stad.length >= 2;
+                const emailValid = /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+                const telefonValid = phoneRegex.test(telefon);
 
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape') {
-                    if (document.getElementById('checkout-modal').classList.contains('show')) {
-                        closeCheckout();
-                    } else if (isCartOpen) {
-                        toggleCart();
+                // Error messages
+                const errors = {
+                    namn: nameValid ? '' : 'Namn måste vara minst 2 tecken.',
+                    adress: addressValid ? '' : 'Ange en giltig adress.',
+                    postnummer: postnummerValid ? '' : 'Postnummer måste vara 5 siffror.',
+                    stad: stadValid ? '' : 'Stad måste vara minst 2 tecken.',
+                    email: emailValid ? '' : 'Ange en giltig e-postadress.',
+                    telefon: telefonValid ? '' : 'Ange ett giltigt svenskt telefonnummer.'
+                };
+
+                // Show errors below each field (using pre-existing containers)
+                Object.keys(errors).forEach(function(field) {
+                    let errorEl = document.getElementById(field + '-error');
+                    if (errorEl) {
+                        errorEl.textContent = errors[field];
+                        errorEl.style.display = errors[field] ? 'block' : 'none';
                     }
-                }
-            });
+                });
 
-            document.addEventListener('click', function(event) {
-                const nav = document.getElementById('nav-links');
-                const menuToggle = document.getElementById('menu-toggle');
-                if (nav && nav.classList.contains('show') && 
-                    !nav.contains(event.target) && 
-                    event.target !== menuToggle) {
-                    closeNav();
-                }
-            });
-
-            setInterval(loadInventory, 30000);
-            console.log('TreeOfLifa website fully loaded with live payments and inventory system');
-        });
-    </script>
-</body>
-</html>
+                // Return overall validity
+                return nameValid && addressValid && postnummerValid && stadValid && emailValid && telefonValid;
