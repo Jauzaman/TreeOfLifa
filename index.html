@@ -858,12 +858,12 @@
     <!-- Header -->
     <header>
         <nav>
-            <div class="logo" onclick="showPage('hem')">TreeOfLifa</div>
+            <div class="logo" id="logo-nav">TreeOfLifa</div>
 
             <ul class="nav-links" id="nav-links">
-                <li><a onclick="showPage('hem')">Hem</a></li>
-                <li><a onclick="showPage('om-oss')">Om oss</a></li>
-                <li><a onclick="showPage('produkter')">Produkter</a></li>
+                <li><a href="#" id="nav-hem">Hem</a></li>
+                <li><a href="#" id="nav-om-oss">Om oss</a></li>
+                <li><a href="#" id="nav-produkter">Produkter</a></li>
             </ul>
 
             <div style="display: flex; align-items: center; gap: 8px;">
@@ -1095,17 +1095,24 @@
 
         // ===== Event Listeners =====
         document.addEventListener('DOMContentLoaded', async function() {
-            'Aleppotvål': { 
-                price: 70, 
-                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG',
-                description: 'En mild 100% naturlig tvål som är gjord på ett urgammalt recept.'
-            },
-            'Presentset': { 
-                price: 145, 
-                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png',
-                description: 'Komplett set i en fin presentask, perfekt som gåva.'
-            }
-        };
+            // Add navigation event listeners
+            document.getElementById('logo-nav').addEventListener('click', function(e) {
+                e.preventDefault();
+                showPage('hem');
+            });
+            document.getElementById('nav-hem').addEventListener('click', function(e) {
+                e.preventDefault();
+                showPage('hem');
+            });
+            document.getElementById('nav-om-oss').addEventListener('click', function(e) {
+                e.preventDefault();
+                showPage('om-oss');
+            });
+            document.getElementById('nav-produkter').addEventListener('click', function(e) {
+                e.preventDefault();
+                showPage('produkter');
+            });
+            // ...existing code...
 
         // ===== Utility Functions =====
         function escapeHtml(text) {
