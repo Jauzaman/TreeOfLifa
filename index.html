@@ -1655,7 +1655,7 @@
                         }
                     } catch (error) {
                         console.error('Failed to initialize payment element:', error);
-                        showStatusMessage('Kortbetalning är för närvarande inte tillgänglig. Vänligen välj Swish.', 'error');
+                        showStatusMessage('Vänligen fyll i leveransadress först', 'error');
                         if (paymentDetails) paymentDetails.style.display = 'none';
                     }
                     
