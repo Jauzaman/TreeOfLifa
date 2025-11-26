@@ -1163,15 +1163,13 @@
         function renderProducts() {
             const homeGrid = document.getElementById('products-grid-home');
             const pageGrid = document.getElementById('products-grid-page');
-            
-            const productsHTML = Object.entries(PRODUCTS).map(([name, product]) => {
+            console.log('DEBUG: renderProducts called, inventory:', inventory);
+            let productsHTML = Object.entries(PRODUCTS).map(([name, product]) => {
                 const stock = inventory[name] || { available: 0, inStock: false, lowStock: false };
-                
                 let stockBadge = '';
                 let stockInfo = '';
                 let imageClass = '';
                 let buttonDisabled = '';
-                
                 if (!stock.inStock) {
                     stockBadge = '<div class="stock-badge out-of-stock">Slut</div>';
                     stockInfo = '<div class="stock-info out-of-stock">Tillfälligt slut i lager</div>';
@@ -1184,7 +1182,6 @@
                     stockBadge = '<div class="stock-badge in-stock">I lager</div>';
                     stockInfo = '<div class="stock-info in-stock">I lager</div>';
                 }
-                
                 return `
                     <div class="product-card">
                         ${stockBadge}
@@ -1203,7 +1200,10 @@
                     </div>
                 `;
             }).join('');
-            
+            // If no products rendered, show debug info
+            if (!productsHTML || productsHTML.trim() === '') {
+                productsHTML = '<div style="color:red">Inga produkter kunde renderas.<br>Inventory:<br><pre>' + JSON.stringify(inventory, null, 2) + '</pre></div>';
+            }
             if (homeGrid) homeGrid.innerHTML = productsHTML;
             if (pageGrid) pageGrid.innerHTML = productsHTML;
         }
