@@ -1875,6 +1875,28 @@
             console.log('TreeOfLifa website loaded');
             await loadInventory();
 
+            // TROUBLESHOOT: Force-close overlays and reset navigation on load
+            setTimeout(() => {
+                // Close cart overlay
+                const overlay = document.getElementById('cart-overlay');
+                const sidebar = document.getElementById('cart-sidebar');
+                if (overlay) overlay.classList.remove('show');
+                if (sidebar) {
+                    sidebar.classList.remove('open');
+                    sidebar.setAttribute('aria-hidden', 'true');
+                }
+                document.body.style.overflow = '';
+                // Close checkout modal
+                const modal = document.getElementById('checkout-modal');
+                if (modal) {
+                    modal.classList.remove('show');
+                    modal.setAttribute('aria-hidden', 'true');
+                }
+                // Reset nav menu
+                const nav = document.getElementById('nav-links');
+                if (nav) nav.classList.remove('show');
+            }, 300);
+
             // Step 1: Enable payment methods only after customer info is valid
             const requiredFields = ['namn', 'adress', 'postnummer', 'stad', 'email', 'telefon'];
             const paymentInputs = document.querySelectorAll('.payment-method input[type="radio"]');
