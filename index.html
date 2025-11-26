@@ -1656,6 +1656,12 @@
                         
                         if (initialized) {
                             showStatusMessage('Kortbetalning redo. Fyll i dina kortuppgifter nedan.', 'info');
+                            // Enable card input and hide info message
+                            var paymentElement = document.getElementById('payment-element');
+                            var cardMsg = document.getElementById('card-info-message');
+                            if (paymentElement) paymentElement.style.pointerEvents = '';
+                            if (paymentElement) paymentElement.style.opacity = '1';
+                            if (cardMsg) cardMsg.style.display = 'none';
                         }
                     } catch (error) {
                         console.error('Failed to initialize payment element:', error);
