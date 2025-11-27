@@ -311,108 +311,107 @@ app.post("/api/create-payment-intent", async (req, res) => {
                     reservationId: reservation.reservationId,
                     customerName: customer.name,
                     customerEmail: customer.email,
-                    customerPhone: metadata?.phone || '',
-                    customerAddress: JSON.stringify({
-                        address: customer.address?.line1 || '',
-                        postalCode: customer.address?.postal_code || '',
-                        city: customer.address?.city || ''
-                    }),
-                    items: JSON.stringify(items),
-                    timestamp: new Date().toISOString()
-                }
-            };
+                    const { amount, currency, customer, items, metadata } = req.body;
 
-            // Lägg till shipping om adress finns
-            if (customer.address) {
-                paymentIntentData.shipping = {
-                    name: customer.name,
-                    address: {
-                        line1: customer.address.line1,
-                        postal_code: customer.address.postal_code,
-                        city: customer.address.city,
-                        country: customer.address.country || 'SE'
+                    // Validering
+                    if (!amount || amount <= 0) {
+                        return res.status(400).json({ 
+                            error: 'Ogiltigt belopp',
+                            type: 'validation_error'
+                        });
                     }
-                };
-            }
+                    if (!customer?.name || !customer?.email || !customer?.address?.line1 || !customer?.address?.postal_code || !customer?.address?.city || !customer?.phone) {
+                        return res.status(400).json({ 
+                            error: 'Kunduppgifter saknas',
+                            type: 'validation_error'
+                        });
+                    }
+                    if (!items || !Array.isArray(items) || items.length === 0) {
+                        return res.status(400).json({ 
+                            error: 'Inga produkter specificerade',
+                            type: 'validation_error'
+                        });
+                    }
 
-            const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
+                    // Kontrollera och reservera lager
+                    let reservation;
+                    try {
+                        reservation = reserveItems(items);
+                    } catch (inventoryError) {
+                        console.error('Lagerfel:', inventoryError.message);
+                        return res.status(400).json({
+                            error: inventoryError.message,
+                            type: 'inventory_error'
+                        });
+                    }
 
-            console.log('✅ Payment intent skapad:', paymentIntent.id);
+                    // Skapa payment intent
+                    try {
+                        console.log('Creating payment intent for amount:', amount, 'SEK');
+                        const paymentIntentData = {
+                            amount: Math.round(amount * 100), // Konvertera till öre
+                            currency: currency || 'sek',
+                            automatic_payment_methods: {
+                                enabled: true,
+                            },
+                            metadata: {
+                                orderId: metadata?.orderId || 'ORD-' + Date.now(),
+                                reservationId: reservation.reservationId,
+                                customerName: customer.name,
+                                customerEmail: customer.email,
+                                customerPhone: customer.phone || '',
+                                customerAddress: JSON.stringify({
+                                    address: customer.address?.line1 || '',
+                                    postalCode: customer.address?.postal_code || '',
+                                    city: customer.address?.city || ''
+                                }),
+                                items: JSON.stringify(items),
+                                timestamp: new Date().toISOString()
+                            }
+                        };
 
-            res.json({ 
-                clientSecret: paymentIntent.client_secret,
-                paymentIntentId: paymentIntent.id,
-                reservationId: reservation.reservationId
-            });
+                        // Lägg till shipping om adress finns
+                        if (customer.address) {
+                            paymentIntentData.shipping = {
+                                name: customer.name,
+                                address: {
+                                    line1: customer.address.line1,
+                                    postal_code: customer.address.postal_code,
+                                    city: customer.address.city,
+                                    country: customer.address.country || 'SE'
+                                }
+                            };
+                        }
 
-        } catch (inventoryError) {
-            console.error('Lagerfel:', inventoryError.message);
-            return res.status(400).json({
-                error: inventoryError.message,
-                type: 'inventory_error'
-            });
-        }
+                        const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
 
-    } catch (error) {
-        console.error('⚠ Payment Intent creation error:', error);
-        
-        let errorMessage = 'Ett fel uppstod vid skapandet av betalningen';
-        let errorType = 'payment_intent_creation_failed';
-        
-        if (error.type === 'StripeCardError') {
-            errorMessage = error.message;
-            errorType = 'card_error';
-        } else if (error.type === 'StripeInvalidRequestError') {
-            errorMessage = 'Ogiltig förfrågan till Stripe';
-            errorType = 'invalid_request_error';
-        }
-        
-        res.status(500).json({ 
-            error: errorMessage,
-            type: errorType,
-            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-        });
-    }
-});
+                        console.log('✅ Payment intent skapad:', paymentIntent.id);
 
-// UPPDATERAD: Hantera beställningar med lagerhantering - Rate limited
-app.post('/api/orders', rateLimit(10, 60000), async (req, res) => {
-    try {
-        const orderData = req.body;
-        
-        if (!orderData || !orderData.orderId) {
-            return res.status(400).json({ error: 'Invalid order data' });
-        }
-
-        console.log('New order received:', orderData.orderId);
-
-        // Slutför lagertransaktionen
-        if (orderData.reservedItems) {
-            completeOrder(orderData.reservedItems);
-        }
-
-        // Skicka emails...
-        const ownerEmail = {
-            from: 'tree.of.liifa@gmail.com',
-            to: 'tree.of.liifa@gmail.com',
-            subject: `🛒 Ny TreeOfLifa beställning - ${orderData.orderId}`,
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #4a7c59;">🎉 Ny beställning inkom!</h2>
-                    
-                    <div style="background: #f8fffe; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #2d4a2b;">Orderinformation</h3>
-                        <p><strong>Order ID:</strong> ${orderData.orderId}</p>
-                        <p><strong>Datum:</strong> ${new Date(orderData.timestamp).toLocaleString('sv-SE')}</p>
-                        <p><strong>Total:</strong> ${orderData.total} kr</p>
-                        <p><strong>Betalmetod:</strong> ${orderData.paymentMethod.toUpperCase()}</p>
-                        ${orderData.transactionId ? `<p><strong>Transaction ID:</strong> ${orderData.transactionId}</p>` : ''}
-                    </div>
-                    
-                    <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #2d4a2b;">Kundinformation</h3>
-                        <p><strong>Namn:</strong> ${orderData.customer.name}</p>
-                        <p><strong>Email:</strong> ${orderData.customer.email}</p>
+                        res.json({ 
+                            clientSecret: paymentIntent.client_secret,
+                            paymentIntentId: paymentIntent.id,
+                            reservationId: reservation.reservationId
+                        });
+                    } catch (error) {
+                        // Stripe error (e.g. insufficient funds, card declined)
+                        console.error('⚠️ Payment Intent creation error:', error);
+                        let errorMessage = 'Ett fel uppstod vid skapandet av betalningen';
+                        let errorType = 'payment_intent_creation_failed';
+                        if (error.type === 'StripeCardError') {
+                            errorMessage = error.message;
+                            errorType = 'card_error';
+                        } else if (error.type === 'StripeInvalidRequestError') {
+                            errorMessage = 'Ogiltig förfrågan till Stripe';
+                            errorType = 'invalid_request_error';
+                        } else if (error.message) {
+                            errorMessage = error.message;
+                        }
+                        res.status(400).json({ 
+                            error: errorMessage,
+                            type: errorType,
+                            details: process.env.NODE_ENV === 'development' ? error.message : undefined
+                        });
+                    }
                         <p><strong>Telefon:</strong> ${orderData.customer.phone}</p>
                         <p><strong>Leveransadress:</strong><br>
                            ${orderData.customer.address}<br>

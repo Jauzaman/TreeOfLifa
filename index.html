@@ -1276,64 +1276,76 @@
                 if (error.message.includes('lager')) {
                     showStatusMessage(error.message, 'error');
                     // Uppdatera lagerstatus
-                    await loadInventory();
-                } else {
-                    showStatusMessage('Fel vid skapande av betalning: ' + error.message, 'error');
-                }
-                
-                throw error;
-            }
-        }
+                    try {
+                        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                        const total = subtotal + 49; // Lägg till frakt
 
-        // ===== Initialize Payment Element =====
-        async function initializePaymentElement() {
-            try {
-                if (!stripe || !clientSecret) {
-                    throw new Error('Stripe eller clientSecret saknas');
-                }
+                        // Validate customer fields
+                        const name = document.getElementById('namn').value.trim();
+                        const email = document.getElementById('email').value.trim();
+                        const address = document.getElementById('adress').value.trim();
+                        const phone = document.getElementById('telefon').value.trim();
+                        const postalCode = document.getElementById('postnummer').value.trim();
+                        const city = document.getElementById('stad').value.trim();
 
-                const options = {
-                    clientSecret: clientSecret,
-                    appearance: {
-                        theme: 'stripe',
-                        variables: {
-                            colorPrimary: '#4a7c59',
+                        if (!name || !email || !address || !phone || !postalCode || !city) {
+                            showStatusMessage('Fyll i alla kunduppgifter innan betalning.', 'error');
+                            throw new Error('Kunduppgifter saknas');
                         }
+
+                        const customerData = {
+                            name,
+                            email,
+                            address: {
+                                line1: address,
+                                postal_code: postalCode,
+                                city: city,
+                                country: 'SE'
+                            },
+                            phone
+                        };
+
+                        const paymentData = {
+                            amount: total,
+                            currency: 'sek',
+                            customer: customerData,
+                            items: cart,
+                            metadata: {
+                                orderId: 'ORD-' + Date.now(),
+                                phone: phone
+                            }
+                        };
+
+                        console.log('Creating payment intent:', paymentData);
+
+                        const response = await fetch(`${API_BASE_URL}/api/create-payment-intent`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(paymentData)
+                        });
+
+                        if (!response.ok) {
+                            const errorData = await response.json();
+                            showStatusMessage('Fel vid skapande av betalning: ' + (errorData.error || response.status), 'error');
+                            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                        }
+
+                        const result = await response.json();
+                        clientSecret = result.clientSecret;
+                        reservationId = result.reservationId;
+
+                        console.log('Payment intent created successfully');
+                        return result;
+                    } catch (error) {
+                        console.error('Error creating payment intent:', error);
+                        if (error.message.includes('lager')) {
+                            showStatusMessage(error.message, 'error');
+                            await loadInventory();
+                        } else {
+                            showStatusMessage('Fel vid skapande av betalning: ' + error.message, 'error');
+                        }
+                        throw error;
                     }
-                };
-
-                elements = stripe.elements(options);
-                paymentElement = elements.create('payment');
-                paymentElement.mount('#payment-element');
-
-                // Lyssna på ändringar
-                paymentElement.on('change', (event) => {
-                    const displayError = document.getElementById('payment-errors');
-                    if (event.error) {
-                        displayError.textContent = event.error.message;
-                    } else {
-                        displayError.textContent = '';
-                    }
-                });
-
-                return true;
-            } catch (error) {
-                console.error('Error initializing payment element:', error);
-                showStatusMessage('Fel vid initiering av kortbetalning.', 'error');
-                return false;
-            }
-        }
-
-        // ===== Navigation Functions =====
-        function showPage(pageId) {
-            try {
-                document.querySelectorAll('.page').forEach(page => {
-                    page.classList.remove('active');
-                });
-
-                const targetPage = document.getElementById(pageId);
-                if (targetPage) {
-                    targetPage.classList.add('active');
                     closeNav();
                     window.scrollTo({top: 0, behavior: 'smooth'});
                 }
@@ -1727,23 +1739,36 @@
         }
 
         async function processStripePayment() {
-            try {
-                isProcessingPayment = true;
-                showLoadingIndicator(true);
-                showStatusMessage('Behandlar kortbetalning...', 'info');
+            isProcessingPayment = true;
+            showLoadingIndicator(true);
+            showStatusMessage('Behandlar kortbetalning...', 'info');
 
+            try {
                 if (!stripe || !elements || !clientSecret) {
                     await createPaymentIntent();
                     await initializePaymentElement();
                 }
 
+                // Validate customer fields again
+                const name = document.getElementById('namn').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const address = document.getElementById('adress').value.trim();
+                const phone = document.getElementById('telefon').value.trim();
+                const postalCode = document.getElementById('postnummer').value.trim();
+                const city = document.getElementById('stad').value.trim();
+
+                if (!name || !email || !address || !phone || !postalCode || !city) {
+                    showStatusMessage('Fyll i alla kunduppgifter innan betalning.', 'error');
+                    throw new Error('Kunduppgifter saknas');
+                }
+
                 const customerData = {
-                    name: document.getElementById('namn').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('telefon').value,
-                    address: document.getElementById('adress').value,
-                    postalCode: document.getElementById('postnummer').value,
-                    city: document.getElementById('stad').value
+                    name,
+                    email,
+                    phone,
+                    address,
+                    postalCode,
+                    city
                 };
 
                 const {error} = await stripe.confirmPayment({
@@ -1761,6 +1786,7 @@
                     } else {
                         showStatusMessage('Ett fel uppstod vid betalningen. Vänligen försök igen.', 'error');
                     }
+                    throw error;
                 } else {
                     // Betalning lyckades - skicka orderdata till backend och visa bekräftelse
                     const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -1799,7 +1825,6 @@
                         showStatusMessage('Beställning mottagen men bekräftelse-email kunde inte skickas.', 'info');
                     }
                 }
-
             } catch (error) {
                 console.error('Stripe payment error:', error);
                 showStatusMessage('Kortbetalning misslyckades. Vänligen försök igen eller välj Swish.', 'error');
