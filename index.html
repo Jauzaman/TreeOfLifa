@@ -1921,8 +1921,31 @@
                     emailErrorMsg.style.cssText = 'color: #c1666b; font-weight: 500; margin-top: 0.3rem;';
                     document.getElementById('email').parentElement.appendChild(emailErrorMsg);
                 }
+                // Common domain typo detection
+                const commonDomains = ['gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com'];
+                let domainTypo = '';
+                if (emailValid && email.length > 0) {
+                    const domain = email.split('@')[1]?.toLowerCase() || '';
+                    if (domain) {
+                        for (const d of commonDomains) {
+                            // Levenshtein distance 1 or 2 (simple check)
+                            if (domain !== d && domain.length === d.length) {
+                                let diff = 0;
+                                for (let i = 0; i < d.length; i++) {
+                                    if (domain[i] !== d[i]) diff++;
+                                }
+                                if (diff === 1 || diff === 2) {
+                                    domainTypo = d;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
                 if (!emailValid && email.length > 0) {
                     emailErrorMsg.textContent = 'Ogiltig e-postadress. Kontrollera stavningen.';
+                } else if (domainTypo) {
+                    emailErrorMsg.textContent = `E-postdomän verkar felstavad. Menade du "${domainTypo}"?`;
                 } else {
                     emailErrorMsg.textContent = '';
                 }
