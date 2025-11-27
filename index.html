@@ -1895,6 +1895,31 @@
         // ===== Event Listeners =====
         document.addEventListener('DOMContentLoaded', async function() {
             // Enable card input only when customer info is valid
+            let emailIsDeliverable = false;
+            const emailInput = document.getElementById('email');
+            emailInput.addEventListener('blur', async function() {
+                const email = emailInput.value.trim();
+                if (!email) return;
+                // Abstract API: https://www.abstractapi.com/email-verification
+                // Get your free API key at https://app.abstractapi.com/api/email-verification
+                const apiKey = 'YOUR_ABSTRACT_API_KEY'; // Replace with your free key
+                const url = `https://emailvalidation.abstractapi.com/v1/?api_key=${apiKey}&email=${encodeURIComponent(email)}`;
+                try {
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (data.deliverability === 'DELIVERABLE' && !data.is_disposable_email.value) {
+                        emailIsDeliverable = true;
+                        showStatusMessage('E-postadressen är giltig.', 'success');
+                    } else {
+                        emailIsDeliverable = false;
+                        showStatusMessage('E-postadressen är ogiltig eller engångsadress. Ange en riktig e-post.', 'error');
+                    }
+                } catch (err) {
+                    emailIsDeliverable = false;
+                    showStatusMessage('Kunde inte verifiera e-postadressen. Försök igen.', 'error');
+                }
+            });
+
             document.getElementById('checkout-form').addEventListener('input', function() {
                 const name = document.getElementById('namn').value.trim();
                 const address = document.getElementById('adress').value.trim();
@@ -1911,7 +1936,7 @@
                 const telefonValid = phoneRegex.test(telefon);
                 const cardMsg = document.getElementById('card-info-message');
                 const paymentEl = document.getElementById('payment-element');
-                if (nameValid && addressValid && postnummerValid && stadValid && emailValid && telefonValid) {
+                if (nameValid && addressValid && postnummerValid && stadValid && emailValid && telefonValid && emailIsDeliverable) {
                     paymentEl.style.pointerEvents = '';
                     paymentEl.style.opacity = '1';
                     cardMsg.style.display = 'none';
