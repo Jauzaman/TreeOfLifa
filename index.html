@@ -1913,7 +1913,7 @@
                 const telefonValid = phoneRegex.test(telefon);
                 const cardMsg = document.getElementById('card-info-message');
                 const paymentEl = document.getElementById('payment-element');
-                if (nameValid && addressValid && postnummerValid && stadValid && emailValid && telefonValid && emailIsDeliverable) {
+                if (nameValid && addressValid && postnummerValid && stadValid && emailValid && telefonValid) {
                     paymentEl.style.pointerEvents = '';
                     paymentEl.style.opacity = '1';
                     cardMsg.style.display = 'none';
