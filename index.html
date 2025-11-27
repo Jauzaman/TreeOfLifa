@@ -1753,24 +1753,48 @@
 
                 if (error) {
                     console.error('Stripe payment error:', error);
-                    
                     if (error.type === 'card_error' || error.type === 'validation_error') {
                         showStatusMessage(error.message, 'error');
                     } else {
                         showStatusMessage('Ett fel uppstod vid betalningen. Vänligen försök igen.', 'error');
                     }
                 } else {
-                    // Betalning lyckades - användaren omdirigeras via return_url
-                    showSuccessMessage({
-                        orderId: 'Processing...',
-                        total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 49,
-                        customer: customerData
-                    });
-                    
-                    cart = [];
-                    updateCartDisplay();
-                    closeCheckout();
-                    toggleCart();
+                    // Betalning lyckades - skicka orderdata till backend och visa bekräftelse
+                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    const total = subtotal + 49;
+                    const orderId = 'CARD-' + Date.now();
+                    const orderData = {
+                        orderId: orderId,
+                        transactionId: 'STRIPE-' + Math.random().toString(36).substr(2, 9),
+                        items: [...cart],
+                        subtotal,
+                        shipping: 49,
+                        total,
+                        paymentMethod: 'card',
+                        customer: customerData,
+                        timestamp: new Date().toISOString(),
+                        reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
+                    };
+                    try {
+                        const response = await fetch(`${API_BASE_URL}/api/orders`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(orderData)
+                        });
+                        if (response.ok) {
+                            showSuccessMessage(orderData);
+                            cart = [];
+                            updateCartDisplay();
+                            closeCheckout();
+                            toggleCart();
+                            await loadInventory();
+                        } else {
+                            throw new Error('Fel vid skickande av orderdata');
+                        }
+                    } catch (err) {
+                        console.error('Order processing error:', err);
+                        showStatusMessage('Beställning mottagen men bekräftelse-email kunde inte skickas.', 'info');
+                    }
                 }
 
             } catch (error) {
