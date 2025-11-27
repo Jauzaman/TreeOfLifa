@@ -1895,30 +1895,7 @@
         // ===== Event Listeners =====
         document.addEventListener('DOMContentLoaded', async function() {
             // Enable card input only when customer info is valid
-            let emailIsDeliverable = false;
-            const emailInput = document.getElementById('email');
-            emailInput.addEventListener('blur', async function() {
-                const email = emailInput.value.trim();
-                if (!email) return;
-                // Abstract API: https://www.abstractapi.com/email-verification
-                // Get your free API key at https://app.abstractapi.com/api/email-verification
-                const apiKey = '6a9837840d414cf099634b02f98a9ca4'; // Updated Abstract API key
-                const url = `https://emailvalidation.abstractapi.com/v1/?api_key=${apiKey}&email=${encodeURIComponent(email)}`;
-                try {
-                    const res = await fetch(url);
-                    const data = await res.json();
-                    if (data.deliverability === 'DELIVERABLE' && !data.is_disposable_email.value) {
-                        emailIsDeliverable = true;
-                        showStatusMessage('E-postadressen är giltig.', 'success');
-                    } else {
-                        emailIsDeliverable = false;
-                        showStatusMessage('E-postadressen är ogiltig eller engångsadress. Ange en riktig e-post.', 'error');
-                    }
-                } catch (err) {
-                    emailIsDeliverable = false;
-                    showStatusMessage('Kunde inte verifiera e-postadressen. Försök igen.', 'error');
-                }
-            });
+            // Only regex validation for email
 
             document.getElementById('checkout-form').addEventListener('input', function() {
                 const name = document.getElementById('namn').value.trim();
