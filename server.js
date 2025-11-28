@@ -575,6 +575,21 @@ app.get('/health', (req, res) => {
 
 // Root endpoint (UPPDATERAD)
 app.post("/api/create-payment-intent", async (req, res) => {
+    // Explicitly allow CORS for this endpoint
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,stripe-signature');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    }
     const { amount, currency, customer, items, metadata } = req.body;
 
     // Validering
