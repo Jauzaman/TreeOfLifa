@@ -1,3 +1,8 @@
+// Start Express server
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`TreeOfLifa backend running on port ${PORT}`);
+});
 // Längst upp i filen, före andra imports
 require('dotenv').config();
 
