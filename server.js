@@ -2,6 +2,14 @@
 // Längst upp i filen, före andra imports
 require('dotenv').config();
 
+const app = express();
+const Stripe = require("stripe");
+const cors = require("cors");
+const nodemailer = require("nodemailer");
+const fs = require('fs').promises;
+const path = require('path');
+// ...existing code...
+
 // --- Ensure server starts and logs errors for Railway ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -14,7 +22,6 @@ process.on('uncaughtException', err => {
 process.on('unhandledRejection', err => {
     console.error('Unhandled Rejection:', err);
 });
-const app = express();
 const Stripe = require("stripe");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
