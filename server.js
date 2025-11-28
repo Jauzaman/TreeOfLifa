@@ -4,6 +4,54 @@ require('dotenv').config();
 const express = require("express");
 const app = express();
 // ...existing code...
+// --- EMAIL CONFIRMATION SYSTEM ---
+const emailConfirmations = new Map(); // email -> { code, expires }
+
+function generateConfirmationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit code
+}
+
+// Endpoint to request email confirmation code
+app.post('/api/request-email-confirmation', async (req, res) => {
+    const { email } = req.body;
+    if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+        return res.status(400).json({ error: 'Ogiltig e-postadress' });
+    }
+    const code = generateConfirmationCode();
+    const expires = Date.now() + 10 * 60 * 1000; // 10 min
+    emailConfirmations.set(email, { code, expires });
+    try {
+        await transporter.sendMail({
+            from: 'tree.of.liifa@gmail.com',
+            to: email,
+            subject: 'Din bekräftelsekod',
+            html: `<p>Din bekräftelsekod är: <b>${code}</b></p><p>Koden är giltig i 10 minuter.</p>`
+        });
+        res.json({ message: 'Bekräftelsekod skickad till e-post.' });
+    } catch (error) {
+        res.status(500).json({ error: 'Kunde inte skicka e-post.' });
+    }
+});
+
+// Endpoint to verify code
+app.post('/api/verify-email-confirmation', (req, res) => {
+    const { email, code } = req.body;
+    const entry = emailConfirmations.get(email);
+    if (!entry || entry.expires < Date.now()) {
+        return res.status(400).json({ error: 'Koden har gått ut eller saknas.' });
+    }
+    if (entry.code !== code) {
+        return res.status(400).json({ error: 'Felaktig kod.' });
+    }
+    // Mark email as confirmed
+    emailConfirmations.set(email, { ...entry, confirmed: true });
+    res.json({ message: 'E-post bekräftad.' });
+});
+
+function isEmailConfirmed(email) {
+    const entry = emailConfirmations.get(email);
+    return entry && entry.confirmed && entry.expires > Date.now();
+}
 
 // --- Ensure server starts and logs errors for Railway ---
 const PORT = process.env.PORT || 3000;
@@ -333,6 +381,13 @@ app.post("/api/create-payment-intent", async (req, res) => {
             });
         }
 
+        if (!isEmailConfirmed(customer.email)) {
+            return res.status(400).json({ 
+                error: 'E-postadressen är inte bekräftad. Kontrollera din e-post för kod.',
+                type: 'email_not_confirmed'
+            });
+        }
+
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ 
                 error: 'Inga produkter specificerade',
@@ -385,16 +440,6 @@ app.post("/api/create-payment-intent", async (req, res) => {
                 type: 'inventory_error'
             });
         }
-
-        // If you want to send confirmation emails, use the correct variables:
-        // Example:
-        // const customerEmail = {
-        //     from: 'tree.of.liifa@gmail.com',
-        //     to: customer.email,
-        //     subject: `Orderbekräftelse - ${metadata?.orderId || 'ORD-' + Date.now()}`,
-        //     html: `<div>...</div>`
-        // };
-        // await transporter.sendMail(customerEmail);
     } catch (error) {
         console.error('Error processing order:', error);
         res.status(500).json({ 
@@ -476,7 +521,6 @@ async function handleSuccessfulPayment(paymentIntent) {
     try {
         const customerAddress = paymentIntent.metadata.customerAddress ? 
             JSON.parse(paymentIntent.metadata.customerAddress) : {};
-            
         const orderData = {
             orderId: paymentIntent.metadata.orderId,
             transactionId: paymentIntent.id,
@@ -497,15 +541,39 @@ async function handleSuccessfulPayment(paymentIntent) {
             total: paymentIntent.amount / 100
         };
 
-        console.log('📧 Skickar bekräftelsemail för order:', orderData.orderId);
-        
-        // Använd befintlig email-funktion
-        const response = await fetch(`${process.env.APP_URL || 'http://localhost:3001'}/api/orders`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(orderData)
-        });
-        
+        // Send confirmation email to customer
+        if (orderData.customer.email) {
+            const itemList = orderData.items.map(item => `<li>${item.quantity} x ${item.name}</li>`).join('');
+            const mailOptions = {
+                from: 'tree.of.liifa@gmail.com',
+                to: orderData.customer.email,
+                subject: `Orderbekräftelse - ${orderData.orderId}`,
+                html: `<h2>Tack för din beställning!</h2>
+                    <p>Ordernummer: <b>${orderData.orderId}</b></p>
+                    <p>Produkter:</p>
+                    <ul>${itemList}</ul>
+                    <p>Totalt: <b>${orderData.total} SEK</b></p>
+                    <p>Leveransadress: ${orderData.customer.address}, ${orderData.customer.postalCode} ${orderData.customer.city}</p>
+                    <p>Vi skickar din order så snart som möjligt!</p>`
+            };
+            try {
+                await transporter.sendMail(mailOptions);
+                console.log('📧 Orderbekräftelse skickad till:', orderData.customer.email);
+            } catch (mailError) {
+                console.error('⚠ Fel vid skickande av orderbekräftelse:', mailError);
+            }
+        }
+
+        // Använd befintlig email-funktion (order API)
+        try {
+            await fetch(`${process.env.APP_URL || 'http://localhost:3001'}/api/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(orderData)
+            });
+        } catch (apiError) {
+            console.error('⚠ Fel vid POST till order-API:', apiError);
+        }
     } catch (error) {
         console.error('⚠ Fel vid hantering av lyckad betalning:', error);
     }
