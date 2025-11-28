@@ -41,6 +41,18 @@ app.use((req, res, next) => {
     res.setHeader('X-Frame-Options', 'DENY');
     res.setHeader('X-XSS-Protection', '1; mode=block');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    // Explicitly allow CORS for all API responses
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
     next();
 });
 
@@ -217,6 +229,18 @@ app.get('/api/inventory', (req, res) => {
         };
     }
     
+    // Explicitly allow CORS for this endpoint
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
     res.json(publicInventory);
 });
 
@@ -586,6 +610,18 @@ app.post("/api/create-payment-intent", async (req, res) => {
         }
         const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
         console.log('✅ Payment intent skapad:', paymentIntent.id);
+        // Explicitly allow CORS for this endpoint
+        const allowedOrigins = [
+            'https://tree-of-lifa.vercel.app',
+            'https://treeoflifa-production.up.railway.app',
+            'https://treeoflifa.se',
+            'http://localhost:3000',
+            'http://127.0.0.1:5500'
+        ];
+        const origin = req.headers.origin;
+        if (allowedOrigins.includes(origin)) {
+            res.setHeader('Access-Control-Allow-Origin', origin);
+        }
         res.json({ 
             clientSecret: paymentIntent.client_secret,
             paymentIntentId: paymentIntent.id,
