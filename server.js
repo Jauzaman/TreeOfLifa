@@ -386,74 +386,15 @@ app.post("/api/create-payment-intent", async (req, res) => {
             });
         }
 
-        const customerEmail = {
-            from: 'tree.of.liifa@gmail.com',
-            to: orderData.customer.email,
-            subject: `Orderbekräftelse - ${orderData.orderId}`,
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <div style="text-align: center; margin-bottom: 30px;">
-                        <h1 style="color: #4a7c59;">🌿 TreeOfLifa</h1>
-                        <h2 style="color: #2d4a2b;">Tack för din beställning!</h2>
-                    </div>
-                    
-                    <p>Hej ${orderData.customer.name},</p>
-                    <p>Vi har tagit emot din beställning och den kommer att skickas inom 2-3 arbetsdagar.</p>
-                    
-                    <div style="background: #f8fffe; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #2d4a2b;">Din beställning</h3>
-                        <p><strong>Ordernummer:</strong> ${orderData.orderId}</p>
-                        <p><strong>Datum:</strong> ${new Date(orderData.timestamp).toLocaleString('sv-SE')}</p>
-                        <p><strong>Total:</strong> ${orderData.total} kr</p>
-                    </div>
-                    
-                    <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #2d4a2b;">Leveransadress</h3>
-                        <p>${orderData.customer.name}<br>
-                           ${orderData.customer.address}<br>
-                           ${orderData.customer.postalCode} ${orderData.customer.city}</p>
-                    </div>
-                    
-                    <div style="background: #fff; padding: 20px; border: 1px solid #e8e8e8; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #2d4a2b;">Beställda produkter</h3>
-                        ${orderData.items.map(item => `
-                            <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                <span>${item.name} x ${item.quantity}</span>
-                                <span>${item.price * item.quantity} kr</span>
-                            </div>
-                        `).join('')}
-                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
-                            <span>Frakt:</span>
-                            <span>${orderData.shipping} kr</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 15px 0; font-weight: bold; font-size: 1.1em; color: #4a7c59;">
-                            <span>Totalt:</span>
-                            <span>${orderData.total} kr</span>
-                        </div>
-                    </div>
-                    
-                    <p>Vi skickar ett spårningsnummer när paketet är på väg.</p>
-                    
-                    <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
-                        <p style="color: #666;">Med vänliga hälsningar,<br><strong>TreeOfLifa-teamet</strong></p>
-                        <p style="color: #666; font-size: 0.9em;">tree.of.liifa@gmail.com</p>
-                    </div>
-                </div>
-            `
-        };
-
-        // Skicka båda emailen parallellt
-        await Promise.all([
-            transporter.sendMail(ownerEmail),
-            transporter.sendMail(customerEmail)
-        ]);
-
-        console.log('Emails sent successfully for order:', orderData.orderId);
-        res.status(200).json({ 
-            success: true, 
-            message: 'Order received and emails sent',
-            orderId: orderData.orderId 
-        });
+        // If you want to send confirmation emails, use the correct variables:
+        // Example:
+        // const customerEmail = {
+        //     from: 'tree.of.liifa@gmail.com',
+        //     to: customer.email,
+        //     subject: `Orderbekräftelse - ${metadata?.orderId || 'ORD-' + Date.now()}`,
+        //     html: `<div>...</div>`
+        // };
+        // await transporter.sendMail(customerEmail);
     } catch (error) {
         console.error('Error processing order:', error);
         res.status(500).json({ 
