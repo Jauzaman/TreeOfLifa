@@ -1,3 +1,21 @@
+// Handle CORS preflight requests for all API routes
+app.options('*', (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,stripe-signature');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.sendStatus(204);
+});
 // Start Express server
 // Längst upp i filen, före andra imports
 require('dotenv').config();
@@ -240,6 +258,9 @@ app.get('/api/inventory', (req, res) => {
     const origin = req.headers.origin;
     if (allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,stripe-signature');
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
     }
     res.json(publicInventory);
 });
@@ -621,6 +642,9 @@ app.post("/api/create-payment-intent", async (req, res) => {
         const origin = req.headers.origin;
         if (allowedOrigins.includes(origin)) {
             res.setHeader('Access-Control-Allow-Origin', origin);
+            res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,OPTIONS');
+            res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization,stripe-signature');
+            res.setHeader('Access-Control-Allow-Credentials', 'true');
         }
         res.json({ 
             clientSecret: paymentIntent.client_secret,
