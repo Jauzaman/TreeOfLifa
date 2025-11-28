@@ -1755,11 +1755,18 @@
                 }
                 const paymentMethod = selectedPayment.value;
                 if (paymentMethod === 'card') {
-                    await processStripePayment();
+                    // Only show confirmation if payment succeeds
+                    try {
+                        await processStripePayment();
+                    } catch (error) {
+                        // Payment failed, do not show confirmation
+                        return;
+                    }
                 } else if (paymentMethod === 'swish') {
                     await processSwishPayment();
+                    // Swish assumed successful for now
                 }
-                // Show confirmation message/modal after order is completed
+                // Show confirmation message/modal only after successful payment
                 setTimeout(() => {
                     const confirmation = document.createElement('div');
                     confirmation.className = 'order-confirmation-modal';
