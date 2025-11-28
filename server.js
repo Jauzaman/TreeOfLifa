@@ -325,34 +325,6 @@ app.post("/api/create-payment-intent", async (req, res) => {
             });
         }
 
-                        res.json({ 
-                            clientSecret: paymentIntent.client_secret,
-                            paymentIntentId: paymentIntent.id,
-                            reservationId: reservation.reservationId
-                        });
-                    } catch (error) {
-                        // Stripe error (e.g. insufficient funds, card declined)
-                        console.error('⚠️ Payment Intent creation error:', error);
-                        let errorMessage = 'Ett fel uppstod vid skapandet av betalningen';
-                        let errorType = 'payment_intent_creation_failed';
-                        if (error.type === 'StripeCardError') {
-                            errorMessage = error.message;
-                        }
-                        // Build error HTML for email or response
-                        const errorHtml = `
-                            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <h4 style="color: #856404; margin: 0 0 10px 0;">Aktuell lagerstatus efter order:</h4>
-                                ${Object.entries(inventory).map(([name, data]) => {
-                                    const available = data.stock - data.reserved;
-                                    return `<p style=\"margin: 5px 0; color: ${available <= 5 ? '#dc3545' : '#6c757d'};\">${name}: ${available} st ${available <= 5 ? '(LÅGT LAGER!)' : ''}</p>`;
-                                }).join('')}
-                            </div>
-                            <div style="text-align: center; margin-top: 30px; color: #666;">
-                                <p>TreeOfLifa Backend System</p>
-                            </div>
-                        `;
-        };
-
         const customerEmail = {
             from: 'tree.of.liifa@gmail.com',
             to: orderData.customer.email,
