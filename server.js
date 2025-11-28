@@ -445,13 +445,24 @@ app.post("/api/create-payment-intent", async (req, res) => {
 
 // Webhook endpoint för Stripe events (UPPDATERAD med lagerhantering)
 app.post('/webhook', (request, response) => {
-    // TEMPORARY: Bypass Stripe signature verification for manual testing
+    const sig = request.headers['stripe-signature'];
     let event;
+
     try {
-        event = typeof request.body === 'string' ? JSON.parse(request.body) : request.body;
+        if (!process.env.STRIPE_WEBHOOK_SECRET) {
+            console.log('⚠️  Webhook secret inte konfigurerad');
+            return response.status(400).send('Webhook secret saknas');
+        }
+
+        event = stripe.webhooks.constructEvent(
+            request.body, 
+            sig, 
+            process.env.STRIPE_WEBHOOK_SECRET
+        );
+        
     } catch (err) {
-        console.log(`⚠ Webhook body parse failed:`, err.message);
-        return response.status(400).send(`Webhook Parse Error: ${err.message}`);
+        console.log(`⚠ Webhook signature verification failed:`, err.message);
+        return response.status(400).send(`Webhook Error: ${err.message}`);
     }
 
     console.log('📨 Webhook mottagen:', event.type);
