@@ -18,6 +18,7 @@ process.on('unhandledRejection', err => {
     console.error('Unhandled Rejection:', err);
 });
 const Stripe = require("stripe");
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const cors = require("cors");
 const nodemailer = require("nodemailer");
 const fs = require('fs').promises;
