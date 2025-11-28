@@ -340,34 +340,6 @@ app.post("/api/create-payment-intent", async (req, res) => {
                 type: 'inventory_error'
             });
         }
-                                customerEmail: customer.email,
-                                customerPhone: customer.phone || '',
-                                customerAddress: JSON.stringify({
-                                    address: customer.address?.line1 || '',
-                                    postalCode: customer.address?.postal_code || '',
-                                    city: customer.address?.city || ''
-                                }),
-                                items: JSON.stringify(items),
-                                timestamp: new Date().toISOString()
-                            }
-                        };
-
-                        // Lägg till shipping om adress finns
-                        if (customer.address) {
-                            paymentIntentData.shipping = {
-                                name: customer.name,
-                                address: {
-                                    line1: customer.address.line1,
-                                    postal_code: customer.address.postal_code,
-                                    city: customer.address.city,
-                                    country: customer.address.country || 'SE'
-                                }
-                            };
-                        }
-
-                        const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
-
-                        console.log('✅ Payment intent skapad:', paymentIntent.id);
 
                         res.json({ 
                             clientSecret: paymentIntent.client_secret,
@@ -381,57 +353,26 @@ app.post("/api/create-payment-intent", async (req, res) => {
                         let errorType = 'payment_intent_creation_failed';
                         if (error.type === 'StripeCardError') {
                             errorMessage = error.message;
-                            errorType = 'card_error';
-                        } else if (error.type === 'StripeInvalidRequestError') {
-                            errorMessage = 'Ogiltig förfrågan till Stripe';
-                            errorType = 'invalid_request_error';
-                        } else if (error.message) {
-                            errorMessage = error.message;
-                        }
-                        res.status(400).json({ 
-                            error: errorMessage,
-                            type: errorType,
-                            details: process.env.NODE_ENV === 'development' ? error.message : undefined
-                        });
-                    }
-                        <p><strong>Telefon:</strong> ${orderData.customer.phone}</p>
-                        <p><strong>Leveransadress:</strong><br>
-                           ${orderData.customer.address}<br>
-                           ${orderData.customer.postalCode} ${orderData.customer.city}
-                        </p>
-                    </div>
-                    
-                    <div style="background: #fff; padding: 20px; border: 1px solid #e8e8e8; border-radius: 8px; margin: 20px 0;">
-                        <h3 style="color: #2d4a2b;">Beställda produkter</h3>
-                        <table style="width: 100%; border-collapse: collapse;">
-                            <thead>
-                                <tr style="background: #f5f5f5;">
-                                    <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Produkt</th>
-                                    <th style="padding: 10px; text-align: center; border-bottom: 1px solid #ddd;">Antal</th>
-                                    <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Pris</th>
-                                    <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Summa</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${orderData.items.map(item => `
-                                    <tr>
-                                        <td style="padding: 10px; border-bottom: 1px solid #eee;">${item.name}</td>
-                                        <td style="padding: 10px; text-align: center; border-bottom: 1px solid #eee;">${item.quantity}</td>
-                                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${item.price} kr</td>
-                                        <td style="padding: 10px; text-align: right; border-bottom: 1px solid #eee;">${item.price * item.quantity} kr</td>
-                                    </tr>
-                                `).join('')}
-                                <tr style="background: #f9f9f9; font-weight: bold;">
-                                    <td style="padding: 10px; border-top: 2px solid #4a7c59;" colspan="3">Produkter:</td>
-                                    <td style="padding: 10px; text-align: right; border-top: 2px solid #4a7c59;">${orderData.subtotal} kr</td>
-                                </tr>
-                                <tr style="background: #f9f9f9;">
-                                    <td style="padding: 10px;" colspan="3">Frakt:</td>
-                                    <td style="padding: 10px; text-align: right;">${orderData.shipping} kr</td>
-                                </tr>
-                                <tr style="background: #4a7c59; color: white; font-weight: bold;">
-                                    <td style="padding: 15px;" colspan="3">TOTALT:</td>
-                                    <td style="padding: 15px; text-align: right;">${orderData.total} kr</td>
+                            } catch (error) {
+                                // Stripe error (e.g. insufficient funds, card declined)
+                                console.error('⚠️ Payment Intent creation error:', error);
+                                let errorMessage = 'Ett fel uppstod vid skapandet av betalningen';
+                                let errorType = 'payment_intent_creation_failed';
+                                if (error.type === 'StripeCardError') {
+                                    errorMessage = error.message;
+                                    errorType = 'card_error';
+                                } else if (error.type === 'StripeInvalidRequestError') {
+                                    errorMessage = 'Ogiltig förfrågan till Stripe';
+                                    errorType = 'invalid_request_error';
+                                } else if (error.message) {
+                                    errorMessage = error.message;
+                                }
+                                res.status(400).json({ 
+                                    error: errorMessage,
+                                    type: errorType,
+                                    details: process.env.NODE_ENV === 'development' ? error.message : undefined
+                                });
+                            }
                                 </tr>
                             </tbody>
                         </table>
