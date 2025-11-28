@@ -25,7 +25,7 @@ console.log('✅ Stripe konfigurerad med key:', process.env.STRIPE_SECRET_KEY.su
 // Skapa Express-app
 const app = express();
 
-// ...existing code...
+// Backup of server.js before payment validation/error handling improvements (2025-11-27)
 
 // CORS-konfiguration
 const corsOptions = {
