@@ -12,22 +12,6 @@ const path = require('path');
 // Simple rate limiting (in-memory - for production use Redis)
 const rateLimitMap = new Map();
 
-// Validera miljövariabler
-if (!process.env.STRIPE_SECRET_KEY) {
-    console.error('⚠ STRIPE_SECRET_KEY är inte definierad i .env filen');
-    process.exit(1);
-}
-
-// Anslut till Stripe med LIVE key
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
-console.log('✅ Stripe konfigurerad med key:', process.env.STRIPE_SECRET_KEY.substring(0, 12) + '...');
-
-// Skapa Express-app
-const app = express();
-
-// Backup of server.js before payment validation/error handling improvements (2025-11-27)
-
-// CORS-konfiguration
 const corsOptions = {
     origin: [
         'https://tree-of-lifa.vercel.app',
@@ -353,46 +337,20 @@ app.post("/api/create-payment-intent", async (req, res) => {
                         let errorType = 'payment_intent_creation_failed';
                         if (error.type === 'StripeCardError') {
                             errorMessage = error.message;
-                            } catch (error) {
-                                // Stripe error (e.g. insufficient funds, card declined)
-                                console.error('⚠️ Payment Intent creation error:', error);
-                                let errorMessage = 'Ett fel uppstod vid skapandet av betalningen';
-                                let errorType = 'payment_intent_creation_failed';
-                                if (error.type === 'StripeCardError') {
-                                    errorMessage = error.message;
-                                    errorType = 'card_error';
-                                } else if (error.type === 'StripeInvalidRequestError') {
-                                    errorMessage = 'Ogiltig förfrågan till Stripe';
-                                    errorType = 'invalid_request_error';
-                                } else if (error.message) {
-                                    errorMessage = error.message;
-                                }
-                                res.status(400).json({ 
-                                    error: errorMessage,
-                                    type: errorType,
-                                    details: process.env.NODE_ENV === 'development' ? error.message : undefined
-                                });
-                            }
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                        <h4 style="color: #856404; margin: 0 0 10px 0;">Aktuell lagerstatus efter order:</h4>
-                        ${Object.entries(inventory).map(([name, data]) => {
-                            const available = data.stock - data.reserved;
-                            return `<p style="margin: 5px 0; color: ${available <= 5 ? '#dc3545' : '#6c757d'};">
-                                ${name}: ${available} st ${available <= 5 ? '(LÅGT LAGER!)' : ''}
-                            </p>`;
-                        }).join('')}
-                    </div>
-                    
-                    <div style="text-align: center; margin-top: 30px; color: #666;">
-                        <p>TreeOfLifa Backend System</p>
-                    </div>
-                </div>
-            `;
+                        }
+                        // Build error HTML for email or response
+                        const errorHtml = `
+                            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                                <h4 style="color: #856404; margin: 0 0 10px 0;">Aktuell lagerstatus efter order:</h4>
+                                ${Object.entries(inventory).map(([name, data]) => {
+                                    const available = data.stock - data.reserved;
+                                    return `<p style=\"margin: 5px 0; color: ${available <= 5 ? '#dc3545' : '#6c757d'};\">${name}: ${available} st ${available <= 5 ? '(LÅGT LAGER!)' : ''}</p>`;
+                                }).join('')}
+                            </div>
+                            <div style="text-align: center; margin-top: 30px; color: #666;">
+                                <p>TreeOfLifa Backend System</p>
+                            </div>
+                        `;
         };
 
         const customerEmail = {
@@ -458,16 +416,13 @@ app.post("/api/create-payment-intent", async (req, res) => {
         ]);
 
         console.log('Emails sent successfully for order:', orderData.orderId);
-        
         res.status(200).json({ 
             success: true, 
             message: 'Order received and emails sent',
             orderId: orderData.orderId 
         });
-
     } catch (error) {
         console.error('Error processing order:', error);
-        
         res.status(500).json({ 
             error: 'Failed to process order',
             details: process.env.NODE_ENV === 'development' ? error.message : 'Internal server error'
@@ -599,67 +554,74 @@ app.get('/health', (req, res) => {
 });
 
 // Root endpoint (UPPDATERAD)
-app.get('/', (req, res) => {
-    res.json({ 
-        message: 'TreeOfLifa Backend API med Lagersystem', 
-        version: '2.0.0',
-        status: 'live',
-        inventory_status: Object.entries(inventory).reduce((acc, [name, data]) => {
-            acc[name] = data.stock - data.reserved;
-            return acc;
-        }, {}),
-        endpoints: [
-            'GET / - Detta meddelande',
-            'GET /health - Hälsostatus',
-            'GET /api/inventory - Lagerstatus',
-            'POST /api/inventory/update - Uppdatera lager (admin)',
-            'POST /create-payment-intent - Skapa betalning (LIVE)',
-            'POST /api/orders - Hantera beställningar',
-            'POST /webhook - Stripe webhooks'
-        ]
-    });
-});
+app.post("/api/create-payment-intent", async (req, res) => {
+    const { amount, currency, customer, items, metadata } = req.body;
 
-// Error handling middleware
-app.use((error, req, res, next) => {
-    console.error('⚠ Ohanterat fel:', error);
-    res.status(500).json({
-        error: 'Internt serverfel',
-        type: 'internal_server_error'
-    });
-});
-
-// 404 handler
-app.use((req, res) => {
-    res.status(404).json({
-        error: 'Endpoint hittades inte',
-        type: 'not_found'
-    });
-});
-
-// Starta servern
-const PORT = process.env.PORT || 3001;
-
-// Ladda lager vid uppstart
-loadInventory().then(() => {
-    app.listen(PORT, () => {
-        console.log(`✅ TreeOfLifa Backend med Lagersystem körs på port ${PORT}`);
-        console.log(`🔐 Stripe LIVE-läge: ${!!process.env.STRIPE_SECRET_KEY && process.env.STRIPE_SECRET_KEY.includes('sk_live')}`);
-        console.log(`📨 Webhook konfigurerad: ${!!process.env.STRIPE_WEBHOOK_SECRET}`);
-        console.log(`📧 Email konfigurerad: ${!!process.env.GMAIL_APP_PASSWORD}`);
-        console.log(`📦 Lager laddat: ${Object.keys(inventory).length} produkter`);
-        
-        // Visa aktuell lagerstatus
-        console.log('\n📊 LAGERSTATUS:');
-        Object.entries(inventory).forEach(([name, data]) => {
-            const available = data.stock - data.reserved;
-            console.log(`  ${name}: ${available} st ${available <= 5 ? '⚠️ LÅGT' : '✅'}`);
+    // Validering
+    if (!amount || amount <= 0) {
+        return res.status(400).json({ 
+            error: 'Ogiltigt belopp',
+            type: 'validation_error'
         });
-    });
+    }
+
+    if (!customer?.name || !customer?.email) {
+        return res.status(400).json({ 
+            error: 'Kunduppgifter saknas',
+            type: 'validation_error'
+        });
+    }
+
+    if (!items || !Array.isArray(items) || items.length === 0) {
+        return res.status(400).json({ 
+            error: 'Inga produkter specificerade',
+            type: 'validation_error'
+        });
+    }
+
+    // NYTT: Kontrollera och reservera lager
+    try {
+        const reservation = reserveItems(items);
+        console.log('Creating payment intent for amount:', amount, 'SEK');
+        
+        const paymentIntentData = {
+            amount: Math.round(amount * 100), // Konvertera till öre
+            currency: currency || 'sek',
+            automatic_payment_methods: {
+                enabled: true,
+            },
+            metadata: {
+                orderId: metadata?.orderId || 'ORD-' + Date.now(),
+                reservationId: reservation.reservationId,
+                customerName: customer.name,
+                customerEmail: customer.email,
+                // ...add other metadata fields as needed...
+            }
+        };
+        // Lägg till shipping om adress finns
+        if (customer.address) {
+            paymentIntentData.shipping = {
+                name: customer.name,
+                address: {
+                    line1: customer.address.line1,
+                    postal_code: customer.address.postal_code,
+                    city: customer.address.city,
+                    country: customer.address.country || 'SE'
+                }
+            };
+        }
+        const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
+        console.log('✅ Payment intent skapad:', paymentIntent.id);
+        res.json({ 
+            clientSecret: paymentIntent.client_secret,
+            paymentIntentId: paymentIntent.id,
+            reservationId: reservation.reservationId
+        });
+    } catch (inventoryError) {
+        console.error('Lagerfel:', inventoryError.message);
+        return res.status(400).json({
+            error: inventoryError.message,
+            type: 'inventory_error'
+        });
+    }
 });
-
-// Serve static frontend files from root and images folders (after API routes)
-app.use(express.static(path.join(__dirname, '.')));
-app.use('/imagess', express.static(path.join(__dirname, 'imagess')));
-
-module.exports = app;
