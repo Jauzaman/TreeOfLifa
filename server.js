@@ -311,53 +311,35 @@ app.post("/api/create-payment-intent", async (req, res) => {
                     reservationId: reservation.reservationId,
                     customerName: customer.name,
                     customerEmail: customer.email,
-                    const { amount, currency, customer, items, metadata } = req.body;
-
-                    // Validering
-                    if (!amount || amount <= 0) {
-                        return res.status(400).json({ 
-                            error: 'Ogiltigt belopp',
-                            type: 'validation_error'
-                        });
+                    // ...add other metadata fields as needed...
+                }
+            };
+            // Lägg till shipping om adress finns
+            if (customer.address) {
+                paymentIntentData.shipping = {
+                    name: customer.name,
+                    address: {
+                        line1: customer.address.line1,
+                        postal_code: customer.address.postal_code,
+                        city: customer.address.city,
+                        country: customer.address.country || 'SE'
                     }
-                    if (!customer?.name || !customer?.email || !customer?.address?.line1 || !customer?.address?.postal_code || !customer?.address?.city || !customer?.phone) {
-                        return res.status(400).json({ 
-                            error: 'Kunduppgifter saknas',
-                            type: 'validation_error'
-                        });
-                    }
-                    if (!items || !Array.isArray(items) || items.length === 0) {
-                        return res.status(400).json({ 
-                            error: 'Inga produkter specificerade',
-                            type: 'validation_error'
-                        });
-                    }
-
-                    // Kontrollera och reservera lager
-                    let reservation;
-                    try {
-                        reservation = reserveItems(items);
-                    } catch (inventoryError) {
-                        console.error('Lagerfel:', inventoryError.message);
-                        return res.status(400).json({
-                            error: inventoryError.message,
-                            type: 'inventory_error'
-                        });
-                    }
-
-                    // Skapa payment intent
-                    try {
-                        console.log('Creating payment intent for amount:', amount, 'SEK');
-                        const paymentIntentData = {
-                            amount: Math.round(amount * 100), // Konvertera till öre
-                            currency: currency || 'sek',
-                            automatic_payment_methods: {
-                                enabled: true,
-                            },
-                            metadata: {
-                                orderId: metadata?.orderId || 'ORD-' + Date.now(),
-                                reservationId: reservation.reservationId,
-                                customerName: customer.name,
+                };
+            }
+            const paymentIntent = await stripe.paymentIntents.create(paymentIntentData);
+            console.log('✅ Payment intent skapad:', paymentIntent.id);
+            res.json({ 
+                clientSecret: paymentIntent.client_secret,
+                paymentIntentId: paymentIntent.id,
+                reservationId: reservation.reservationId
+            });
+        } catch (inventoryError) {
+            console.error('Lagerfel:', inventoryError.message);
+            return res.status(400).json({
+                error: inventoryError.message,
+                type: 'inventory_error'
+            });
+        }
                                 customerEmail: customer.email,
                                 customerPhone: customer.phone || '',
                                 customerAddress: JSON.stringify({
