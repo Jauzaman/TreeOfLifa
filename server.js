@@ -392,7 +392,7 @@ app.post("/api/create-payment-intent", async (req, res) => {
                         <p>TreeOfLifa Backend System</p>
                     </div>
                 </div>
-            `
+            `;
         };
 
         const customerEmail = {
@@ -660,7 +660,6 @@ loadInventory().then(() => {
 
 // Serve static frontend files from root and images folders (after API routes)
 app.use(express.static(path.join(__dirname, '.')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/imagess', express.static(path.join(__dirname, 'imagess')));
 
 module.exports = app;
