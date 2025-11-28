@@ -1252,6 +1252,23 @@
             }
         }
 
+        // ===== Stripe Payment Element Initialization =====
+        async function initializePaymentElement() {
+            try {
+                if (!stripe || !clientSecret) {
+                    console.error('Stripe or clientSecret not initialized');
+                    return false;
+                }
+                elements = stripe.elements({ clientSecret });
+                paymentElement = elements.create('payment');
+                paymentElement.mount('#payment-element');
+                return true;
+            } catch (error) {
+                console.error('Error initializing payment element:', error);
+                return false;
+            }
+        }
+
         // ===== Payment Intent Creation =====
         async function createPaymentIntent() {
             try {
