@@ -1,3 +1,16 @@
+// Start Express server
+// Längst upp i filen, före andra imports
+require('dotenv').config();
+
+// Importera paket
+const express = require("express");
+const app = express();
+const Stripe = require("stripe");
+const cors = require("cors");
+const nodemailer = require("nodemailer");
+const fs = require('fs').promises;
+const path = require('path');
+
 // Handle CORS preflight requests for all API routes
 app.options('*', (req, res) => {
     const allowedOrigins = [
@@ -16,18 +29,6 @@ app.options('*', (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.sendStatus(204);
 });
-// Start Express server
-// Längst upp i filen, före andra imports
-require('dotenv').config();
-
-// Importera paket
-const express = require("express");
-const app = express();
-const Stripe = require("stripe");
-const cors = require("cors");
-const nodemailer = require("nodemailer");
-const fs = require('fs').promises;
-const path = require('path');
 
 // Simple rate limiting (in-memory - for production use Redis)
 const rateLimitMap = new Map();
