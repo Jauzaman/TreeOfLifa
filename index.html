@@ -1022,14 +1022,14 @@
 
     <script>
         // ===== Page Navigation =====
-        function showPage(pageId) {
+        window.showPage = function(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             const page = document.getElementById(pageId);
             if (page) page.classList.add('active');
             window.scrollTo(0,0);
-        }
+        };
 
-        function toggleNav() {
+        window.toggleNav = function() {
             try {
                 const nav = document.getElementById('nav-links');
                 if (nav) {
@@ -1038,9 +1038,9 @@
             } catch (error) {
                 console.error('Error toggling navigation:', error);
             }
-        }
+        };
 
-        function closeNav() {
+        window.closeNav = function() {
             try {
                 const nav = document.getElementById('nav-links');
                 if (nav) {
@@ -1049,7 +1049,7 @@
             } catch (error) {
                 console.error('Error closing navigation:', error);
             }
-        }
+        };
         // ===== KONFIGURATION =====
         // Load from config file - These values should be set during build/deployment
         const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || 'https://tree-of-lifa.vercel.app';
@@ -1576,18 +1576,15 @@
             }, 3000);
         }
 
-        function toggleCart() {
+        window.toggleCart = function() {
             try {
                 const overlay = document.getElementById('cart-overlay');
                 const sidebar = document.getElementById('cart-sidebar');
-                
                 if (!overlay || !sidebar) {
                     console.error('Cart DOM elements not found');
                     return;
                 }
-
                 isCartOpen = !isCartOpen;
-                
                 if (isCartOpen) {
                     overlay.classList.add('show');
                     sidebar.classList.add('open');
