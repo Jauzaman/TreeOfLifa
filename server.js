@@ -3,6 +3,7 @@ require('dotenv').config();
 
 // Importera paket
 const express = require("express");
+const app = express();
 const Stripe = require("stripe");
 const cors = require("cors");
 const nodemailer = require("nodemailer");
