@@ -381,12 +381,6 @@ app.post("/api/create-payment-intent", async (req, res) => {
             });
         }
 
-        if (!isEmailConfirmed(customer.email)) {
-            return res.status(400).json({ 
-                error: 'E-postadressen är inte bekräftad. Kontrollera din e-post för kod.',
-                type: 'email_not_confirmed'
-            });
-        }
 
         if (!items || !Array.isArray(items) || items.length === 0) {
             return res.status(400).json({ 
