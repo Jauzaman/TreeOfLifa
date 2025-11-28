@@ -1022,12 +1022,13 @@
 
     <script>
         // ===== Page Navigation =====
-        window.showPage = function(pageId) {
+        function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             const page = document.getElementById(pageId);
             if (page) page.classList.add('active');
             window.scrollTo(0,0);
-        };
+        }
+        window.showPage = showPage;
 
         window.toggleNav = function() {
             try {
@@ -1379,8 +1380,7 @@
                     window.scrollTo({top: 0, behavior: 'smooth'});
                 }
             }
-        }
-        }
+    }
 
         function toggleNav() {
             try {
