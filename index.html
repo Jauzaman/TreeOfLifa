@@ -1021,6 +1021,35 @@
     </footer>
 
     <script>
+        // ===== Page Navigation =====
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            const page = document.getElementById(pageId);
+            if (page) page.classList.add('active');
+            window.scrollTo(0,0);
+        }
+
+        function toggleNav() {
+            try {
+                const nav = document.getElementById('nav-links');
+                if (nav) {
+                    nav.classList.toggle('show');
+                }
+            } catch (error) {
+                console.error('Error toggling navigation:', error);
+            }
+        }
+
+        function closeNav() {
+            try {
+                const nav = document.getElementById('nav-links');
+                if (nav) {
+                    nav.classList.remove('show');
+                }
+            } catch (error) {
+                console.error('Error closing navigation:', error);
+            }
+        }
         // ===== KONFIGURATION =====
         // Load from config file - These values should be set during build/deployment
         const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || 'https://tree-of-lifa.vercel.app';
@@ -1349,9 +1378,6 @@
                     closeNav();
                     window.scrollTo({top: 0, behavior: 'smooth'});
                 }
-            } catch (error) {
-                console.error('Error navigating to page:', error);
-            }
         }
 
         function toggleNav() {
