@@ -1,7 +1,7 @@
 // Start Express server
 // Längst upp i filen, före andra imports
 require('dotenv').config();
-
+const express = require("express");
 const app = express();
 // ...existing code...
 
