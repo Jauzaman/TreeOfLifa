@@ -3,11 +3,6 @@
 require('dotenv').config();
 
 const app = express();
-const Stripe = require("stripe");
-const cors = require("cors");
-const nodemailer = require("nodemailer");
-const fs = require('fs').promises;
-const path = require('path');
 // ...existing code...
 
 // --- Ensure server starts and logs errors for Railway ---
