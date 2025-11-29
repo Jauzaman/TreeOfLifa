@@ -1164,19 +1164,23 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 inventory = await response.json();
+                // Override inventory for display as requested
+                inventory['Kokosskrubb'] = { available: 10, inStock: true, lowStock: false };
+                inventory['Tvålunderlägg Lifa'] = { available: 50, inStock: true, lowStock: false };
+                inventory['Lifa Handske'] = { available: 3, inStock: true, lowStock: true };
                 console.log('📦 Lager laddat:', inventory);
                 renderProducts();
             } catch (error) {
                 console.error('Fel vid laddning av lager:', error);
                 // Fallback till standardlager om backend inte fungerar
                 inventory = {
-                    'Lifa Handske': { available: 5, inStock: true, lowStock: false },
+                    'Kokosskrubb': { available: 10, inStock: true, lowStock: false },
                     'Tvålunderlägg Lifa': { available: 50, inStock: true, lowStock: false },
-                    'Kokosskrubb': { available: 20, inStock: true, lowStock: false },
-                    'Mindre Lifah': { available: 50, inStock: true, lowStock: false },
-                    'Större Lifah': { available: 3, inStock: true, lowStock: true },
-                    'Aleppotvål': { available: 8, inStock: true, lowStock: false },
-                    'Presentset': { available: 10, inStock: true, lowStock: false }
+                    'Lifa Handske': { available: 3, inStock: true, lowStock: true },
+                    'Mindre Lifah': { available: 0, inStock: false, lowStock: false },
+                    'Större Lifah': { available: 0, inStock: false, lowStock: false },
+                    'Aleppotvål': { available: 0, inStock: false, lowStock: false },
+                    'Presentset': { available: 0, inStock: false, lowStock: false }
                 };
                 renderProducts();
             }
