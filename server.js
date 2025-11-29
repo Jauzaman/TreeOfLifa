@@ -4,6 +4,8 @@ require('dotenv').config();
 const express = require("express");
 const app = express();
 // ...existing code...
+// Serve static files from project root (for favicon, images, etc.)
+app.use(express.static(__dirname));
 // --- EMAIL CONFIRMATION SYSTEM ---
 const emailConfirmations = new Map(); // email -> { code, expires }
 
