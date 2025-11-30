@@ -1812,7 +1812,7 @@
                 const city = document.getElementById('stad').value.trim();
 
                 if (!name || !email || !address || !phone || !postalCode || !city) {
-                    showStatusMessage('Fyll i alla kunduppgifter innan betalning.', 'error');
+                    showStatusMessage('Vänligen fyll i namn & adress först', 'error');
                     throw new Error('Kunduppgifter saknas');
                 }
 
