@@ -1244,7 +1244,7 @@
                             <p>${escapeHtml(product.description)}</p>
                             ${stockInfo}
                             <div class="price">${product.price} kr</div>
-                            <button class="buy-button" ${buttonDisabled} onclick="addToCart(${JSON.stringify(name)}, ${product.price})">
+                            <button class="buy-button" ${buttonDisabled} onclick='addToCart(${JSON.stringify(name)}, ${product.price})'>
                                 ${stock.inStock ? 'Lägg i kundvagn' : 'Slut i lager'}
                             </button>
                         </div>
@@ -1514,12 +1514,12 @@
                             </div>
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <div class="quantity-controls">
-                                    <button class="quantity-btn" onclick="updateQuantity(${JSON.stringify(item.name)}, -1)">−</button>
+                                    <button class="quantity-btn" onclick='updateQuantity(${JSON.stringify(item.name)}, -1)'>−</button>
                                     <span style="margin:0 6px;">${item.quantity}</span>
-                                    <button class="quantity-btn" onclick="updateQuantity(${JSON.stringify(item.name)}, 1)">+</button>
+                                    <button class="quantity-btn" onclick='updateQuantity(${JSON.stringify(item.name)}, 1)'>+</button>
                                 </div>
                                 <button style="background:none; border:none; color:#999; cursor:pointer;" 
-                                        onclick="removeFromCart(${JSON.stringify(item.name)})">
+                                        onclick='removeFromCart(${JSON.stringify(item.name)})'>
                                     Ta bort
                                 </button>
                             </div>
