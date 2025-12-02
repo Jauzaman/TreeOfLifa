@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TreeOfLifa - Analytics Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #3d5a3c;
+            margin-bottom: 30px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #3d5a3c;
+            margin: 10px 0;
+        }
+        .stat-label {
+            color: #666;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .section {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #3d5a3c;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background: #f9f9f9;
+            font-weight: 600;
+            color: #333;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge-danger {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: #666;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .refresh-btn {
+            background: #3d5a3c;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+        .refresh-btn:hover {
+            background: #2d4a2c;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 TreeOfLifa Analytics Dashboard</h1>
+        
+        <button class="refresh-btn" onclick="loadAnalytics()">🔄 Refresh Data</button>
+        
+        <div id="content">
+            <div class="loading">Loading analytics data...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://treeoflifa-production.up.railway.app';
+        const ADMIN_KEY = prompt('Enter admin key:');
+
+        async function loadAnalytics() {
+            const content = document.getElementById('content');
+            content.innerHTML = '<div class="loading">Loading analytics data...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/analytics/dashboard?key=${ADMIN_KEY}`);
+                
+                if (!response.ok) {
+                    throw new Error(response.status === 403 ? 'Invalid admin key' : 'Failed to load analytics');
+                }
+
+                const data = await response.json();
+                displayAnalytics(data);
+            } catch (error) {
+                content.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function displayAnalytics(data) {
+            const conversionRate = data.conversionStats.checkoutAttempts > 0 
+                ? ((data.conversionStats.completedPurchases / data.conversionStats.checkoutAttempts) * 100).toFixed(1)
+                : 0;
+
+            const abandonRate = data.conversionStats.checkoutAttempts > 0
+                ? ((data.conversionStats.checkoutAbandons / data.conversionStats.checkoutAttempts) * 100).toFixed(1)
+                : 0;
+
+            const html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Visitors</div>
+                        <div class="stat-value">${data.totalVisitors}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Sessions</div>
+                        <div class="stat-value">${data.totalSessions}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Checkout Attempts</div>
+                        <div class="stat-value">${data.conversionStats.checkoutAttempts}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Completed Purchases</div>
+                        <div class="stat-value">${data.conversionStats.completedPurchases}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Conversion Rate</div>
+                        <div class="stat-value">${conversionRate}%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Abandonment Rate</div>
+                        <div class="stat-value">${abandonRate}%</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Recent Sessions</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Visitor ID</th>
+                                <th>Session #</th>
+                                <th>Duration</th>
+                                <th>Events</th>
+                                <th>Checkout</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.recentSessions.slice().reverse().map(session => `
+                                <tr>
+                                    <td>${new Date(session.timestamp).toLocaleString('sv-SE')}</td>
+                                    <td>${session.visitorId.slice(0, 12)}...</td>
+                                    <td>${session.sessionCount}</td>
+                                    <td>${session.duration}s</td>
+                                    <td>${session.totalEvents}</td>
+                                    <td>${session.reachedCheckout ? 'Yes' : 'No'}</td>
+                                    <td>
+                                        ${session.completedPurchase 
+                                            ? '<span class="badge badge-success">Purchased</span>' 
+                                            : session.abandonedCheckout 
+                                            ? '<span class="badge badge-danger">Abandoned</span>'
+                                            : session.reachedCheckout
+                                            ? '<span class="badge badge-warning">In Progress</span>'
+                                            : '<span class="badge">Browsing</span>'
+                                        }
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="section">
+                    <h2>Top Visitors</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Visitor ID</th>
+                                <th>First Seen</th>
+                                <th>Sessions</th>
+                                <th>Page Views</th>
+                                <th>Product Views</th>
+                                <th>Checkouts</th>
+                                <th>Purchases</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.topVisitors.map(visitor => `
+                                <tr>
+                                    <td>${visitor.visitorId.slice(0, 12)}...</td>
+                                    <td>${new Date(visitor.firstSeen).toLocaleDateString('sv-SE')}</td>
+                                    <td>${visitor.sessionCount}</td>
+                                    <td>${visitor.totalPageViews}</td>
+                                    <td>${visitor.totalProductViews}</td>
+                                    <td>${visitor.checkoutAttempts}</td>
+                                    <td>${visitor.completedPurchases}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            document.getElementById('content').innerHTML = html;
+        }
+
+        // Load analytics on page load
+        if (ADMIN_KEY) {
+            loadAnalytics();
+        } else {
+            document.getElementById('content').innerHTML = '<div class="error">Admin key required</div>';
+        }
+    </script>
+</body>
+</html>

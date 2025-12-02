@@ -11,6 +11,9 @@
     <!-- Configuration - Load first -->
     <script src="config.js"></script>
     
+    <!-- Analytics - Load early -->
+    <script src="analytics.js"></script>
+    
     <!-- Stripe SDK -->
     <script src="https://js.stripe.com/v3/"></script>
     
@@ -1027,6 +1030,9 @@
             const page = document.getElementById(pageId);
             if (page) page.classList.add('active');
             window.scrollTo(0,0);
+            
+            // Track page view
+            if (analytics) analytics.trackPageView(pageId);
         }
         window.showPage = showPage;
 
@@ -1073,6 +1079,17 @@
         let stripeInitialized = false;
         let clientSecret = null;
         let reservationId = null;
+
+        // ===== Initialize Analytics =====
+        let analytics = null;
+        try {
+            analytics = new Analytics();
+            // Make cart data accessible to analytics
+            window.getCartTotal = () => cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            window.cart = cart;
+        } catch (e) {
+            console.warn('Analytics not available:', e);
+        }
 
         // ===== Product Name Normalization =====
         // Ensures frontend product names always match server inventory keys
@@ -1436,6 +1453,10 @@
                 }
                 
                 console.log('✓ Added to cart:', { name: normalizedName, price, cart });
+                
+                // Track add to cart
+                if (analytics) analytics.trackAddToCart(normalizedName, price, 1);
+                
                 updateCartDisplay();
                 showCartNotification(normalizedName);
             } catch (error) {
@@ -1446,8 +1467,15 @@
         function removeFromCart(name) {
             try {
                 const normalizedName = normalizeProductName(name);
+                const removedItem = cart.find(item => item.name === normalizedName);
                 cart = cart.filter(item => item.name !== normalizedName);
                 console.log('✓ Removed from cart:', normalizedName);
+                
+                // Track removal
+                if (analytics && removedItem) {
+                    analytics.trackRemoveFromCart(normalizedName, removedItem.quantity);
+                }
+                
                 updateCartDisplay();
             } catch (error) {
                 console.error('Error removing from cart:', error);
@@ -1599,6 +1627,12 @@
                     sidebar.classList.add('open');
                     sidebar.setAttribute('aria-hidden', 'false');
                     document.body.style.overflow = 'hidden';
+                    
+                    // Track cart view
+                    if (analytics) {
+                        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                        analytics.trackCartView(cart, total);
+                    }
                 } else {
                     overlay.classList.remove('show');
                     sidebar.classList.remove('open');
@@ -1616,6 +1650,14 @@
                 if (cart.length === 0) {
                     showStatusMessage('Din kundvagn är tom', 'error');
                     return;
+                }
+
+                // Track checkout initiation
+                if (analytics) {
+                    analytics.trackCheckoutStep('initiated', { 
+                        itemCount: cart.length,
+                        cartValue: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+                    });
                 }
 
                 // Kontrollera att alla produkter fortfarande finns i lager
@@ -1645,6 +1687,18 @@
 
         function closeCheckout() {
             try {
+                // Track checkout abandonment if cart is not empty
+                if (cart.length > 0 && analytics) {
+                    const selectedPayment = document.querySelector('input[name="payment"]:checked');
+                    const paymentMethod = selectedPayment ? selectedPayment.value : 'none';
+                    const hasFilledForm = document.getElementById('namn').value.trim() !== '';
+                    
+                    analytics.trackCheckoutAbandonment(
+                        hasFilledForm ? 'form_filled' : 'initial',
+                        paymentMethod === 'none' ? 'no_payment_selected' : 'closed_checkout'
+                    );
+                }
+                
                 const modal = document.getElementById('checkout-modal');
                 if (modal) {
                     modal.classList.remove('show');
@@ -1675,6 +1729,9 @@
 
         async function selectPayment(paymentType) {
             try {
+                // Track payment method selection
+                if (analytics) analytics.trackPaymentMethodSelected(paymentType);
+                
                 document.querySelectorAll('.payment-method').forEach(method => {
                     method.classList.remove('selected');
                 });
@@ -1770,6 +1827,17 @@
                     await processSwishPayment();
                     // Swish assumed successful for now
                 }
+                // Track successful purchase
+                if (analytics) {
+                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                    analytics.trackPurchaseComplete({
+                        orderId: 'ORD-' + Date.now(),
+                        total: subtotal + 49,
+                        items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+                        paymentMethod: paymentMethod
+                    });
+                }
+                
                 // Show confirmation message/modal only after successful payment
                 setTimeout(() => {
                     const confirmation = document.createElement('div');

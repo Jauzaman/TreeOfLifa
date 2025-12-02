@@ -702,3 +702,112 @@ app.post("/api/create-payment-intent", async (req, res) => {
         });
     }
 });
+
+// ===== ANALYTICS ENDPOINT =====
+const analyticsFile = 'analytics.json';
+let analyticsData = { sessions: [], visitors: {} };
+
+async function loadAnalytics() {
+    try {
+        const data = await fs.readFile(analyticsFile, 'utf8');
+        analyticsData = JSON.parse(data);
+        console.log('📊 Analytics data loaded');
+    } catch (error) {
+        console.log('📊 No existing analytics data, starting fresh');
+    }
+}
+
+async function saveAnalytics() {
+    try {
+        await fs.writeFile(analyticsFile, JSON.stringify(analyticsData, null, 2));
+    } catch (error) {
+        console.error('Error saving analytics:', error);
+    }
+}
+
+// Load analytics on startup
+loadAnalytics();
+
+app.post('/api/analytics', async (req, res) => {
+    try {
+        const { visitorId, sessionId, sessionCount, sessionData, summary } = req.body;
+
+        // Store session data
+        analyticsData.sessions.push({
+            visitorId,
+            sessionId,
+            sessionCount,
+            timestamp: new Date().toISOString(),
+            ...summary
+        });
+
+        // Update visitor data
+        if (!analyticsData.visitors[visitorId]) {
+            analyticsData.visitors[visitorId] = {
+                firstSeen: new Date().toISOString(),
+                sessionCount: 0,
+                totalEvents: 0,
+                totalPageViews: 0,
+                totalProductViews: 0,
+                checkoutAttempts: 0,
+                checkoutAbandons: 0,
+                completedPurchases: 0,
+                totalRevenue: 0
+            };
+        }
+
+        const visitor = analyticsData.visitors[visitorId];
+        visitor.lastSeen = new Date().toISOString();
+        visitor.sessionCount++;
+        visitor.totalEvents += summary.totalEvents || 0;
+        visitor.totalPageViews += summary.uniquePageViews || 0;
+        visitor.totalProductViews += summary.uniqueProductViews || 0;
+        
+        if (summary.reachedCheckout) visitor.checkoutAttempts++;
+        if (summary.abandonedCheckout) visitor.checkoutAbandons++;
+        if (summary.completedPurchase) visitor.completedPurchases++;
+
+        // Save to file
+        await saveAnalytics();
+
+        console.log('📊 Analytics saved:', { visitorId, sessionId, summary: summary });
+
+        res.json({ success: true, message: 'Analytics recorded' });
+    } catch (error) {
+        console.error('Error recording analytics:', error);
+        res.status(500).json({ error: 'Failed to record analytics' });
+    }
+});
+
+// Admin endpoint to view analytics
+app.get('/api/analytics/dashboard', (req, res) => {
+    const adminKey = req.query.key;
+    
+    if (adminKey !== process.env.ADMIN_KEY) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    const stats = {
+        totalVisitors: Object.keys(analyticsData.visitors).length,
+        totalSessions: analyticsData.sessions.length,
+        recentSessions: analyticsData.sessions.slice(-50),
+        topVisitors: Object.entries(analyticsData.visitors)
+            .sort((a, b) => b[1].sessionCount - a[1].sessionCount)
+            .slice(0, 10)
+            .map(([id, data]) => ({ visitorId: id, ...data })),
+        conversionStats: {
+            checkoutAttempts: Object.values(analyticsData.visitors).reduce((sum, v) => sum + v.checkoutAttempts, 0),
+            checkoutAbandons: Object.values(analyticsData.visitors).reduce((sum, v) => sum + v.checkoutAbandons, 0),
+            completedPurchases: Object.values(analyticsData.visitors).reduce((sum, v) => sum + v.completedPurchases, 0),
+            totalRevenue: Object.values(analyticsData.visitors).reduce((sum, v) => sum + v.totalRevenue, 0)
+        },
+        abandonmentReasons: analyticsData.sessions
+            .filter(s => s.abandonedCheckout)
+            .map(s => {
+                const checkoutSteps = s.checkoutFunnelSteps || [];
+                return checkoutSteps[checkoutSteps.length - 1] || 'unknown';
+            })
+    };
+
+    res.json(stats);
+});
