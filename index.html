@@ -1074,6 +1074,26 @@
         let clientSecret = null;
         let reservationId = null;
 
+        // ===== Product Name Normalization =====
+        // Ensures frontend product names always match server inventory keys
+        function normalizeProductName(name) {
+            // Trim whitespace and ensure consistent casing
+            const normalized = name.trim();
+            
+            // Map of frontend display names to server inventory keys
+            const nameMap = {
+                'Kokosskrubb': 'Kokosskrubb',
+                'Lifa Handske': 'Lifa Handske',
+                'Tvålunderlägg Lifa': 'Tvålunderlägg Lifa',
+                'Mindre Lifah': 'Mindre Lifah',
+                'Större Lifah': 'Större Lifah',
+                'Aleppotvål': 'Aleppotvål',
+                'Presentset': 'Presentset'
+            };
+            
+            return nameMap[normalized] || normalized;
+        }
+
         // Produktdata (metadata - priserna och bilder)
         const PRODUCTS = {
         
@@ -1277,18 +1297,33 @@
         // ===== Payment Intent Creation =====
         async function createPaymentIntent() {
             try {
+                // Validate customer fields first
+                const name = document.getElementById('namn').value.trim();
+                const email = document.getElementById('email').value.trim();
+                const address = document.getElementById('adress').value.trim();
+                const phone = document.getElementById('telefon').value.trim();
+                const postalCode = document.getElementById('postnummer').value.trim();
+                const city = document.getElementById('stad').value.trim();
+
+                if (!name || !email || !address || !phone || !postalCode || !city) {
+                    const errorMsg = 'Vänligen fyll i namn & adress först';
+                    showStatusMessage(errorMsg, 'error');
+                    throw new Error(errorMsg);
+                }
+
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const total = subtotal + 49; // Lägg till frakt
 
                 const customerData = {
-                    name: document.getElementById('namn').value,
-                    email: document.getElementById('email').value,
+                    name,
+                    email,
                     address: {
-                        line1: document.getElementById('adress').value,
-                        postal_code: document.getElementById('postnummer').value,
-                        city: document.getElementById('stad').value,
+                        line1: address,
+                        postal_code: postalCode,
+                        city: city,
                         country: 'SE'
-                    }
+                    },
+                    phone
                 };
 
                 const paymentData = {
@@ -1298,7 +1333,7 @@
                     items: cart,
                     metadata: {
                         orderId: 'ORD-' + Date.now(),
-                        phone: document.getElementById('telefon').value
+                        phone: phone
                     }
                 };
 
@@ -1311,98 +1346,32 @@
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                    const errorData = await response.json().catch(() => ({ error: 'Network error' }));
+                    console.error('Server error:', errorData);
+                    const errorMsg = errorData.error || `Server error: ${response.status}`;
+                    showStatusMessage(errorMsg, 'error');
+                    throw new Error(errorMsg);
                 }
 
                 const result = await response.json();
                 clientSecret = result.clientSecret;
                 reservationId = result.reservationId;
 
-                console.log('Payment intent created successfully');
+                console.log('✓ Payment intent created successfully', { clientSecret: clientSecret ? 'SET' : 'NULL', reservationId });
                 return result;
 
             } catch (error) {
-                console.error('Error creating payment intent:', error);
+                console.error('❌ Error creating payment intent:', error);
                 
-                if (error.message.includes('lager')) {
-                    showStatusMessage(error.message, 'error');
-                    // Uppdatera lagerstatus
-                    try {
-                        const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                        const total = subtotal + 49; // Lägg till frakt
-
-                        // Validate customer fields
-                        const name = document.getElementById('namn').value.trim();
-                        const email = document.getElementById('email').value.trim();
-                        const address = document.getElementById('adress').value.trim();
-                        const phone = document.getElementById('telefon').value.trim();
-                        const postalCode = document.getElementById('postnummer').value.trim();
-                        const city = document.getElementById('stad').value.trim();
-
-                        if (!name || !email || !address || !phone || !postalCode || !city) {
-                            showStatusMessage('Fyll i alla kunduppgifter innan betalning.', 'error');
-                            throw new Error('Kunduppgifter saknas');
-                        }
-
-                        const customerData = {
-                            name,
-                            email,
-                            address: {
-                                line1: address,
-                                postal_code: postalCode,
-                                city: city,
-                                country: 'SE'
-                            },
-                            phone
-                        };
-
-                        const paymentData = {
-                            amount: total,
-                            currency: 'sek',
-                            customer: customerData,
-                            items: cart,
-                            metadata: {
-                                orderId: 'ORD-' + Date.now(),
-                                phone: phone
-                            }
-                        };
-
-                        console.log('Creating payment intent:', paymentData);
-
-                        const response = await fetch(`${API_BASE_URL}/api/create-payment-intent`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(paymentData)
-                        });
-
-                        if (!response.ok) {
-                            const errorData = await response.json();
-                            showStatusMessage('Fel vid skapande av betalning: ' + (errorData.error || response.status), 'error');
-                            throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-                        }
-
-                        const result = await response.json();
-                        clientSecret = result.clientSecret;
-                        reservationId = result.reservationId;
-
-                        console.log('Payment intent created successfully');
-                        return result;
-                    } catch (error) {
-                        console.error('Error creating payment intent:', error);
-                        if (error.message.includes('lager')) {
-                            showStatusMessage(error.message, 'error');
-                            await loadInventory();
-                        } else {
-                            showStatusMessage('Fel vid skapande av betalning: ' + error.message, 'error');
-                        }
-                        throw error;
-                    }
-                    closeNav();
-                    window.scrollTo({top: 0, behavior: 'smooth'});
+                // Update inventory if it's a stock issue
+                if (error.message && error.message.includes('lager')) {
+                    await loadInventory();
                 }
+                
+                // Re-throw to be handled by caller
+                throw error;
             }
-    }
+        }
 
         function toggleNav() {
             try {
@@ -1434,29 +1403,33 @@
                     return;
                 }
 
+                // Normalize product name to match inventory keys
+                const normalizedName = normalizeProductName(name);
+
                 // Kontrollera lager innan tillägg
-                const stock = inventory[name];
+                const stock = inventory[normalizedName];
                 if (!stock || !stock.inStock) {
-                    showStatusMessage(`${name} är tyvärr slut i lager.`, 'error');
+                    showStatusMessage(`${normalizedName} är tyvärr slut i lager.`, 'error');
                     return;
                 }
 
-                const existing = cart.find(item => item.name === name);
+                const existing = cart.find(item => item.name === normalizedName);
                 const currentQuantity = existing ? existing.quantity : 0;
 
                 if (currentQuantity >= stock.available) {
-                    showStatusMessage(`Endast ${stock.available} ${name} finns i lager.`, 'error');
+                    showStatusMessage(`Endast ${stock.available} ${normalizedName} finns i lager.`, 'error');
                     return;
                 }
 
                 if (existing) {
                     existing.quantity += 1;
                 } else {
-                    cart.push({ name, price, quantity: 1 });
+                    cart.push({ name: normalizedName, price, quantity: 1 });
                 }
                 
+                console.log('✓ Added to cart:', { name: normalizedName, price, cart });
                 updateCartDisplay();
-                showCartNotification(name);
+                showCartNotification(normalizedName);
             } catch (error) {
                 console.error('Error adding to cart:', error);
             }
@@ -1464,7 +1437,9 @@
 
         function removeFromCart(name) {
             try {
-                cart = cart.filter(item => item.name !== name);
+                const normalizedName = normalizeProductName(name);
+                cart = cart.filter(item => item.name !== normalizedName);
+                console.log('✓ Removed from cart:', normalizedName);
                 updateCartDisplay();
             } catch (error) {
                 console.error('Error removing from cart:', error);
@@ -1473,26 +1448,28 @@
 
         function updateQuantity(name, change) {
             try {
-                const item = cart.find(i => i.name === name);
+                const normalizedName = normalizeProductName(name);
+                const item = cart.find(i => i.name === normalizedName);
                 if (!item) {
-                    console.error(`Product '${name}' not found in cart`);
+                    console.error(`Product '${normalizedName}' not found in cart`);
                     return;
                 }
 
                 const newQuantity = item.quantity + change;
                 
                 // Kontrollera lager
-                const stock = inventory[name];
+                const stock = inventory[normalizedName];
                 if (change > 0 && stock && newQuantity > stock.available) {
-                    showStatusMessage(`Endast ${stock.available} ${name} finns i lager.`, 'error');
+                    showStatusMessage(`Endast ${stock.available} ${normalizedName} finns i lager.`, 'error');
                     return;
                 }
                 
                 item.quantity = newQuantity;
                 
                 if (item.quantity <= 0) {
-                    removeFromCart(name);
+                    removeFromCart(normalizedName);
                 } else {
+                    console.log('✓ Updated quantity:', { name: normalizedName, quantity: item.quantity });
                     updateCartDisplay();
                 }
             } catch (error) {
@@ -1710,21 +1687,35 @@
                     showStatusMessage('Förbereder kortbetalning...', 'info');
                     
                     try {
-                        await createPaymentIntent();
-                        const initialized = await initializePaymentElement();
+                        const paymentIntentResult = await createPaymentIntent();
                         
-                        if (initialized) {
-                            showStatusMessage('Kortbetalning redo. Fyll i dina kortuppgifter nedan.', 'info');
-                            // Enable card input and hide info message
-                            var paymentElement = document.getElementById('payment-element');
-                            var cardMsg = document.getElementById('card-info-message');
-                            if (paymentElement) paymentElement.style.pointerEvents = '';
-                            if (paymentElement) paymentElement.style.opacity = '1';
-                            if (cardMsg) cardMsg.style.display = 'none';
+                        // Only initialize payment element if createPaymentIntent succeeded
+                        if (paymentIntentResult && paymentIntentResult.clientSecret) {
+                            const initialized = await initializePaymentElement();
+                            
+                            if (initialized) {
+                                showStatusMessage('Kortbetalning redo. Fyll i dina kortuppgifter nedan.', 'info');
+                                // Enable card input and hide info message
+                                var paymentElement = document.getElementById('payment-element');
+                                var cardMsg = document.getElementById('card-info-message');
+                                if (paymentElement) paymentElement.style.pointerEvents = '';
+                                if (paymentElement) paymentElement.style.opacity = '1';
+                                if (cardMsg) cardMsg.style.display = 'none';
+                            } else {
+                                throw new Error('Failed to initialize payment element');
+                            }
+                        } else {
+                            throw new Error('Failed to create payment intent');
                         }
                     } catch (error) {
-                        console.error('Failed to initialize payment element:', error);
-                        showStatusMessage('Vänligen fyll i uppgifter först', 'error');
+                        console.error('Failed to initialize payment:', error);
+                        // Show user-friendly error based on what went wrong
+                        const errorMsg = error.message.includes('lager') 
+                            ? error.message 
+                            : error.message.includes('kunduppgifter') || error.message.includes('namn & adress')
+                            ? 'Vänligen fyll i alla uppgifter först'
+                            : 'Kunde inte förbereda betalning. Kontrollera dina uppgifter och försök igen.';
+                        showStatusMessage(errorMsg, 'error');
                         if (paymentDetails) paymentDetails.style.display = 'none';
                     }
                     
