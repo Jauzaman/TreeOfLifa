@@ -729,6 +729,11 @@ async function saveAnalytics() {
 loadAnalytics();
 
 app.post('/api/analytics', async (req, res) => {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
     try {
         const { visitorId, sessionId, sessionCount, sessionData, summary } = req.body;
 
@@ -781,6 +786,11 @@ app.post('/api/analytics', async (req, res) => {
 
 // Admin endpoint to view analytics
 app.get('/api/analytics/dashboard', (req, res) => {
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    
     const adminKey = req.query.key;
     
     if (adminKey !== process.env.ADMIN_KEY) {
