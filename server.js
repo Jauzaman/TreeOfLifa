@@ -187,7 +187,10 @@ let inventory = {
     'Mindre Lifah': { stock: 25, reserved: 0 },
     'Större Lifah': { stock: 15, reserved: 0 },
     'Aleppotvål': { stock: 30, reserved: 0 },
-    'Presentset': { stock: 10, reserved: 0 }
+    'Presentset': { stock: 10, reserved: 0 },
+    'Kokosskrubb': { stock: 12, reserved: 0 },
+    'Lifa Handske': { stock: 3, reserved: 0 },
+    'Tvålunderlägg Lifa': { stock: 50, reserved: 0 }
 };
 
 // Spara/läs lagerstatus från fil (för persistens)
@@ -221,6 +224,12 @@ function reserveItems(items) {
     try {
         // Kontrollera att alla produkter finns i lager
         for (const item of items) {
+            console.log('Checking inventory for:', item.name, 'Available inventory keys:', Object.keys(inventory));
+            
+            if (!inventory[item.name]) {
+                throw new Error(`Produkt "${item.name}" finns inte i lagersystemet. Tillgängliga produkter: ${Object.keys(inventory).join(', ')}`);
+            }
+            
             const available = inventory[item.name].stock - inventory[item.name].reserved;
             if (available < item.quantity) {
                 throw new Error(`Inte tillräckligt med ${item.name} i lager. Tillgängligt: ${available}`);

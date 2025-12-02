@@ -1326,11 +1326,18 @@
                     phone
                 };
 
+                // Normalize cart items before sending to server
+                const normalizedCart = cart.map(item => ({
+                    name: normalizeProductName(item.name),
+                    price: item.price,
+                    quantity: item.quantity
+                }));
+
                 const paymentData = {
                     amount: total,
                     currency: 'sek',
                     customer: customerData,
-                    items: cart,
+                    items: normalizedCart,
                     metadata: {
                         orderId: 'ORD-' + Date.now(),
                         phone: phone
@@ -1338,6 +1345,7 @@
                 };
 
                 console.log('Creating payment intent:', paymentData);
+                console.log('Cart items being sent:', normalizedCart.map(i => i.name));
 
                 const response = await fetch(`${API_BASE_URL}/api/create-payment-intent`, {
                     method: 'POST',
