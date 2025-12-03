@@ -69,6 +69,26 @@ class Analytics {
             screenSize: `${window.innerWidth}x${window.innerHeight}`,
             language: navigator.language
         });
+
+        // Proactive send: push a snapshot shortly after load so visitors are counted even if they don't navigate away
+        setTimeout(() => {
+            try {
+                this.trackEvent('session_snapshot');
+                this.sendAnalyticsToServer();
+            } catch (e) {
+                console.warn('Analytics snapshot send failed:', e);
+            }
+        }, 5000);
+
+        // Periodic heartbeat: send updates every 30s during long sessions
+        this._heartbeat = setInterval(() => {
+            try {
+                this.trackEvent('session_heartbeat');
+                this.sendAnalyticsToServer();
+            } catch (e) {
+                console.warn('Analytics heartbeat send failed:', e);
+            }
+        }, 30000);
     }
 
     getSessionDuration() {
@@ -195,6 +215,11 @@ class Analytics {
     }
 
     handleSessionEnd() {
+        // Stop heartbeat when session ends
+        if (this._heartbeat) {
+            clearInterval(this._heartbeat);
+            this._heartbeat = null;
+        }
         this.trackEvent('session_end', {
             duration: this.getSessionDuration(),
             totalEvents: this.sessionData.events.length,
