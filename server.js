@@ -735,7 +735,17 @@ app.post('/api/analytics', async (req, res) => {
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
     try {
-        const { visitorId, sessionId, sessionCount, sessionData, summary } = req.body;
+        // Handle text/plain payloads (sendBeacon default) by parsing JSON manually
+        let body = req.body;
+        if (typeof body === 'string') {
+            try { body = JSON.parse(body); } catch (e) { /* ignore parse error */ }
+        }
+        const { visitorId, sessionId, sessionCount, sessionData, summary } = body || {};
+
+        if (!visitorId || !sessionId || !summary) {
+            console.warn('⚠️ Invalid analytics payload:', { hasBody: !!body, contentType: req.headers['content-type'] });
+            return res.status(400).json({ error: 'Invalid analytics payload' });
+        }
 
         // Store session data
         analyticsData.sessions.push({
@@ -791,17 +801,26 @@ app.get('/api/analytics/dashboard', (req, res) => {
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
-    const adminKey = req.query.key;
-    
+    // Normalize keys to avoid hidden whitespace/newline mismatches
+    const receivedKeyRaw = req.query.key || '';
+    const expectedKeyRaw = process.env.ADMIN_KEY || '';
+    const adminKey = receivedKeyRaw.trim();
+    const expectedKey = expectedKeyRaw.trim();
+
     // Debug logging
     console.log('🔑 Admin key check:');
-    console.log('  Received key:', adminKey);
-    console.log('  Expected key:', process.env.ADMIN_KEY);
-    console.log('  Keys match:', adminKey === process.env.ADMIN_KEY);
-    console.log('  Received key length:', adminKey?.length);
-    console.log('  Expected key length:', process.env.ADMIN_KEY?.length);
+    console.log('  Received key (raw):', receivedKeyRaw);
+    console.log('  Expected key (raw):', expectedKeyRaw);
+    console.log('  Received key (trimmed):', adminKey);
+    console.log('  Expected key (trimmed):', expectedKey);
+    console.log('  Keys match (raw):', receivedKeyRaw === expectedKeyRaw);
+    console.log('  Keys match (trimmed):', adminKey === expectedKey);
+    console.log('  Received key length (raw):', receivedKeyRaw.length);
+    console.log('  Expected key length (raw):', expectedKeyRaw.length);
+    console.log('  Received key length (trimmed):', adminKey.length);
+    console.log('  Expected key length (trimmed):', expectedKey.length);
     
-    if (adminKey !== process.env.ADMIN_KEY) {
+    if (adminKey !== expectedKey) {
         return res.status(403).json({ error: 'Unauthorized' });
     }
 

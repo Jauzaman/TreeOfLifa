@@ -1059,7 +1059,9 @@
         };
         // ===== KONFIGURATION =====
         // Load from config file - These values should be set during build/deployment
-        const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || 'https://tree-of-lifa.vercel.app';
+    const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL || 'https://tree-of-lifa.vercel.app';
+    // Expose base URL globally so analytics.js and other scripts can use it
+    window.API_BASE_URL = API_BASE_URL;
         const STRIPE_PUBLISHABLE_KEY = window.APP_CONFIG?.STRIPE_PUBLISHABLE_KEY || '';
         const PAYPAL_CLIENT_ID = window.APP_CONFIG?.PAYPAL_CLIENT_ID || '';
 

@@ -244,11 +244,36 @@ class Analytics {
                 summary: this.generateSessionSummary()
             };
 
-            // Send to server (non-blocking)
-            navigator.sendBeacon(
-                `${window.API_BASE_URL || ''}/api/analytics`,
-                JSON.stringify(analyticsData)
-            );
+            // Resolve API base URL robustly
+            const base = (window.API_BASE_URL 
+                || (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL)
+                || 'https://treeoflifa-production.up.railway.app').replace(/\/$/, '');
+            const url = `${base}/api/analytics`;
+
+            const payload = JSON.stringify(analyticsData);
+
+            // Prefer sendBeacon with proper MIME type if available
+            let sent = false;
+            try {
+                if (navigator.sendBeacon) {
+                    const blob = new Blob([payload], { type: 'application/json' });
+                    sent = navigator.sendBeacon(url, blob);
+                }
+            } catch (_) {
+                sent = false;
+            }
+
+            // Fallback to fetch (keepalive allows request during unload)
+            if (!sent) {
+                await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: payload,
+                    keepalive: true,
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+            }
         } catch (e) {
             console.warn('Could not send analytics:', e);
         }
