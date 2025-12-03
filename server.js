@@ -793,6 +793,14 @@ app.get('/api/analytics/dashboard', (req, res) => {
     
     const adminKey = req.query.key;
     
+    // Debug logging
+    console.log('🔑 Admin key check:');
+    console.log('  Received key:', adminKey);
+    console.log('  Expected key:', process.env.ADMIN_KEY);
+    console.log('  Keys match:', adminKey === process.env.ADMIN_KEY);
+    console.log('  Received key length:', adminKey?.length);
+    console.log('  Expected key length:', process.env.ADMIN_KEY?.length);
+    
     if (adminKey !== process.env.ADMIN_KEY) {
         return res.status(403).json({ error: 'Unauthorized' });
     }
