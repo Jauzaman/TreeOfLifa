@@ -1827,40 +1827,13 @@
                 }
                 const paymentMethod = selectedPayment.value;
                 if (paymentMethod === 'card') {
-                    // Only show confirmation if payment succeeds
-                    try {
-                        await processStripePayment();
-                    } catch (error) {
-                        // Payment failed, do not show confirmation
-                        return;
-                    }
+                    // Wait for payment to complete - will throw error if cancelled/failed
+                    await processStripePayment();
+                    // If we reach here, payment succeeded - success message is already shown in processStripePayment
                 } else if (paymentMethod === 'swish') {
                     await processSwishPayment();
                     // Swish assumed successful for now
                 }
-                // Track successful purchase
-                if (analytics) {
-                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    analytics.trackPurchaseComplete({
-                        orderId: 'ORD-' + Date.now(),
-                        total: subtotal + 49,
-                        items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
-                        paymentMethod: paymentMethod
-                    });
-                }
-                
-                // Show confirmation message/modal only after successful payment
-                setTimeout(() => {
-                    const confirmation = document.createElement('div');
-                    confirmation.className = 'order-confirmation-modal';
-                    confirmation.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(45,45,36,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;';
-                    confirmation.innerHTML = `<div style="background:#fff;padding:2rem 2.5rem;border-radius:20px;max-width:90vw;text-align:center;box-shadow:0 8px 32px rgba(61,90,60,0.18);">
-                        <h2 style="color:#4a7c59;margin-bottom:1rem;">Tack för din beställning!</h2>
-                        <p style="font-size:1.1rem;margin-bottom:1.2rem;">Din order är mottagen och du får snart en bekräftelse via e-post.</p>
-                        <button onclick="this.parentElement.parentElement.remove();location.reload();" style="margin-top:1rem;padding:0.5rem 1.2rem;background:#4a7c59;color:#fff;border:none;border-radius:8px;font-size:1rem;cursor:pointer;">Stäng</button>
-                    </div>`;
-                    document.body.appendChild(confirmation);
-                }, 1200);
             } catch (error) {
                 console.error('Error placing order:', error);
                 showStatusMessage('Ett fel uppstod vid beställningen.', 'error');
@@ -1913,53 +1886,88 @@
 
                 if (error) {
                     console.error('Stripe payment error:', error);
+                    showLoadingIndicator(false);
+                    isProcessingPayment = false;
+                    
+                    // User cancelled or payment failed
                     if (error.type === 'card_error' || error.type === 'validation_error') {
                         showStatusMessage(error.message, 'error');
+                    } else if (error.message && error.message.includes('cancel')) {
+                        showStatusMessage('Betalning avbruten', 'error');
                     } else {
                         showStatusMessage('Ett fel uppstod vid betalningen. Vänligen försök igen.', 'error');
                     }
-                    throw error;
-                } else {
-                    // Betalning lyckades - skicka orderdata till backend och visa bekräftelse
-                    const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                    const total = subtotal + 49;
-                    const orderId = 'CARD-' + Date.now();
-                    const orderData = {
-                        orderId: orderId,
-                        transactionId: 'STRIPE-' + Math.random().toString(36).substr(2, 9),
-                        items: [...cart],
-                        subtotal,
-                        shipping: 49,
-                        total,
-                        paymentMethod: 'card',
-                        customer: customerData,
-                        timestamp: new Date().toISOString(),
-                        reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
-                    };
-                    try {
-                        const response = await fetch(`${API_BASE_URL}/api/orders`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(orderData)
-                        });
-                        if (response.ok) {
-                            showSuccessMessage(orderData);
-                            cart = [];
-                            updateCartDisplay();
-                            closeCheckout();
-                            toggleCart();
-                            await loadInventory();
-                        } else {
-                            throw new Error('Fel vid skickande av orderdata');
-                        }
-                    } catch (err) {
-                        console.error('Order processing error:', err);
-                        showStatusMessage('Beställning mottagen men bekräftelse-email kunde inte skickas.', 'info');
+                    
+                    // Track abandonment
+                    if (analytics) {
+                        analytics.trackCheckoutAbandonment('payment_failed', error.message);
                     }
+                    
+                    throw error;
                 }
+                
+                // If we reach here, payment succeeded!
+                showLoadingIndicator(false);
+                isProcessingPayment = false;
+                
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const total = subtotal + 49;
+                const orderId = 'CARD-' + Date.now();
+                const orderData = {
+                    orderId: orderId,
+                    transactionId: 'STRIPE-' + Math.random().toString(36).substr(2, 9),
+                    items: [...cart],
+                    subtotal,
+                    shipping: 49,
+                    total,
+                    paymentMethod: 'card',
+                    customer: customerData,
+                    timestamp: new Date().toISOString(),
+                    reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
+                };
+                
+                // Track successful purchase
+                if (analytics) {
+                    analytics.trackPurchaseComplete({
+                        orderId: orderData.orderId,
+                        total: orderData.total,
+                        items: orderData.items,
+                        paymentMethod: 'card'
+                    });
+                }
+                
+                try {
+                    // Send order to backend for email confirmation
+                    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderData)
+                    });
+                    
+                    if (response.ok) {
+                        console.log('✅ Order sent to backend successfully');
+                    } else {
+                        console.warn('⚠️ Order completed but backend notification failed');
+                    }
+                } catch (err) {
+                    console.error('Order backend notification error:', err);
+                }
+                
+                // Show success message
+                showSuccessMessage(orderData);
+                
+                // Clear cart and close checkout
+                cart = [];
+                updateCartDisplay();
+                closeCheckout();
+                
+                // Reload inventory
+                await loadInventory();
+                
             } catch (error) {
+                // Error already handled above with user feedback
                 console.error('Stripe payment error:', error);
-                showStatusMessage('Kortbetalning misslyckades. Vänligen försök igen eller välj Swish.', 'error');
+                throw error; // Re-throw to prevent placeOrder from continuing
             }
         }
 
