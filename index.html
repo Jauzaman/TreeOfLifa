@@ -1588,7 +1588,7 @@
             try {
                 const checkoutSubtotal = document.getElementById('checkout-subtotal');
                 const checkoutTotal = document.getElementById('checkout-total');
-                const shippingCost = 1; // Temporary for testing - normally 49 kr
+                const shippingCost = 49;
                 
                 if (checkoutSubtotal) checkoutSubtotal.textContent = `${subtotal} kr`;
                 if (checkoutTotal) checkoutTotal.textContent = `${subtotal + shippingCost} kr`;
@@ -1910,14 +1910,14 @@
                 isProcessingPayment = false;
                 
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const total = subtotal + 1; // Temporary for testing - normally 49 kr
+                const total = subtotal + 49; // Lägg till frakt
                 const orderId = 'CARD-' + Date.now();
                 const orderData = {
                     orderId: orderId,
                     transactionId: 'STRIPE-' + Math.random().toString(36).substr(2, 9),
                     items: [...cart],
                     subtotal,
-                    shipping: 1, // Temporary for testing - normally 49 kr
+                    shipping: 49,
                     total,
                     paymentMethod: 'card',
                     customer: customerData,
@@ -1973,7 +1973,7 @@
         async function processSwishPayment() {
             try {
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const total = subtotal + 1; // Temporary for testing - normally 49 kr
+                const total = subtotal + 49;
                 const orderId = 'SWISH-' + Date.now();
                 
                 const customerData = {
