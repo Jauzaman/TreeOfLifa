@@ -1110,6 +1110,7 @@
             
             // Map of frontend display names to server inventory keys
             const nameMap = {
+                'Test Produkt': 'Test Produkt',
                 'Kokosskrubb': 'Kokosskrubb',
                 'Lifa Handske': 'Lifa Handske',
                 'Tvålunderlägg Lifa': 'Tvålunderlägg Lifa',
@@ -1124,6 +1125,12 @@
 
         // Produktdata (metadata - priserna och bilder)
         const PRODUCTS = {
+        
+            'Test Produkt': { 
+                price: 1, 
+                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5809.jpg',
+                description: '🧪 TEST PRODUKT - Endast 1 kr för att testa betalningar och orderbekräftelser. Ta bort efter test!'
+            },
         
             'Kokosskrubb': { 
                 price: 25, 
