@@ -1220,6 +1220,7 @@
                 }
                 inventory = await response.json();
                 // Override inventory for display as requested
+                inventory['Test Produkt'] = { available: 100, inStock: true, lowStock: false };
                 inventory['Kokosskrubb'] = { available: 10, inStock: true, lowStock: false };
                 inventory['Tvålunderlägg Lifa'] = { available: 50, inStock: true, lowStock: false };
                 inventory['Lifa Handske'] = { available: 3, inStock: true, lowStock: true };
