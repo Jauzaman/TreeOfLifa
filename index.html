@@ -1110,7 +1110,6 @@
             
             // Map of frontend display names to server inventory keys
             const nameMap = {
-                'Test Produkt': 'Test Produkt',
                 'Kokosskrubb': 'Kokosskrubb',
                 'Lifa Handske': 'Lifa Handske',
                 'Tvålunderlägg Lifa': 'Tvålunderlägg Lifa',
@@ -1125,13 +1124,6 @@
 
         // Produktdata (metadata - priserna och bilder)
         const PRODUCTS = {
-        
-            'Test Produkt': { 
-                price: 1, 
-                image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5809.jpg',
-                description: '🧪 TEST PRODUKT - Endast 1 kr för att testa betalningar och orderbekräftelser. Ta bort efter test!'
-            },
-        
             'Kokosskrubb': { 
                 price: 25, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5805.jpg',
@@ -1220,7 +1212,6 @@
                 }
                 inventory = await response.json();
                 // Override inventory for display as requested
-                inventory['Test Produkt'] = { available: 100, inStock: true, lowStock: false };
                 inventory['Kokosskrubb'] = { available: 10, inStock: true, lowStock: false };
                 inventory['Tvålunderlägg Lifa'] = { available: 50, inStock: true, lowStock: false };
                 inventory['Lifa Handske'] = { available: 3, inStock: true, lowStock: true };
