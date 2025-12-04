@@ -2007,37 +2007,21 @@
                     reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
                 };
                 
-                // Send order to backend with timeout
+                // Send order to backend
                 console.log('📤 Sending order to backend:', orderData.orderId);
                 
-                // Create abort controller with 10 second timeout
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                
-                try {
-                    const response = await fetch(`${API_BASE_URL}/api/orders`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(orderData),
-                        signal: controller.signal
-                    });
+                const response = await fetch(`${API_BASE_URL}/api/orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
 
-                    clearTimeout(timeoutId);
-                    console.log('📨 Backend response status:', response.status);
-                    const responseData = await response.json();
-                    console.log('📨 Backend response:', responseData);
-                    
-                    // Continue with rest of function
-                    if (!response.ok) {
-                        throw new Error(`Backend error: ${response.status} - ${responseData.error}`);
-                    }
-                } catch (fetchError) {
-                    clearTimeout(timeoutId);
-                    if (fetchError.name === 'AbortError') {
-                        console.error('❌ Request timeout (10 seconds)');
-                        throw new Error('Förfrågan tog för lång tid. Vänligen försök igen.');
-                    }
-                    throw fetchError;
+                console.log('📨 Backend response status:', response.status);
+                const responseData = await response.json();
+                console.log('📨 Backend response:', responseData);
+                
+                if (!response.ok) {
+                    throw new Error(`Backend error: ${response.status} - ${responseData.error}`);
                 }
                 if (response.ok) {
                     console.log('✅ Order sent to backend successfully');
