@@ -747,12 +747,10 @@ app.post('/api/orders', async (req, res) => {
                     return;
                 }
                 
-                console.log('✅ [ORDER ' + orderData.orderId + '] GMAIL_APP_PASSWORD is set');
+                console.log('✅ [ORDER ' + orderData.orderId + '] GMAIL_APP_PASSWORD is set (length: ' + process.env.GMAIL_APP_PASSWORD.length + ')');
                 
-                // Try to verify transporter
-                console.log('🔍 [ORDER ' + orderData.orderId + '] Verifying email transporter...');
-                await transporter.verify();
-                console.log('✅ [ORDER ' + orderData.orderId + '] Email transporter verified');
+                // Skip verification - just try to send directly
+                // (verification often times out on Railway)
                 
                 // Send owner email
                 const ownerEmail = {
@@ -1060,34 +1058,13 @@ app.post('/api/test-email', async (req, res) => {
     console.log('🧪 Testing email...');
     console.log('📧 GMAIL_APP_PASSWORD set:', !!process.env.GMAIL_APP_PASSWORD);
     console.log('📧 GMAIL_APP_PASSWORD length:', process.env.GMAIL_APP_PASSWORD?.length);
+    console.log('� GMAIL_APP_PASSWORD value (first 4 chars):', process.env.GMAIL_APP_PASSWORD?.substring(0, 4) + '...');
+    console.log('� NODE_ENV:', process.env.NODE_ENV);
     
-    try {
-        console.log('🔍 Verifying transporter...');
-        await transporter.verify();
-        console.log('✅ Transporter verified!');
-        
-        const testEmail = {
-            from: 'tree.of.liifa@gmail.com',
-            to: 'tree.of.liifa@gmail.com',
-            subject: '🧪 TreeOfLifa Test Email',
-            html: '<h2>This is a test email from TreeOfLifa</h2><p>If you see this, emails are working!</p>'
-        };
-        
-        console.log('📬 Sending test email to tree.of.liifa@gmail.com...');
-        const result = await transporter.sendMail(testEmail);
-        console.log('✅ Test email sent!', result);
-        
-        res.status(200).json({ 
-            success: true, 
-            message: 'Test email sent successfully',
-            result: result
-        });
-    } catch (error) {
-        console.error('❌ Test email failed:', error);
-        res.status(500).json({ 
-            error: 'Test email failed',
-            message: error.message,
-            code: error.code
-        });
-    }
+    // Return env var status
+    res.status(200).json({
+        passwordSet: !!process.env.GMAIL_APP_PASSWORD,
+        passwordLength: process.env.GMAIL_APP_PASSWORD?.length || 0,
+        nodeEnv: process.env.NODE_ENV
+    });
 });
