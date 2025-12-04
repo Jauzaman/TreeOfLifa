@@ -298,11 +298,15 @@ function completeOrder(reservedItems) {
 
 // Konfigurera Gmail SMTP transport
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // TLS (not SSL)
     auth: {
         user: 'tree.of.liifa@gmail.com',
         pass: process.env.GMAIL_APP_PASSWORD
-    }
+    },
+    connectionTimeout: 10000,
+    socketTimeout: 10000
 });
 
 // ----- LAGER-API ENDPOINTS ----- //
