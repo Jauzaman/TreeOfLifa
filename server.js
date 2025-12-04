@@ -736,138 +736,29 @@ app.post('/api/orders', async (req, res) => {
             orderId: orderData.orderId
         });
         
-        // Send emails asynchronously (non-blocking) with timeout
+        // Send emails asynchronously (non-blocking) - Railway blocks SMTP so emails won't send
+        // For now, just log that email sending was attempted
         (async () => {
             try {
-                console.log('📧 [ORDER ' + orderData.orderId + '] Attempting to send emails...');
+                console.log('📧 [ORDER ' + orderData.orderId + '] Order received - Email sending temporarily disabled (Railway SMTP blocked)');
+                console.log('📧 [ORDER ' + orderData.orderId + '] Order details: Customer=' + orderData.customer?.email + ', Total=' + orderData.total + 'kr');
                 
-                // Check if email is configured
-                if (!process.env.GMAIL_APP_PASSWORD) {
-                    console.warn('⚠️ [ORDER ' + orderData.orderId + '] GMAIL_APP_PASSWORD not configured - skipping emails');
-                    return;
+                // Try to send anyway, but don't wait for it
+                if (process.env.GMAIL_APP_PASSWORD) {
+                    try {
+                        await transporter.sendMail({
+                            from: 'tree.of.liifa@gmail.com',
+                            to: 'tree.of.liifa@gmail.com',
+                            subject: `Ny beställning - ${orderData.orderId}`,
+                            text: `Order ID: ${orderData.orderId}\nCustomer: ${orderData.customer?.name}\nEmail: ${orderData.customer?.email}\nTotal: ${orderData.total} kr`
+                        });
+                        console.log('✅ [ORDER ' + orderData.orderId + '] Email sent');
+                    } catch (err) {
+                        console.log('⚠️ [ORDER ' + orderData.orderId + '] Email send attempt failed (expected on Railway): ' + err.message);
+                    }
                 }
-                
-                console.log('✅ [ORDER ' + orderData.orderId + '] GMAIL_APP_PASSWORD is set (length: ' + process.env.GMAIL_APP_PASSWORD.length + ')');
-                
-                // Skip verification - just try to send directly
-                // (verification often times out on Railway)
-                
-                // Send owner email
-                const ownerEmail = {
-                    from: 'tree.of.liifa@gmail.com',
-                    to: 'tree.of.liifa@gmail.com',
-                    subject: `🛒 Ny beställning - ${orderData.orderId}`,
-                    html: `
-                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                            <h2 style="color: #4a7c59;">🎉 Ny beställning inkom!</h2>
-                            
-                            <div style="background: #f8fffe; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                <h3 style="color: #2d4a2b;">Orderinformation</h3>
-                                <p><strong>Order ID:</strong> ${orderData.orderId}</p>
-                                <p><strong>Datum:</strong> ${new Date(orderData.timestamp || Date.now()).toLocaleString('sv-SE')}</p>
-                                <p><strong>Total:</strong> ${orderData.total} kr</p>
-                                <p><strong>Betalmetod:</strong> ${(orderData.paymentMethod || 'Okänd').toUpperCase()}</p>
-                            </div>
-                            
-                            <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                <h3 style="color: #2d4a2b;">Kundinformation</h3>
-                                <p><strong>Namn:</strong> ${orderData.customer?.name || 'Ej angivet'}</p>
-                                <p><strong>Email:</strong> ${orderData.customer?.email || 'Ej angivet'}</p>
-                                <p><strong>Telefon:</strong> ${orderData.customer?.phone || 'Ej angivet'}</p>
-                                <p><strong>Leveransadress:</strong><br>
-                                   ${orderData.customer?.address || ''}<br>
-                                   ${orderData.customer?.postalCode || ''} ${orderData.customer?.city || ''}
-                                </p>
-                            </div>
-                            
-                            <div style="background: #fff; padding: 20px; border: 1px solid #e8e8e8; border-radius: 8px;">
-                                <h3 style="color: #2d4a2b;">Beställda produkter</h3>
-                                ${(orderData.items || []).map(item => `
-                                    <div style="padding: 10px 0; border-bottom: 1px solid #eee;">
-                                        ${item.name} x ${item.quantity} = ${(item.price * item.quantity)} kr
-                                    </div>
-                                `).join('')}
-                                <div style="padding: 15px 0; font-weight: bold; color: #4a7c59;">
-                                    TOTALT: ${orderData.total} kr
-                                </div>
-                            </div>
-                        </div>
-                    `
-                };
-                
-                console.log('📬 [ORDER ' + orderData.orderId + '] Sending owner email to tree.of.liifa@gmail.com...');
-                const ownerResult = await transporter.sendMail(ownerEmail);
-                console.log('✅ [ORDER ' + orderData.orderId + '] Owner email sent:', ownerResult.messageId);
-                
-                // Send customer email
-                if (orderData.customer?.email) {
-                    const customerEmail = {
-                        from: 'tree.of.liifa@gmail.com',
-                        to: orderData.customer.email,
-                        subject: `Orderbekräftelse - TreeOfLifa - ${orderData.orderId}`,
-                        html: `
-                            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                                <div style="text-align: center; margin-bottom: 30px;">
-                                    <h1 style="color: #4a7c59;">🌿 TreeOfLifa</h1>
-                                    <h2 style="color: #2d4a2b;">Tack för din beställning!</h2>
-                                </div>
-                                
-                                <p>Hej ${orderData.customer.name || 'Kund'},</p>
-                                <p>Vi har tagit emot din beställning och den kommer att skickas inom 2-3 arbetsdagar.</p>
-                                
-                                <div style="background: #f8fffe; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                    <h3 style="color: #2d4a2b;">Din beställning</h3>
-                                    <p><strong>Ordernummer:</strong> ${orderData.orderId}</p>
-                                    <p><strong>Datum:</strong> ${new Date(orderData.timestamp || Date.now()).toLocaleString('sv-SE')}</p>
-                                    <p><strong>Total:</strong> ${orderData.total} kr</p>
-                                </div>
-                                
-                                <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                    <h3 style="color: #2d4a2b;">Leveransadress</h3>
-                                    <p>${orderData.customer.name}<br>
-                                       ${orderData.customer.address}<br>
-                                       ${orderData.customer.postalCode} ${orderData.customer.city}</p>
-                                </div>
-                                
-                                <div style="background: #fff; padding: 20px; border: 1px solid #e8e8e8; border-radius: 8px; margin: 20px 0;">
-                                    <h3 style="color: #2d4a2b;">Beställda produkter</h3>
-                                    ${(orderData.items || []).map(item => `
-                                        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee;">
-                                            <span>${item.name} x ${item.quantity}</span>
-                                            <span>${(item.price * item.quantity)} kr</span>
-                                        </div>
-                                    `).join('')}
-                                    <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ddd;">
-                                        <span>Frakt:</span>
-                                        <span>${orderData.shipping || 49} kr</span>
-                                    </div>
-                                    <div style="display: flex; justify-content: space-between; padding: 15px 0; font-weight: bold; font-size: 1.1em; color: #4a7c59;">
-                                        <span>Totalt:</span>
-                                        <span>${orderData.total} kr</span>
-                                    </div>
-                                </div>
-                                
-                                <p>Vi skickar ett spårningsnummer när paketet är på väg.</p>
-                                
-                                <div style="text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid #eee;">
-                                    <p style="color: #666;">Med vänliga hälsningar,<br><strong>TreeOfLifa-teamet</strong></p>
-                                    <p style="color: #666; font-size: 0.9em;">tree.of.liifa@gmail.com</p>
-                                </div>
-                            </div>
-                        `
-                    };
-                    
-                    console.log('📬 [ORDER ' + orderData.orderId + '] Sending customer email to ' + orderData.customer.email + '...');
-                    const customerResult = await transporter.sendMail(customerEmail);
-                    console.log('✅ [ORDER ' + orderData.orderId + '] Customer email sent:', customerResult.messageId);
-                }
-                
-                console.log('✅ [ORDER ' + orderData.orderId + '] All emails sent successfully!');
-                
             } catch (error) {
-                console.error('❌ [ORDER ' + orderData.orderId + '] Email send failed:', error.message);
-                console.error('   Error code:', error.code);
-                console.error('   Error details:', error.response);
+                console.log('⚠️ [ORDER ' + orderData.orderId + '] Email processing error (non-critical): ' + error.message);
             }
         })();
         
