@@ -2045,12 +2045,24 @@
                     // Show Swish payment instructions
                     showLoadingIndicator(false);
                     showStatusMessage(`
-                        <div style="text-align: center;">
-                            <h3 style="color: #4a7c59; margin-bottom: 15px;">Swisha till: <strong style="font-size: 1.2em;">123 164 91 77</strong></h3>
-                            <p style="margin: 15px 0; font-size: 1.1em;">Belopp: <strong>${total} kr</strong></p>
-                            <p style="margin: 15px 0;">Meddelande: <strong style="color: #d4a574; font-size: 1em;">${orderId}</strong></p>
-                            <p style="margin-top: 20px; color: #666;">Din beställning är registrerad och du får en bekräftelse via email.</p>
-                            <p style="margin-top: 10px; font-size: 0.9em;">Du kan nu stänga denna ruta.</p>
+                        <div style="text-align: center; background: linear-gradient(135deg, #2d4a2b 0%, #4a7c59 100%); padding: 40px 30px; border-radius: 12px;">
+                            <h3 style="color: white; margin-bottom: 25px; font-size: 1.4em;">Swisha till:</h3>
+                            <div style="background: white; color: #2d4a2b; padding: 20px; border-radius: 8px; margin-bottom: 25px; font-size: 2em; font-weight: bold; letter-spacing: 2px;">
+                                123 164 91 77
+                            </div>
+                            
+                            <p style="margin: 20px 0; font-size: 1.3em; color: white;"><strong>Belopp:</strong></p>
+                            <div style="background: white; color: #2d4a2b; padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 1.8em; font-weight: bold;">
+                                ${total} kr
+                            </div>
+                            
+                            <p style="margin: 20px 0; font-size: 1.1em; color: #e8f5e8;"><strong>Meddelande:</strong></p>
+                            <div style="background: white; color: #2d4a2b; padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 1.2em; font-weight: bold; word-break: break-all;">
+                                ${orderId}
+                            </div>
+                            
+                            <p style="margin-top: 25px; color: #e8f5e8; font-size: 1em; line-height: 1.5;">Din beställning är registrerad och du får en bekräftelse via email.</p>
+                            <p style="margin-top: 15px; color: #c9e4c9; font-size: 0.95em;">Du kan nu stänga denna ruta.</p>
                         </div>
                     `, 'info');
                     
