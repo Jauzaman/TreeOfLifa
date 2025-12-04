@@ -810,7 +810,8 @@ app.post('/api/orders', async (req, res) => {
                         console.log('✅ [ORDER ' + orderData.orderId + '] Owner email sent:', ownerResult.id);
                     } else {
                         const error = await ownerResponse.json();
-                        console.error('❌ [ORDER ' + orderData.orderId + '] Owner email failed:', error);
+                        console.error('❌ [ORDER ' + orderData.orderId + '] Owner email failed, status:', ownerResponse.status);
+                        console.error('❌ [ORDER ' + orderData.orderId + '] Error details:', JSON.stringify(error));
                     }
                 } catch (err) {
                     console.error('❌ [ORDER ' + orderData.orderId + '] Owner email error:', err.message);
