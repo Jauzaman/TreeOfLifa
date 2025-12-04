@@ -740,12 +740,16 @@ app.post('/api/orders', async (req, res) => {
         (async () => {
             try {
                 console.log('📧 [ORDER ' + orderData.orderId + '] Attempting to send emails via Resend...');
+                console.log('📧 [ORDER ' + orderData.orderId + '] RESEND_API_KEY set:', !!process.env.RESEND_API_KEY);
                 
                 // Check if Resend API key is configured
                 if (!process.env.RESEND_API_KEY) {
                     console.warn('⚠️ [ORDER ' + orderData.orderId + '] RESEND_API_KEY not configured - emails will not be sent');
+                    console.warn('⚠️ Please add RESEND_API_KEY to Railway environment variables');
                     return;
                 }
+                
+                console.log('✅ [ORDER ' + orderData.orderId + '] RESEND_API_KEY found, proceeding with email send...');
                 
                 // Send owner email
                 try {
