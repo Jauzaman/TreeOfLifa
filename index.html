@@ -1171,15 +1171,17 @@
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
 
-        function showStatusMessage(message, type = 'info') {
+        function showStatusMessage(message, type = 'info', duration = 8000) {
             const statusContainer = document.getElementById('payment-status');
             if (statusContainer) {
                 statusContainer.innerHTML = `<div class="${type}-message">${message}</div>`;
                 
-                if (type === 'info') {
+                // Don't auto-clear success or payment instructions - user must close manually
+                // Error messages clear after 8 seconds
+                if (type === 'error' && duration > 0) {
                     setTimeout(() => {
                         statusContainer.innerHTML = '';
-                    }, 8000);
+                    }, duration);
                 }
             }
         }
