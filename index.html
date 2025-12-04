@@ -1985,50 +1985,73 @@
                     city: document.getElementById('stad').value
                 };
 
-                showStatusMessage(`Swish-betalning: ${total} kr till 123 164 91 77. Skriv "${orderId}" som meddelande.`, 'info');
+                // Show Swish payment instructions
+                showLoadingIndicator(false);
+                showStatusMessage(`
+                    <div style="text-align: center;">
+                        <strong style="font-size: 1.2em;">Swisha till: 123 164 91 77</strong>
+                        <p style="margin: 15px 0;">Belopp: <strong>${total} kr</strong></p>
+                        <p>Meddelande: <strong style="color: #d4a574;">${orderId}</strong></p>
+                        <p style="margin-top: 20px; font-size: 0.9em;">Du kan nu stänga denna ruta och bekräfta betalningen när den är genomförd.</p>
+                    </div>
+                `, 'info');
                 
-                // Skicka orderdata till backend
-                setTimeout(async () => {
-                    try {
-                        const orderData = {
-                            orderId: orderId,
-                            transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
-                            items: [...cart],
-                            subtotal, 
-                            shipping: 49, 
-                            total,
-                            paymentMethod: 'swish',
-                            customer: customerData,
-                            timestamp: new Date().toISOString(),
-                            reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
-                        };
-                        
-                        const response = await fetch(`${API_BASE_URL}/api/orders`, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(orderData)
-                        });
+                // Send order to backend and request confirmation email
+                try {
+                    const orderData = {
+                        orderId: orderId,
+                        transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
+                        items: [...cart],
+                        subtotal, 
+                        shipping: 49, 
+                        total,
+                        paymentMethod: 'swish',
+                        customer: customerData,
+                        timestamp: new Date().toISOString(),
+                        reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
+                    };
+                    
+                    const response = await fetch(`${API_BASE_URL}/api/orders`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(orderData)
+                    });
 
-                        if (response.ok) {
-                            showSuccessMessage(orderData);
-                            cart = [];
-                            updateCartDisplay();
-                            closeCheckout();
-                            toggleCart();
-                            await loadInventory(); // Uppdatera lagerstatus
-                        } else {
-                            throw new Error('Fel vid skickande av orderdata');
+                    if (response.ok) {
+                        console.log('✅ Order sent to backend and confirmation email requested');
+                        
+                        // Track successful purchase
+                        if (analytics) {
+                            analytics.trackPurchaseComplete({
+                                orderId: orderData.orderId,
+                                total: orderData.total,
+                                items: orderData.items,
+                                paymentMethod: 'swish'
+                            });
                         }
                         
-                    } catch (error) {
-                        console.error('Order processing error:', error);
-                        showStatusMessage('Beställning mottagen men bekräftelse-email kunde inte skickas.', 'info');
+                        // Clear cart after order is processed
+                        cart = [];
+                        updateCartDisplay();
+                        
+                        // Keep checkout open so user sees Swish instructions
+                        // They'll close it manually after paying
+                        
+                    } else {
+                        console.error('Backend order response error:', response.status);
+                        showStatusMessage('Beställning mottagen men bekräftelse-email kunde inte skickas. Kontakta oss via email.', 'error');
                     }
-                }, 3000);
+                    
+                } catch (error) {
+                    console.error('Order processing error:', error);
+                    showStatusMessage('Beställning mottagen men bekräftelse-email kunde inte skickas. Kontakta oss på tree.of.liifa@gmail.com', 'error');
+                }
 
             } catch (error) {
                 console.error('Swish payment error:', error);
                 showStatusMessage('Fel vid Swish-betalning.', 'error');
+                showLoadingIndicator(false);
+                isProcessingPayment = false;
             }
         }
 
