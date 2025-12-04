@@ -271,7 +271,8 @@ class Analytics {
                     body: payload,
                     keepalive: true,
                     mode: 'cors',
-                    cache: 'no-cache'
+                    cache: 'no-cache',
+                    credentials: 'omit' // avoid triggering credentials mode include
                 });
             }
         } catch (e) {

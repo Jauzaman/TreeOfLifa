@@ -895,8 +895,22 @@ async function saveAnalytics() {
 loadAnalytics();
 
 app.post('/api/analytics', async (req, res) => {
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Set CORS headers dynamically (no wildcard when credentials might be included)
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    } else {
+        // Fallback for unknown origins
+        res.setHeader('Access-Control-Allow-Origin', 'https://treeoflifa.se');
+    }
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
@@ -962,8 +976,21 @@ app.post('/api/analytics', async (req, res) => {
 
 // Admin endpoint to view analytics
 app.get('/api/analytics/dashboard', (req, res) => {
-    // Set CORS headers
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // Set CORS headers dynamically
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+    } else {
+        res.setHeader('Access-Control-Allow-Origin', 'https://treeoflifa.se');
+    }
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     
