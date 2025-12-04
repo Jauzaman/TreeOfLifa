@@ -798,7 +798,7 @@ app.post('/api/orders', async (req, res) => {
                             'Authorization': 'Bearer ' + process.env.RESEND_API_KEY
                         },
                         body: JSON.stringify({
-                            from: 'noreply@treeoflifa.se',
+                            from: 'onboarding@resend.dev',
                             to: 'tree.of.liifa@gmail.com',
                             subject: `🛒 Ny beställning - ${orderData.orderId}`,
                             html: ownerEmailHtml
@@ -879,7 +879,7 @@ app.post('/api/orders', async (req, res) => {
                                 'Authorization': 'Bearer ' + process.env.RESEND_API_KEY
                             },
                             body: JSON.stringify({
-                                from: 'noreply@treeoflifa.se',
+                                from: 'onboarding@resend.dev',
                                 to: orderData.customer.email,
                                 subject: `Orderbekräftelse - TreeOfLifa - ${orderData.orderId}`,
                                 html: customerEmailHtml
