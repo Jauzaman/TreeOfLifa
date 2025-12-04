@@ -1810,18 +1810,23 @@
             try {
                 event.preventDefault();
                 if (isProcessingPayment) return;
+                isProcessingPayment = true;
+                
                 const selectedPayment = document.querySelector('input[name="payment"]:checked');
                 if (!selectedPayment) {
                     showStatusMessage('Vänligen välj en betalmetod', 'error');
+                    isProcessingPayment = false;
                     return;
                 }
                 if (cart.length === 0) {
                     showStatusMessage('Din kundvagn är tom', 'error');
+                    isProcessingPayment = false;
                     return;
                 }
                 const form = document.getElementById('checkout-form');
                 if (!form.checkValidity()) {
                     form.reportValidity();
+                    isProcessingPayment = false;
                     return;
                 }
                 const paymentMethod = selectedPayment.value;
@@ -1831,14 +1836,14 @@
                     // If we reach here, payment succeeded - success message is already shown in processStripePayment
                 } else if (paymentMethod === 'swish') {
                     await processSwishPayment();
-                    // Swish assumed successful for now
+                    // Swish flow completes order directly
                 }
             } catch (error) {
                 console.error('Error placing order:', error);
                 showStatusMessage('Ett fel uppstod vid beställningen.', 'error');
+                isProcessingPayment = false;
             } finally {
                 showLoadingIndicator(false);
-                isProcessingPayment = false;
             }
         }
 
@@ -1972,86 +1977,89 @@
 
         async function processSwishPayment() {
             try {
+                showLoadingIndicator(true);
+                showStatusMessage('Bearbetar Swish-betalning...', 'info');
+                
                 const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
                 const total = subtotal + 49;
                 const orderId = 'SWISH-' + Date.now();
                 
                 const customerData = {
-                    name: document.getElementById('namn').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('telefon').value,
-                    address: document.getElementById('adress').value,
-                    postalCode: document.getElementById('postnummer').value,
-                    city: document.getElementById('stad').value
+                    name: document.getElementById('namn').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('telefon').value.trim(),
+                    address: document.getElementById('adress').value.trim(),
+                    postalCode: document.getElementById('postnummer').value.trim(),
+                    city: document.getElementById('stad').value.trim()
                 };
 
-                // Show Swish payment instructions
-                showLoadingIndicator(false);
-                showStatusMessage(`
-                    <div style="text-align: center;">
-                        <strong style="font-size: 1.2em;">Swisha till: 123 164 91 77</strong>
-                        <p style="margin: 15px 0;">Belopp: <strong>${total} kr</strong></p>
-                        <p>Meddelande: <strong style="color: #d4a574;">${orderId}</strong></p>
-                        <p style="margin-top: 20px; font-size: 0.9em;">Du kan nu stänga denna ruta och bekräfta betalningen när den är genomförd.</p>
-                    </div>
-                `, 'info');
+                // Prepare order data
+                const orderData = {
+                    orderId: orderId,
+                    transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
+                    items: [...cart],
+                    subtotal, 
+                    shipping: 49, 
+                    total,
+                    paymentMethod: 'swish',
+                    customer: customerData,
+                    timestamp: new Date().toISOString(),
+                    reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
+                };
                 
-                // Send order to backend and request confirmation email
-                try {
-                    const orderData = {
-                        orderId: orderId,
-                        transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
-                        items: [...cart],
-                        subtotal, 
-                        shipping: 49, 
-                        total,
-                        paymentMethod: 'swish',
-                        customer: customerData,
-                        timestamp: new Date().toISOString(),
-                        reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
-                    };
-                    
-                    const response = await fetch(`${API_BASE_URL}/api/orders`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(orderData)
-                    });
+                // Send order to backend
+                console.log('📤 Sending order to backend:', orderData.orderId);
+                const response = await fetch(`${API_BASE_URL}/api/orders`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(orderData)
+                });
 
-                    if (response.ok) {
-                        console.log('✅ Order sent to backend and confirmation email requested');
-                        
-                        // Track successful purchase
-                        if (analytics) {
-                            analytics.trackPurchaseComplete({
-                                orderId: orderData.orderId,
-                                total: orderData.total,
-                                items: orderData.items,
-                                paymentMethod: 'swish'
-                            });
-                        }
-                        
-                        // Clear cart after order is processed
-                        cart = [];
-                        updateCartDisplay();
-                        
-                        // Keep checkout open so user sees Swish instructions
-                        // They'll close it manually after paying
-                        
-                    } else {
-                        console.error('Backend order response error:', response.status);
-                        showStatusMessage('Beställning mottagen men bekräftelse-email kunde inte skickas. Kontakta oss via email.', 'error');
+                console.log('📨 Backend response status:', response.status);
+                const responseData = await response.json();
+                console.log('📨 Backend response:', responseData);
+
+                if (response.ok) {
+                    console.log('✅ Order sent to backend successfully');
+                    
+                    // Track successful purchase in analytics
+                    if (analytics) {
+                        analytics.trackPurchaseComplete({
+                            orderId: orderData.orderId,
+                            total: orderData.total,
+                            items: orderData.items,
+                            paymentMethod: 'swish'
+                        });
                     }
                     
-                } catch (error) {
-                    console.error('Order processing error:', error);
-                    showStatusMessage('Beställning mottagen men bekräftelse-email kunde inte skickas. Kontakta oss på tree.of.liifa@gmail.com', 'error');
+                    // Clear cart
+                    cart = [];
+                    updateCartDisplay();
+                    
+                    // Show Swish payment instructions
+                    showLoadingIndicator(false);
+                    showStatusMessage(`
+                        <div style="text-align: center;">
+                            <h3 style="color: #4a7c59; margin-bottom: 15px;">Swisha till: <strong style="font-size: 1.2em;">123 164 91 77</strong></h3>
+                            <p style="margin: 15px 0; font-size: 1.1em;">Belopp: <strong>${total} kr</strong></p>
+                            <p style="margin: 15px 0;">Meddelande: <strong style="color: #d4a574; font-size: 1em;">${orderId}</strong></p>
+                            <p style="margin-top: 20px; color: #666;">Din beställning är registrerad och du får en bekräftelse via email.</p>
+                            <p style="margin-top: 10px; font-size: 0.9em;">Du kan nu stänga denna ruta.</p>
+                        </div>
+                    `, 'info');
+                    
+                } else {
+                    console.error('❌ Backend returned error:', response.status);
+                    showLoadingIndicator(false);
+                    showStatusMessage(`Fel vid beställning (${response.status}). Kontakta oss på tree.of.liifa@gmail.com`, 'error');
+                    throw new Error(`Backend error: ${response.status}`);
                 }
-
+                
             } catch (error) {
-                console.error('Swish payment error:', error);
-                showStatusMessage('Fel vid Swish-betalning.', 'error');
+                console.error('❌ Swish payment error:', error);
                 showLoadingIndicator(false);
-                isProcessingPayment = false;
+                showStatusMessage('Fel vid Swish-betalning. ' + error.message, 'error');
+                throw error;
             }
         }
 
