@@ -735,40 +735,22 @@ app.post('/api/orders', async (req, res) => {
         // Send emails asynchronously (non-blocking) with timeout
         (async () => {
             try {
-                console.log('📧 Attempting to send emails...');
+                console.log('📧 [ORDER ' + orderData.orderId + '] Attempting to send emails...');
                 
                 // Check if email is configured
                 if (!process.env.GMAIL_APP_PASSWORD) {
-                    console.warn('⚠️ GMAIL_APP_PASSWORD not configured - skipping emails');
+                    console.warn('⚠️ [ORDER ' + orderData.orderId + '] GMAIL_APP_PASSWORD not configured - skipping emails');
                     return;
                 }
                 
-                // Set a 5 second timeout for email operations
-                const emailPromise = new Promise(async (resolve, reject) => {
-                    const timeout = setTimeout(() => {
-                        reject(new Error('Email send timeout'));
-                    }, 5000);
-                    
-                    try {
-                        // Try to verify transporter
-                        console.log('🔍 Verifying email transporter...');
-                        await transporter.verify();
-                        console.log('✅ Email transporter verified');
-                        clearTimeout(timeout);
-                        resolve({ verified: true });
-                    } catch (err) {
-                        clearTimeout(timeout);
-                        console.error('❌ Transporter verification failed:', err.message);
-                        reject(err);
-                    }
-                });
+                console.log('✅ [ORDER ' + orderData.orderId + '] GMAIL_APP_PASSWORD is set');
                 
-                await emailPromise;
+                // Try to verify transporter
+                console.log('🔍 [ORDER ' + orderData.orderId + '] Verifying email transporter...');
+                await transporter.verify();
+                console.log('✅ [ORDER ' + orderData.orderId + '] Email transporter verified');
                 
-                // Send emails
-                console.log('📬 Sending emails for order:', orderData.orderId);
-                
-                // Email to owner
+                // Send owner email
                 const ownerEmail = {
                     from: 'tree.of.liifa@gmail.com',
                     to: 'tree.of.liifa@gmail.com',
@@ -811,15 +793,11 @@ app.post('/api/orders', async (req, res) => {
                     `
                 };
                 
-                try {
-                    await transporter.sendMail(ownerEmail);
-                    console.log('✅ Owner email sent successfully');
-                } catch (err) {
-                    console.error('❌ Failed to send owner email:', err.message);
-                    throw err;
-                }
+                console.log('📬 [ORDER ' + orderData.orderId + '] Sending owner email to tree.of.liifa@gmail.com...');
+                const ownerResult = await transporter.sendMail(ownerEmail);
+                console.log('✅ [ORDER ' + orderData.orderId + '] Owner email sent:', ownerResult.messageId);
                 
-                // Email to customer
+                // Send customer email
                 if (orderData.customer?.email) {
                     const customerEmail = {
                         from: 'tree.of.liifa@gmail.com',
@@ -877,20 +855,17 @@ app.post('/api/orders', async (req, res) => {
                         `
                     };
                     
-                    try {
-                        await transporter.sendMail(customerEmail);
-                        console.log('✅ Customer email sent successfully');
-                    } catch (err) {
-                        console.error('❌ Failed to send customer email:', err.message);
-                        throw err;
-                    }
+                    console.log('📬 [ORDER ' + orderData.orderId + '] Sending customer email to ' + orderData.customer.email + '...');
+                    const customerResult = await transporter.sendMail(customerEmail);
+                    console.log('✅ [ORDER ' + orderData.orderId + '] Customer email sent:', customerResult.messageId);
                 }
                 
-                console.log('✅ All emails sent successfully for order:', orderData.orderId);
+                console.log('✅ [ORDER ' + orderData.orderId + '] All emails sent successfully!');
                 
             } catch (error) {
-                console.error('⚠️ Email send failed (order still completed):', error.message);
-                console.error('   Stack:', error.stack);
+                console.error('❌ [ORDER ' + orderData.orderId + '] Email send failed:', error.message);
+                console.error('   Error code:', error.code);
+                console.error('   Error details:', error.response);
             }
         })();
         
@@ -1074,4 +1049,41 @@ app.get('/api/analytics/dashboard', (req, res) => {
     };
 
     res.json(stats);
+});
+
+// ===== TEST EMAIL ENDPOINT =====
+app.post('/api/test-email', async (req, res) => {
+    console.log('🧪 Testing email...');
+    console.log('📧 GMAIL_APP_PASSWORD set:', !!process.env.GMAIL_APP_PASSWORD);
+    console.log('📧 GMAIL_APP_PASSWORD length:', process.env.GMAIL_APP_PASSWORD?.length);
+    
+    try {
+        console.log('🔍 Verifying transporter...');
+        await transporter.verify();
+        console.log('✅ Transporter verified!');
+        
+        const testEmail = {
+            from: 'tree.of.liifa@gmail.com',
+            to: 'tree.of.liifa@gmail.com',
+            subject: '🧪 TreeOfLifa Test Email',
+            html: '<h2>This is a test email from TreeOfLifa</h2><p>If you see this, emails are working!</p>'
+        };
+        
+        console.log('📬 Sending test email to tree.of.liifa@gmail.com...');
+        const result = await transporter.sendMail(testEmail);
+        console.log('✅ Test email sent!', result);
+        
+        res.status(200).json({ 
+            success: true, 
+            message: 'Test email sent successfully',
+            result: result
+        });
+    } catch (error) {
+        console.error('❌ Test email failed:', error);
+        res.status(500).json({ 
+            error: 'Test email failed',
+            message: error.message,
+            code: error.code
+        });
+    }
 });
