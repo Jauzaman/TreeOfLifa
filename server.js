@@ -736,20 +736,20 @@ app.post('/api/orders', async (req, res) => {
             orderId: orderData.orderId
         });
         
-        // Send emails asynchronously using Resend API (works on Railway!)
+        // Send emails asynchronously using SendGrid API (works on Railway!)
         (async () => {
             try {
-                console.log('📧 [ORDER ' + orderData.orderId + '] Attempting to send emails via Resend...');
-                console.log('📧 [ORDER ' + orderData.orderId + '] RESEND_API_KEY set:', !!process.env.RESEND_API_KEY);
+                console.log('📧 [ORDER ' + orderData.orderId + '] Attempting to send emails via SendGrid...');
+                console.log('📧 [ORDER ' + orderData.orderId + '] SENDGRID_API_KEY set:', !!process.env.SENDGRID_API_KEY);
                 
-                // Check if Resend API key is configured
-                if (!process.env.RESEND_API_KEY) {
-                    console.warn('⚠️ [ORDER ' + orderData.orderId + '] RESEND_API_KEY not configured - emails will not be sent');
-                    console.warn('⚠️ Please add RESEND_API_KEY to Railway environment variables');
+                // Check if SendGrid API key is configured
+                if (!process.env.SENDGRID_API_KEY) {
+                    console.warn('⚠️ [ORDER ' + orderData.orderId + '] SENDGRID_API_KEY not configured - emails will not be sent');
+                    console.warn('⚠️ Please add SENDGRID_API_KEY to Railway environment variables');
                     return;
                 }
                 
-                console.log('✅ [ORDER ' + orderData.orderId + '] RESEND_API_KEY found, proceeding with email send...');
+                console.log('✅ [ORDER ' + orderData.orderId + '] SENDGRID_API_KEY found, proceeding with email send...');
                 
                 // Send owner email
                 try {
@@ -791,23 +791,27 @@ app.post('/api/orders', async (req, res) => {
                     `;
                     
                     console.log('� [ORDER ' + orderData.orderId + '] Sending owner email via Resend...');
-                    const ownerResponse = await fetch('https://api.resend.com/emails', {
+                    const ownerResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': 'Bearer ' + process.env.RESEND_API_KEY
+                            'Authorization': 'Bearer ' + process.env.SENDGRID_API_KEY
                         },
                         body: JSON.stringify({
-                            from: 'onboarding@resend.dev',
-                            to: 'tree.of.liifa@gmail.com',
+                            personalizations: [{
+                                to: [{ email: 'tree.of.liifa@gmail.com' }]
+                            }],
+                            from: { email: 'noreply@treeoflifa.se', name: 'TreeOfLifa' },
                             subject: `🛒 Ny beställning - ${orderData.orderId}`,
-                            html: ownerEmailHtml
+                            content: [{
+                                type: 'text/html',
+                                value: ownerEmailHtml
+                            }]
                         })
                     });
                     
-                    if (ownerResponse.ok) {
-                        const ownerResult = await ownerResponse.json();
-                        console.log('✅ [ORDER ' + orderData.orderId + '] Owner email sent:', ownerResult.id);
+                    if (ownerResponse.ok || ownerResponse.status === 202) {
+                        console.log('✅ [ORDER ' + orderData.orderId + '] Owner email sent via SendGrid');
                     } else {
                         const error = await ownerResponse.json();
                         console.error('❌ [ORDER ' + orderData.orderId + '] Owner email failed, status:', ownerResponse.status);
@@ -822,11 +826,6 @@ app.post('/api/orders', async (req, res) => {
                     try {
                         const customerEmailHtml = `
                             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                                <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                                    <strong>⚠️ TESTLÄGE:</strong> Detta är kundbekräftelsen som skulle ha skickats till: <strong>${orderData.customer.email}</strong>
-                                    <br><small>När domänen är verifierad skickas detta automatiskt till kunden.</small>
-                                </div>
-                                
                                 <div style="text-align: center; margin-bottom: 30px;">
                                     <h1 style="color: #4a7c59;">🌿 TreeOfLifa</h1>
                                     <h2 style="color: #2d4a2b;">Tack för din beställning!</h2>
@@ -880,24 +879,28 @@ app.post('/api/orders', async (req, res) => {
                             </div>
                         `;
                         
-                        console.log('📬 [ORDER ' + orderData.orderId + '] Sending customer email to ' + orderData.customer.email + ' via Resend...');
-                        const customerResponse = await fetch('https://api.resend.com/emails', {
+                        console.log('📬 [ORDER ' + orderData.orderId + '] Sending customer email to ' + orderData.customer.email + ' via SendGrid...');
+                        const customerResponse = await fetch('https://api.sendgrid.com/v3/mail/send', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'Authorization': 'Bearer ' + process.env.RESEND_API_KEY
+                                'Authorization': 'Bearer ' + process.env.SENDGRID_API_KEY
                             },
                             body: JSON.stringify({
-                                from: 'onboarding@resend.dev',
-                                to: 'tree.of.liifa@gmail.com',
-                                subject: `Orderbekräftelse för ${orderData.customer.email} - TreeOfLifa - ${orderData.orderId}`,
-                                html: customerEmailHtml
+                                personalizations: [{
+                                    to: [{ email: orderData.customer.email }]
+                                }],
+                                from: { email: 'noreply@treeoflifa.se', name: 'TreeOfLifa' },
+                                subject: `Orderbekräftelse - TreeOfLifa - ${orderData.orderId}`,
+                                content: [{
+                                    type: 'text/html',
+                                    value: customerEmailHtml
+                                }]
                             })
                         });
                         
-                        if (customerResponse.ok) {
-                            const customerResult = await customerResponse.json();
-                            console.log('✅ [ORDER ' + orderData.orderId + '] Customer email sent:', customerResult.id);
+                        if (customerResponse.ok || customerResponse.status === 202) {
+                            console.log('✅ [ORDER ' + orderData.orderId + '] Customer email sent via SendGrid to ' + orderData.customer.email);
                         } else {
                             const error = await customerResponse.json();
                             console.error('❌ [ORDER ' + orderData.orderId + '] Customer email failed:', error);
