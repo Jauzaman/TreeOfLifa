@@ -817,11 +817,16 @@ app.post('/api/orders', async (req, res) => {
                     console.error('❌ [ORDER ' + orderData.orderId + '] Owner email error:', err.message);
                 }
                 
-                // Send customer email
+                // Send customer email - send to owner's email with customer info
                 if (orderData.customer?.email) {
                     try {
                         const customerEmailHtml = `
                             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                                <div style="background: #fff3cd; border: 2px solid #ffc107; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                                    <strong>⚠️ TESTLÄGE:</strong> Detta är kundbekräftelsen som skulle ha skickats till: <strong>${orderData.customer.email}</strong>
+                                    <br><small>När domänen är verifierad skickas detta automatiskt till kunden.</small>
+                                </div>
+                                
                                 <div style="text-align: center; margin-bottom: 30px;">
                                     <h1 style="color: #4a7c59;">🌿 TreeOfLifa</h1>
                                     <h2 style="color: #2d4a2b;">Tack för din beställning!</h2>
@@ -829,6 +834,10 @@ app.post('/api/orders', async (req, res) => {
                                 
                                 <p>Hej ${orderData.customer.name || 'Kund'},</p>
                                 <p>Vi har tagit emot din beställning och den kommer att skickas inom 2-3 arbetsdagar.</p>
+                                
+                                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
+                                    <p style="margin: 0; font-size: 0.9em; color: #664d03;"><strong>📧 Testläge:</strong> Denna bekräftelse skickas till tree.of.liifa@gmail.com för testning. Den verkliga kunden (${orderData.customer.email}) kommer att få denna e-post när domänverifieringen är klar.</p>
+                                </div>
                                 
                                 <div style="background: #f8fffe; padding: 20px; border-radius: 8px; margin: 20px 0;">
                                     <h3 style="color: #2d4a2b;">Din beställning</h3>
@@ -880,8 +889,8 @@ app.post('/api/orders', async (req, res) => {
                             },
                             body: JSON.stringify({
                                 from: 'onboarding@resend.dev',
-                                to: orderData.customer.email,
-                                subject: `Orderbekräftelse - TreeOfLifa - ${orderData.orderId}`,
+                                to: 'tree.of.liifa@gmail.com',
+                                subject: `Orderbekräftelse för ${orderData.customer.email} - TreeOfLifa - ${orderData.orderId}`,
                                 html: customerEmailHtml
                             })
                         });
