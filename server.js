@@ -837,10 +837,6 @@ app.post('/api/orders', async (req, res) => {
                                 <p>Hej ${orderData.customer.name || 'Kund'},</p>
                                 <p>Vi har tagit emot din beställning och den kommer att skickas inom 2-3 arbetsdagar.</p>
                                 
-                                <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
-                                    <p style="margin: 0; font-size: 0.9em; color: #664d03;"><strong>📧 Testläge:</strong> Denna bekräftelse skickas till tree.of.liifa@gmail.com för testning. Den verkliga kunden (${orderData.customer.email}) kommer att få denna e-post när domänverifieringen är klar.</p>
-                                </div>
-                                
                                 <div style="background: #f8fffe; padding: 20px; border-radius: 8px; margin: 20px 0;">
                                     <h3 style="color: #2d4a2b;">Din beställning</h3>
                                     <p><strong>Ordernummer:</strong> ${orderData.orderId}</p>
