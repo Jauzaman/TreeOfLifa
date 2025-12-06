@@ -694,6 +694,22 @@
             transform: none;
         }
 
+        /* ===== Rating Buttons ===== */
+        .rating-btn {
+            background: none;
+            border: 2px solid #ddd;
+            padding: 0.5rem 0.8rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            opacity: 0.5;
+        }
+        .rating-btn:hover {
+            border-color: var(--earth-medium);
+            opacity: 0.8;
+        }
+
         .close-cart {
             background: none; 
             border: none; 
@@ -1023,12 +1039,59 @@
         </div>
     </div>
 
+    <!-- Review Modal -->
+    <div class="checkout-modal" id="review-modal" aria-hidden="true">
+        <div class="checkout-content" style="max-width: 500px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Skriv en recension</h2>
+                <button class="close-cart" onclick="closeReviewModal()">×</button>
+            </div>
+
+            <form id="review-form" onsubmit="submitReview(event)">
+                <div class="form-group">
+                    <label for="review-product">Produkt</label>
+                    <select id="review-product" required style="width: 100%; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="">Välj produkt...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="review-name">Ditt namn</label>
+                    <input type="text" id="review-name" required placeholder="Namn" />
+                </div>
+
+                <div class="form-group">
+                    <label for="review-rating">Betyg</label>
+                    <div style="display: flex; gap: 0.5rem; margin: 0.5rem 0;">
+                        <button type="button" class="rating-btn" data-rating="1" onclick="selectRating(1)">⭐</button>
+                        <button type="button" class="rating-btn" data-rating="2" onclick="selectRating(2)">⭐⭐</button>
+                        <button type="button" class="rating-btn" data-rating="3" onclick="selectRating(3)">⭐⭐⭐</button>
+                        <button type="button" class="rating-btn" data-rating="4" onclick="selectRating(4)">⭐⭐⭐⭐</button>
+                        <button type="button" class="rating-btn" data-rating="5" onclick="selectRating(5)">⭐⭐⭐⭐⭐</button>
+                    </div>
+                    <input type="hidden" id="review-rating" value="" required />
+                    <small id="rating-display" style="color: #666;">Välj ett betyg</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="review-text">Din recension (10-500 tecken)</label>
+                    <textarea id="review-text" required placeholder="Vad tycker du om produkten?" style="width: 100%; min-height: 100px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-family: inherit;"></textarea>
+                </div>
+
+                <div id="review-status"></div>
+
+                <button type="submit" class="order-button">Skicka recension</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="footer-content">
             <h3 style="color: #7fb069; margin-bottom: 0.6rem;">TreeOfLifa</h3>
             <p>Naturlig skönhet, hållbar framtid</p>
             <p style="margin-top: 0.4rem;">Kontakta oss: tree.of.liifa@gmail.com</p>
+            <button onclick="openReviewModal()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #7fb069; color: white; border: none; border-radius: 4px; cursor: pointer;">✍️ Skriv en recension</button>
         </div>
     </footer>
 
@@ -1127,39 +1190,46 @@
             'Kokosskrubb': { 
                 price: 25, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5805.jpg',
-                description: 'En skrubb gjord av kokosfiber. Perfekt för hud som behöver djuprengöras. Kan även klippas till tvålunderlägg.'
+                description: 'Naturlig kokosfiber skrubb för intensiv rengöring. Perfekt för kroppsskrubb och exfoliering av torr hud. 100% biologiskt nedbrytbar.',
+                longDescription: 'Vår kokosfiber skrubb är gjord av ekologisk kokosfibrer som erbjuder en djup och kraftig rengöring. Idealisk för att avlägsna död hud och förbättra blodcirkulationen. Kan även klippas till tvålunderlägg för tvål. Miljövänlig och hållbar.'
             },
             
             'Lifa Handske': { 
                 price: 50, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5802.jpg',
-                description: 'Otroligt mysig duschkamrat som har en mjuk härlig sida och en liten del med lifa som är exfolierande.'
+                description: 'Mysig duschhandske med mjuk framidasida och exfolierande liffavävnad. Perfekt för daglig körpivård.',
+                longDescription: 'Denna unika dusch handske kombinerar mjukhet och exfoliering. Den mjuka sidan är perfekt för mild rengöring medan liffasidan ger en kraftig exfoliering. Perfekt för hela kroppen och ansiktet. 100% naturlig och miljövänlig.'
             },
             
             'Tvålunderlägg Lifa': { 
                 price: 25, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5816.jpg',
-                description: 'Lifa Tvålunderlägg, perfekt under din tvål, mäter ca 5-7cm i diameter och 1cm tjocklek. Blekt.'
+                description: 'Blekt luffasvamp tvålunderlägg. Håller din tvål torr och ger bättre luftcirkulation. Ca 5-7cm i diameter.',
+                longDescription: 'Det perfekta tillbehöret för din tvål! Vårt tvålunderlägg är gjort av naturlig luffasvamp som håller din tvål torr mellan användningar. Det låter luften cirkulera runt tvålen och förlängar dess livslängd. Blekt och helt naturligt.'
             },
             'Mindre Lifah': { 
                 price: 50, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5809.jpg',
-                description: 'Vår populäraste luffasvamp, lite kompaktare, perfekt för daglig användning. Mäter ca 10cm längd och 5-8cm i diameter'
+                description: 'Naturlig luffasvamp för daglig kroppskrubb och exfoliering. Perfekt storlek för handledning och ansiktsvård. Ca 10cm lång.',
+                longDescription: 'Vår populäraste och mest älskade luffasvamp! Denna mindre variant är perfekt för daglig användning, tack vare sin hanterliga storlek. Den ekologiska odlade luffasvampen ger en mild men effektiv exfoliering. Mäter cirka 10cm längd och 5-8cm i diameter. 100% naturlig och biologiskt nedbrytbar.'
             },
             'Större Lifah': { 
                 price: 75, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG',
-                description: 'Extra tjock och hållbar luffasvamp för djup rengöring.'
+                description: 'Extra tjock och hållbar luffasvamp för grundlig djuprengöring och exfoliering. Stor storlek för effektiv användning.',
+                longDescription: 'Denna större och tjockare luffasvamp är gjord för de som vill ha en mer intensiv rengöring. Perfekt för hela kroppen och långvarigt bruk. Den extra tjocka konstruktionen gör den mycket hållbar och resistent. Ekologisk och 100% naturlig, helt utan kemikalier.'
             },
             'Aleppotvål': { 
                 price: 70, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG',
-                description: 'En mild 100% naturlig tvål som är gjord på ett urgammalt recept.'
+                description: 'Naturlig Aleppotvål gjord på ett gammalt hemlighetsrecept. Mild och fuktig tvål för känslig hud. 100% ekologisk.',
+                longDescription: 'Denna autentiska Aleppotvål är tillverkad enligt ett urgammalt recept från Aleppo, Syrien. Gjord på olivolja och lautelolja, denna tvål är extremt mild och perfekt för känslig och torr hud. Den innehåller inga kemikalier eller konstgjorda additiver. Perfekt för både ansikte och kropp. En tvål som har använts i århundraden för sin läkande egenskaper.'
             },
             'Presentset': { 
                 price: 145, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png',
-                description: 'Komplett set i en fin presentask, perfekt som gåva.'
+                description: 'Komplett naturligt presentset i fin presentbox. Perfekt gåva för hälsa- och naturvårdsentusiaster.',
+                longDescription: 'Vår premium presentset innehåller ett urval av våra mest populära produkter, paketerade i en vacker gåvask. Perfekt för att ge en komplett naturlig hudvårdsupplevelse. Innehåller exfolierande verktyg och naturlig tvål. En genomtänkt gåva som visar att du bryr dig om naturlig skönhet och miljön. Miljövänlig packaging.'
             }
         };
 
@@ -1271,6 +1341,9 @@
                         <div class="product-info">
                             <h3>${escapeHtml(name)}</h3>
                             <p>${escapeHtml(product.description)}</p>
+                            <div id="reviews-${name.replace(/\s+/g, '-')}" class="product-reviews" style="margin: 0.5rem 0; font-size: 0.9em; color: #666;">
+                                <span style="display: inline-block;">⭐ Laddar recensioner...</span>
+                            </div>
                             ${stockInfo}
                             <div class="price">${product.price} kr</div>
                             <button class="buy-button" ${buttonDisabled} onclick='addToCart(${JSON.stringify(name)}, ${product.price})'>
@@ -1283,6 +1356,33 @@
             
             if (homeGrid) homeGrid.innerHTML = productsHTML;
             if (pageGrid) pageGrid.innerHTML = productsHTML;
+            
+            // Load reviews for each product
+            Object.keys(PRODUCTS).forEach(productName => {
+                loadProductReviews(productName);
+            });
+        }
+        
+        // Load and display reviews for a product
+        async function loadProductReviews(productName) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/reviews/${encodeURIComponent(productName)}`);
+                if (!response.ok) throw new Error('Failed to load reviews');
+                
+                const data = await response.json();
+                const reviewsEl = document.getElementById(`reviews-${productName.replace(/\s+/g, '-')}`);
+                if (!reviewsEl) return;
+                
+                if (data.stats.totalReviews === 0) {
+                    reviewsEl.innerHTML = '<span style="color: #999;">Ingen recensioner än. Bli först!</span>';
+                } else {
+                    const avgRating = parseFloat(data.stats.averageRating);
+                    const stars = '⭐'.repeat(Math.round(avgRating)) + (avgRating % 1 >= 0.5 ? '✨' : '');
+                    reviewsEl.innerHTML = `${stars} ${avgRating}/5 (${data.stats.totalReviews} recensioner)`;
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+            }
         }
 
         // ===== Stripe Initialization =====
@@ -2204,8 +2304,126 @@
             // Uppdatera lager var 30:e sekund
             setInterval(loadInventory, 30000);
 
-            console.log('TreeOfLifa website fully loaded with live payments and inventory system');
+            // Populate review product dropdown
+            const reviewProductSelect = document.getElementById('review-product');
+            if (reviewProductSelect) {
+                Object.keys(PRODUCTS).forEach(productName => {
+                    const option = document.createElement('option');
+                    option.value = productName;
+                    option.textContent = productName;
+                    reviewProductSelect.appendChild(option);
+                });
+            }
+
+            console.log('TreeOfLifa website fully loaded with live payments, inventory and reviews system');
         });
+
+        // ===== REVIEW MODAL FUNCTIONS =====
+        let selectedRating = 0;
+
+        function openReviewModal() {
+            const modal = document.getElementById('review-modal');
+            if (modal) {
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeReviewModal() {
+            const modal = document.getElementById('review-modal');
+            if (modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+                // Reset form
+                document.getElementById('review-form').reset();
+                selectedRating = 0;
+                updateRatingDisplay();
+            }
+        }
+
+        function selectRating(rating) {
+            selectedRating = rating;
+            document.getElementById('review-rating').value = rating;
+            updateRatingDisplay();
+        }
+
+        function updateRatingDisplay() {
+            const displayEl = document.getElementById('rating-display');
+            const buttons = document.querySelectorAll('.rating-btn');
+            
+            buttons.forEach((btn, index) => {
+                if (index < selectedRating) {
+                    btn.style.opacity = '1';
+                    btn.style.transform = 'scale(1.1)';
+                } else {
+                    btn.style.opacity = '0.5';
+                    btn.style.transform = 'scale(1)';
+                }
+            });
+            
+            if (selectedRating > 0) {
+                displayEl.textContent = `${selectedRating} stjärnor`;
+            } else {
+                displayEl.textContent = 'Välj ett betyg';
+            }
+        }
+
+        async function submitReview(event) {
+            event.preventDefault();
+            
+            const productName = document.getElementById('review-product').value;
+            const customerName = document.getElementById('review-name').value.trim();
+            const rating = parseInt(document.getElementById('review-rating').value);
+            const reviewText = document.getElementById('review-text').value.trim();
+            
+            if (!productName || !customerName || !rating || !reviewText) {
+                showReviewStatus('Vänligen fyll i alla fält', 'error');
+                return;
+            }
+            
+            if (reviewText.length < 10) {
+                showReviewStatus('Recensionen måste vara minst 10 tecken', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/reviews`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        productName,
+                        customerName,
+                        rating,
+                        reviewText
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    showReviewStatus(error.error || 'Något gick fel', 'error');
+                    return;
+                }
+                
+                showReviewStatus('Tack för din recension! ⭐', 'success');
+                setTimeout(() => {
+                    // Reload reviews
+                    loadProductReviews(productName);
+                    closeReviewModal();
+                }, 2000);
+            } catch (error) {
+                console.error('Error submitting review:', error);
+                showReviewStatus('Kunde inte skicka recensionen', 'error');
+            }
+        }
+
+        function showReviewStatus(message, type = 'info') {
+            const statusEl = document.getElementById('review-status');
+            if (statusEl) {
+                statusEl.innerHTML = `<div class="${type}-message" style="margin-bottom: 1rem;">${message}</div>`;
+            }
+        }
     </script>
 </body>
 </html>

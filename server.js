@@ -1098,13 +1098,153 @@ app.get('/api/analytics/dashboard', (req, res) => {
     res.json(stats);
 });
 
+// ===== PRODUCT REVIEWS SYSTEM =====
+const REVIEWS_FILE = 'reviews.json';
+let reviews = {};
+
+async function loadReviews() {
+    try {
+        const data = await fs.readFile(REVIEWS_FILE, 'utf8');
+        reviews = JSON.parse(data);
+        console.log('⭐ Reviews loaded');
+    } catch (error) {
+        console.log('⭐ No existing reviews, starting fresh');
+        reviews = {};
+        await saveReviews();
+    }
+}
+
+async function saveReviews() {
+    try {
+        await fs.writeFile(REVIEWS_FILE, JSON.stringify(reviews, null, 2));
+    } catch (error) {
+        console.error('Error saving reviews:', error);
+    }
+}
+
+// Load reviews on startup
+loadReviews();
+
+// Get reviews for a product
+app.get('/api/reviews/:productName', (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    try {
+        const productName = decodeURIComponent(req.params.productName);
+        const productReviews = reviews[productName] || [];
+        
+        // Calculate stats
+        const stats = {
+            totalReviews: productReviews.length,
+            averageRating: productReviews.length > 0 
+                ? (productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length).toFixed(1)
+                : 0,
+            ratingDistribution: {
+                5: productReviews.filter(r => r.rating === 5).length,
+                4: productReviews.filter(r => r.rating === 4).length,
+                3: productReviews.filter(r => r.rating === 3).length,
+                2: productReviews.filter(r => r.rating === 2).length,
+                1: productReviews.filter(r => r.rating === 1).length
+            }
+        };
+        
+        // Return reviews sorted by date (newest first)
+        const sortedReviews = [...productReviews].sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        res.json({
+            stats,
+            reviews: sortedReviews
+        });
+    } catch (error) {
+        console.error('Error fetching reviews:', error);
+        res.status(500).json({ error: 'Failed to fetch reviews' });
+    }
+});
+
+// Submit a review
+app.post('/api/reviews', rateLimit(3, 3600000), async (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    try {
+        const { productName, customerName, rating, reviewText } = req.body;
+        
+        // Validation
+        if (!productName || !customerName || !rating || !reviewText) {
+            return res.status(400).json({ error: 'All fields required' });
+        }
+        
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({ error: 'Rating must be 1-5' });
+        }
+        
+        if (reviewText.length < 10 || reviewText.length > 500) {
+            return res.status(400).json({ error: 'Review must be 10-500 characters' });
+        }
+        
+        // Create review
+        const review = {
+            id: 'REV-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+            productName: escapeHtml(productName),
+            customerName: escapeHtml(customerName),
+            rating: parseInt(rating),
+            reviewText: escapeHtml(reviewText),
+            date: new Date().toISOString(),
+            helpful: 0
+        };
+        
+        // Store review
+        if (!reviews[productName]) {
+            reviews[productName] = [];
+        }
+        reviews[productName].push(review);
+        await saveReviews();
+        
+        console.log('⭐ Review submitted for:', productName);
+        res.status(201).json({ 
+            success: true, 
+            message: 'Tack för din recension!',
+            review
+        });
+    } catch (error) {
+        console.error('Error submitting review:', error);
+        res.status(500).json({ error: 'Failed to submit review' });
+    }
+});
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+}
+
 // ===== TEST EMAIL ENDPOINT =====
 app.post('/api/test-email', async (req, res) => {
     console.log('🧪 Testing email...');
     console.log('📧 GMAIL_APP_PASSWORD set:', !!process.env.GMAIL_APP_PASSWORD);
     console.log('📧 GMAIL_APP_PASSWORD length:', process.env.GMAIL_APP_PASSWORD?.length);
-    console.log('� GMAIL_APP_PASSWORD value (first 4 chars):', process.env.GMAIL_APP_PASSWORD?.substring(0, 4) + '...');
-    console.log('� NODE_ENV:', process.env.NODE_ENV);
+    console.log('📧 GMAIL_APP_PASSWORD value (first 4 chars):', process.env.GMAIL_APP_PASSWORD?.substring(0, 4) + '...');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
     
     // Return env var status
     res.status(200).json({
