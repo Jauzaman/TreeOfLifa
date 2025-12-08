@@ -1098,6 +1098,108 @@ app.get('/api/analytics/dashboard', (req, res) => {
     res.json(stats);
 });
 
+// ===== NEWSLETTER SUBSCRIPTION SYSTEM =====
+const NEWSLETTER_FILE = 'newsletter_subscribers.json';
+let subscribers = [];
+
+async function loadSubscribers() {
+    try {
+        const data = await fs.readFile(NEWSLETTER_FILE, 'utf8');
+        subscribers = JSON.parse(data);
+        console.log('📧 Newsletter subscribers loaded:', subscribers.length);
+    } catch (error) {
+        console.log('📧 No existing subscribers, starting fresh');
+        subscribers = [];
+        await saveSubscribers();
+    }
+}
+
+async function saveSubscribers() {
+    try {
+        await fs.writeFile(NEWSLETTER_FILE, JSON.stringify(subscribers, null, 2));
+    } catch (error) {
+        console.error('Error saving subscribers:', error);
+    }
+}
+
+// Load subscribers on startup
+loadSubscribers();
+
+// Subscribe to newsletter
+app.post('/api/newsletter/subscribe', rateLimit(3, 3600000), async (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    try {
+        const { email } = req.body;
+        
+        // Validation
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+            return res.status(400).json({ error: 'Ogiltig e-postadress' });
+        }
+        
+        // Check if already subscribed
+        if (subscribers.some(sub => sub.email.toLowerCase() === email.toLowerCase())) {
+            return res.status(400).json({ error: 'Du är redan prenumerant' });
+        }
+        
+        // Add subscriber
+        const subscriber = {
+            email: email.toLowerCase(),
+            subscriptionDate: new Date().toISOString(),
+            id: 'SUB-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5)
+        };
+        
+        subscribers.push(subscriber);
+        await saveSubscribers();
+        
+        console.log('📧 New newsletter subscriber:', email);
+        res.status(201).json({ 
+            success: true, 
+            message: 'Tack för att du prenumererar! Du får snart ett bekräftelsemejl.'
+        });
+    } catch (error) {
+        console.error('Error subscribing to newsletter:', error);
+        res.status(500).json({ error: 'Kunde inte prenumerera på nyhetsbrevet' });
+    }
+});
+
+// Get subscriber count (admin endpoint)
+app.get('/api/newsletter/subscribers', (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    const adminKey = (req.query.key || '').trim();
+    const expectedKey = (process.env.ADMIN_KEY || '').trim();
+    
+    if (adminKey !== expectedKey) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    res.json({
+        totalSubscribers: subscribers.length,
+        subscribers: subscribers.map(s => ({ email: s.email, subscriptionDate: s.subscriptionDate }))
+    });
+});
+
 // ===== PRODUCT REVIEWS SYSTEM =====
 const REVIEWS_FILE = 'reviews.json';
 let reviews = {};
