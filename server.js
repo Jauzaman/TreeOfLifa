@@ -1200,6 +1200,111 @@ app.get('/api/newsletter/subscribers', (req, res) => {
     });
 });
 
+// ===== ABANDONED CART RECOVERY SYSTEM =====
+const ABANDONED_CARTS_FILE = 'abandoned_carts.json';
+let abandonedCarts = {};
+
+async function loadAbandonedCarts() {
+    try {
+        const data = await fs.readFile(ABANDONED_CARTS_FILE, 'utf8');
+        abandonedCarts = JSON.parse(data);
+        console.log('🛒 Abandoned carts loaded');
+    } catch (error) {
+        console.log('🛒 No abandoned carts file, starting fresh');
+        abandonedCarts = {};
+        await saveAbandonedCarts();
+    }
+}
+
+async function saveAbandonedCarts() {
+    try {
+        await fs.writeFile(ABANDONED_CARTS_FILE, JSON.stringify(abandonedCarts, null, 2));
+    } catch (error) {
+        console.error('Error saving abandoned carts:', error);
+    }
+}
+
+// Load abandoned carts on startup
+loadAbandonedCarts();
+
+// Track abandoned cart
+app.post('/api/abandoned-cart', rateLimit(5, 3600000), async (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    try {
+        const { email, items, total } = req.body;
+        
+        if (!email || !items || !Array.isArray(items) || items.length === 0) {
+            return res.status(400).json({ error: 'Invalid cart data' });
+        }
+        
+        const cartId = 'CART-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+        const cartData = {
+            id: cartId,
+            email: email.toLowerCase(),
+            items,
+            total,
+            timestamp: new Date().toISOString(),
+            emailSent: false,
+            recovered: false
+        };
+        
+        abandonedCarts[cartId] = cartData;
+        await saveAbandonedCarts();
+        
+        console.log('🛒 Abandoned cart tracked:', email);
+        res.status(201).json({ 
+            success: true, 
+            message: 'Cart tracked',
+            cartId
+        });
+    } catch (error) {
+        console.error('Error tracking abandoned cart:', error);
+        res.status(500).json({ error: 'Failed to track cart' });
+    }
+});
+
+// Get abandoned carts (admin endpoint)
+app.get('/api/abandoned-carts/list', (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    const adminKey = (req.query.key || '').trim();
+    const expectedKey = (process.env.ADMIN_KEY || '').trim();
+    
+    if (adminKey !== expectedKey) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    const cartsList = Object.values(abandonedCarts).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
+    res.json({
+        totalAbandoned: cartsList.length,
+        recoveryPotential: cartsList.reduce((sum, cart) => sum + cart.total, 0),
+        notRecovered: cartsList.filter(c => !c.recovered).length,
+        carts: cartsList.slice(0, 50) // Latest 50
+    });
+});
+
 // ===== PRODUCT REVIEWS SYSTEM =====
 const REVIEWS_FILE = 'reviews.json';
 let reviews = {};

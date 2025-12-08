@@ -1877,16 +1877,24 @@
 
         function closeCheckout() {
             try {
-                // Track checkout abandonment if cart is not empty
-                if (cart.length > 0 && analytics) {
+                // Track checkout abandonment and abandoned cart if cart is not empty
+                if (cart.length > 0) {
                     const selectedPayment = document.querySelector('input[name="payment"]:checked');
                     const paymentMethod = selectedPayment ? selectedPayment.value : 'none';
                     const hasFilledForm = document.getElementById('namn').value.trim() !== '';
                     
-                    analytics.trackCheckoutAbandonment(
-                        hasFilledForm ? 'form_filled' : 'initial',
-                        paymentMethod === 'none' ? 'no_payment_selected' : 'closed_checkout'
-                    );
+                    if (analytics) {
+                        analytics.trackCheckoutAbandonment(
+                            hasFilledForm ? 'form_filled' : 'initial',
+                            paymentMethod === 'none' ? 'no_payment_selected' : 'closed_checkout'
+                        );
+                    }
+                    
+                    // Track abandoned cart for recovery email
+                    const email = document.getElementById('email').value.trim();
+                    if (email && /@/.test(email)) {
+                        trackAbandonedCart(email);
+                    }
                 }
                 
                 const modal = document.getElementById('checkout-modal');
@@ -1914,6 +1922,31 @@
                 }
             } catch (error) {
                 console.error('Error closing checkout:', error);
+            }
+        }
+
+        // Track abandoned cart
+        async function trackAbandonedCart(email) {
+            try {
+                const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0) + 49;
+                
+                const response = await fetch(`${API_BASE_URL}/api/abandoned-cart`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email,
+                        items: cart,
+                        total: cartTotal
+                    })
+                });
+                
+                if (response.ok) {
+                    console.log('🛒 Abandoned cart tracked for recovery');
+                }
+            } catch (error) {
+                console.error('Error tracking abandoned cart:', error);
             }
         }
 

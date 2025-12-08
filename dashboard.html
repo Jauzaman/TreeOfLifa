@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TreeOfLifa Admin Dashboard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: linear-gradient(135deg, #3d5a3c 0%, #5a7856 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+        .login-form {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            max-width: 400px;
+        }
+        .login-form input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .login-form button {
+            width: 100%;
+            padding: 0.8rem;
+            background: #3d5a3c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .login-form button:hover {
+            background: #2d4a2b;
+        }
+        .dashboard {
+            display: none;
+        }
+        .dashboard.active {
+            display: block;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .stat-card h3 {
+            color: #999;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        .stat-card .value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #3d5a3c;
+        }
+        .section {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .section h2 {
+            color: #3d5a3c;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th {
+            background: #f9f9f9;
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+            font-weight: 600;
+        }
+        table td {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        table tr:hover {
+            background: #f9f9f9;
+        }
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: #e8f5e8;
+            color: #2d4a2b;
+            border-radius: 20px;
+            font-size: 0.85rem;
+        }
+        .error {
+            color: #c1666b;
+            padding: 1rem;
+            background: #ffe0e0;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+        .success {
+            color: #2d4a2b;
+            padding: 1rem;
+            background: #e0ffe0;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 TreeOfLifa Admin Dashboard</h1>
+            <p>Manage sales, abandoned carts, subscribers, and reviews</p>
+        </div>
+
+        <!-- Login Section -->
+        <div id="login-section" class="login-form">
+            <h2 style="margin-bottom: 1rem;">Admin Login</h2>
+            <input type="password" id="admin-key" placeholder="Enter admin key" />
+            <button onclick="login()">Login</button>
+            <div id="login-error" class="error" style="display: none; margin-top: 1rem;"></div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard" class="dashboard">
+            <div style="text-align: right; margin-bottom: 1rem;">
+                <button onclick="logout()" style="padding: 0.5rem 1rem; background: #c1666b; color: white; border: none; border-radius: 4px; cursor: pointer;">Logout</button>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Abandoned Carts</h3>
+                    <div class="value" id="stat-abandoned">0</div>
+                    <small id="stat-recovery">0 kr potential</small>
+                </div>
+                <div class="stat-card">
+                    <h3>Newsletter Subscribers</h3>
+                    <div class="value" id="stat-subscribers">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Orders (Analytics)</h3>
+                    <div class="value" id="stat-orders">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Unique Visitors</h3>
+                    <div class="value" id="stat-visitors">0</div>
+                </div>
+            </div>
+
+            <!-- Abandoned Carts Section -->
+            <div class="section">
+                <h2>🛒 Abandoned Carts (Recovery Opportunity)</h2>
+                <div id="abandoned-carts-table"></div>
+            </div>
+
+            <!-- Newsletter Subscribers Section -->
+            <div class="section">
+                <h2>📧 Newsletter Subscribers</h2>
+                <div id="subscribers-table"></div>
+            </div>
+
+            <!-- Analytics Section -->
+            <div class="section">
+                <h2>📊 Sales & Analytics</h2>
+                <div id="analytics-stats"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://treeoflifa.se'; // Change to your API URL
+        let adminKey = localStorage.getItem('adminKey');
+
+        function login() {
+            const key = document.getElementById('admin-key').value;
+            if (!key) {
+                showLoginError('Please enter admin key');
+                return;
+            }
+            adminKey = key;
+            localStorage.setItem('adminKey', key);
+            loadDashboard();
+        }
+
+        function logout() {
+            localStorage.removeItem('adminKey');
+            adminKey = null;
+            document.getElementById('login-section').style.display = 'block';
+            document.getElementById('dashboard').classList.remove('active');
+        }
+
+        function showLoginError(msg) {
+            const errorEl = document.getElementById('login-error');
+            errorEl.textContent = msg;
+            errorEl.style.display = 'block';
+        }
+
+        async function loadDashboard() {
+            if (!adminKey) return;
+
+            try {
+                // Load abandoned carts
+                const cartsRes = await fetch(`${API_BASE_URL}/api/abandoned-carts/list?key=${adminKey}`);
+                if (cartsRes.status === 403) {
+                    showLoginError('Invalid admin key');
+                    return;
+                }
+                const cartsData = await cartsRes.json();
+                displayAbandonedCarts(cartsData);
+
+                // Load newsletter subscribers
+                const subRes = await fetch(`${API_BASE_URL}/api/newsletter/subscribers?key=${adminKey}`);
+                const subData = await subRes.json();
+                displaySubscribers(subData);
+
+                // Load analytics
+                const analyticsRes = await fetch(`${API_BASE_URL}/api/analytics/dashboard?key=${adminKey}`);
+                const analyticsData = await analyticsRes.json();
+                displayAnalytics(analyticsData);
+
+                // Show dashboard, hide login
+                document.getElementById('login-section').style.display = 'none';
+                document.getElementById('dashboard').classList.add('active');
+            } catch (error) {
+                showLoginError('Error loading dashboard: ' + error.message);
+            }
+        }
+
+        function displayAbandonedCarts(data) {
+            document.getElementById('stat-abandoned').textContent = data.notRecovered || 0;
+            document.getElementById('stat-recovery').textContent = (data.recoveryPotential || 0).toFixed(0) + ' kr potential';
+
+            let html = '<table><tr><th>Email</th><th>Items</th><th>Total</th><th>Time</th></tr>';
+            data.carts.forEach(cart => {
+                if (!cart.recovered) {
+                    const time = new Date(cart.timestamp).toLocaleDateString('sv-SE');
+                    html += `<tr>
+                        <td>${escapeHtml(cart.email)}</td>
+                        <td>${cart.items.map(i => i.name).join(', ')}</td>
+                        <td>${cart.total} kr</td>
+                        <td>${time}</td>
+                    </tr>`;
+                }
+            });
+            html += '</table>';
+            document.getElementById('abandoned-carts-table').innerHTML = html;
+        }
+
+        function displaySubscribers(data) {
+            document.getElementById('stat-subscribers').textContent = data.totalSubscribers || 0;
+
+            let html = '<table><tr><th>Email</th><th>Subscription Date</th></tr>';
+            data.subscribers.forEach(sub => {
+                const date = new Date(sub.subscriptionDate).toLocaleDateString('sv-SE');
+                html += `<tr><td>${escapeHtml(sub.email)}</td><td>${date}</td></tr>`;
+            });
+            html += '</table>';
+            document.getElementById('subscribers-table').innerHTML = html;
+        }
+
+        function displayAnalytics(data) {
+            document.getElementById('stat-orders').textContent = data.conversionStats.completedPurchases || 0;
+            document.getElementById('stat-visitors').textContent = data.totalVisitors || 0;
+
+            const stats = data.conversionStats;
+            let html = `
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                    <div class="stat-card">
+                        <h3>Checkout Attempts</h3>
+                        <div class="value">${stats.checkoutAttempts || 0}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Checkout Abandons</h3>
+                        <div class="value">${stats.checkoutAbandons || 0}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Completed Orders</h3>
+                        <div class="value">${stats.completedPurchases || 0}</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Revenue</h3>
+                        <div class="value">${(stats.totalRevenue || 0).toFixed(0)} kr</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('analytics-stats').innerHTML = html;
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        // Auto-load if admin key exists
+        if (adminKey) {
+            loadDashboard();
+        }
+    </script>
+</body>
+</html>
