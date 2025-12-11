@@ -1163,6 +1163,45 @@
         </div>
     </section>
 
+    <!-- Trust Badges & Security Section -->
+    <section style="background: #f9f6f0; padding: 2rem 5%; text-align: center;">
+        <div style="max-width: 1000px; margin: 0 auto;">
+            <h3 style="color: #3d5a3c; margin-bottom: 2rem; font-size: 1.3rem;">✅ Vi värnar om ditt förtroende</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem;">
+                <div style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
+                    <h4 style="color: #2d4a2b; margin-bottom: 0.5rem;">Säker Betalning</h4>
+                    <p style="font-size: 0.9rem; color: #666;">Stripe & Swish krypterad</p>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🌱</div>
+                    <h4 style="color: #2d4a2b; margin-bottom: 0.5rem;">100% Naturlig</h4>
+                    <p style="font-size: 0.9rem; color: #666;">Inga kemikalier eller tillsatser</p>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📦</div>
+                    <h4 style="color: #2d4a2b; margin-bottom: 0.5rem;">Gratis Frakt</h4>
+                    <p style="font-size: 0.9rem; color: #666;">Fritt över 100 kr i Sverige</p>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⭐</div>
+                    <h4 style="color: #2d4a2b; margin-bottom: 0.5rem;">Kundrecensioner</h4>
+                    <p style="font-size: 0.9rem; color: #666;">Äkta feedback från köpare</p>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">♻️</div>
+                    <h4 style="color: #2d4a2b; margin-bottom: 0.5rem;">Miljövänlig</h4>
+                    <p style="font-size: 0.9rem; color: #666;">100% biologiskt nedbrytbar</p>
+                </div>
+                <div style="padding: 1.5rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📞</div>
+                    <h4 style="color: #2d4a2b; margin-bottom: 0.5rem;">Kundsupport</h4>
+                    <p style="font-size: 0.9rem; color: #666;">Vi är här för att hjälpa</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Footer -->
     <footer>
         <div class="footer-content">
@@ -2579,6 +2618,195 @@
                 statusEl.innerHTML = '<div style="color: #ffcccc;">Kunde inte prenumerera. Försök igen senare.</div>';
             }
         }
+
+        // ===== LIVE CHAT SYSTEM =====
+        let chatMessages = [];
+
+        function openChat() {
+            const chatWidget = document.getElementById('chat-widget');
+            if (chatWidget) {
+                chatWidget.style.display = chatWidget.style.display === 'none' ? 'block' : 'none';
+                if (chatWidget.style.display === 'block') {
+                    document.getElementById('chat-input').focus();
+                }
+            }
+        }
+
+        function closeChat() {
+            document.getElementById('chat-widget').style.display = 'none';
+        }
+
+        async function sendChatMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            // Add user message to chat
+            addChatMessage('user', message);
+            input.value = '';
+            
+            // Show loading state
+            addChatMessage('bot', '⏳ Bearbetar...');
+            
+            try {
+                // Send to backend for AI/processing
+                const response = await fetch(`${API_BASE_URL}/api/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    // Remove loading message
+                    chatMessages.pop();
+                    addChatMessage('bot', data.response || 'Tack för din fråga!');
+                } else {
+                    // Remove loading message
+                    chatMessages.pop();
+                    addChatMessage('bot', 'Jag kunde inte svara. Vänligen kontakta tree.of.liifa@gmail.com');
+                }
+            } catch (error) {
+                // Remove loading message
+                chatMessages.pop();
+                addChatMessage('bot', 'Kontakta oss på tree.of.liifa@gmail.com för mer hjälp.');
+            }
+            
+            // Scroll to bottom
+            document.getElementById('chat-messages').scrollTop = document.getElementById('chat-messages').scrollHeight;
+        }
+
+        function addChatMessage(sender, text) {
+            chatMessages.push({ sender, text });
+            const messagesDiv = document.getElementById('chat-messages');
+            const messageEl = document.createElement('div');
+            messageEl.style.marginBottom = '0.8rem';
+            messageEl.style.textAlign = sender === 'user' ? 'right' : 'left';
+            
+            const bubbleStyle = sender === 'user' 
+                ? 'background: #7fb069; color: white; border-radius: 18px 0 18px 18px;'
+                : 'background: #f0f0f0; color: #333; border-radius: 0 18px 18px 18px;';
+            
+            messageEl.innerHTML = `<div style="${bubbleStyle} display: inline-block; max-width: 80%; padding: 0.8rem 1rem; word-wrap: break-word;">${escapeHtml(text)}</div>`;
+            messagesDiv.appendChild(messageEl);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        // Initialize chat
+        document.addEventListener('DOMContentLoaded', () => {
+            addChatMessage('bot', 'Hej! 👋 Hur kan vi hjälpa dig idag?');
+        });
+
+    <!-- Chat Widget -->
+    <div id="chat-widget" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 380px;
+        height: 500px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 5px 40px rgba(0,0,0,0.16);
+        display: none;
+        flex-direction: column;
+        z-index: 9999;
+        font-family: Arial, sans-serif;
+    ">
+        <!-- Chat Header -->
+        <div style="
+            background: linear-gradient(135deg, #3d5a3c 0%, #5a7856 100%);
+            color: white;
+            padding: 1rem;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        ">
+            <h3 style="margin: 0; font-size: 1rem;">💬 TreeOfLifa Support</h3>
+            <button onclick="closeChat()" style="
+                background: none;
+                border: none;
+                color: white;
+                font-size: 1.5rem;
+                cursor: pointer;
+                padding: 0;
+                width: 30px;
+                height: 30px;
+            ">×</button>
+        </div>
+
+        <!-- Chat Messages -->
+        <div id="chat-messages" style="
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            background: #fafafa;
+        "></div>
+
+        <!-- Chat Input -->
+        <div style="
+            padding: 1rem;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 0.5rem;
+        ">
+            <input 
+                type="text" 
+                id="chat-input" 
+                placeholder="Skriv din fråga..." 
+                style="
+                    flex: 1;
+                    padding: 0.6rem;
+                    border: 1px solid #ddd;
+                    border-radius: 20px;
+                    font-size: 0.95rem;
+                    font-family: inherit;
+                "
+                onkeypress="if(event.key==='Enter') sendChatMessage()"
+            />
+            <button onclick="sendChatMessage()" style="
+                background: #7fb069;
+                color: white;
+                border: none;
+                border-radius: 50%;
+                width: 36px;
+                height: 36px;
+                cursor: pointer;
+                font-size: 1.2rem;
+            ">→</button>
+        </div>
+    </div>
+
+    <!-- Chat Button (Floating) -->
+    <button onclick="openChat()" id="chat-button" style="
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #3d5a3c 0%, #5a7856 100%);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 9998;
+        transition: transform 0.3s ease;
+    " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+        💬
+    </button>
+
+    <script>
+        // Hide chat button when widget is open
+        const observer = setInterval(() => {
+            const widget = document.getElementById('chat-widget');
+            const button = document.getElementById('chat-button');
+            if (widget && button) {
+                button.style.display = widget.style.display === 'none' ? 'block' : 'none';
+            }
+        }, 100);
     </script>
 </body>
 </html>
