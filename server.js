@@ -1445,6 +1445,200 @@ function escapeHtml(text) {
     return text.replace(/[&<>"']/g, function(m) { return map[m]; });
 }
 
+// ===== GIVEAWAY SYSTEM =====
+const GIVEAWAY_FILE = 'giveaway_entries.json';
+let giveawayEntries = [];
+
+async function loadGiveawayEntries() {
+    try {
+        const data = await fs.readFile(GIVEAWAY_FILE, 'utf8');
+        giveawayEntries = JSON.parse(data);
+        console.log('🎁 Giveaway entries loaded:', giveawayEntries.length);
+    } catch (error) {
+        console.log('🎁 No giveaway entries file, starting fresh');
+        giveawayEntries = [];
+        await saveGiveawayEntries();
+    }
+}
+
+async function saveGiveawayEntries() {
+    try {
+        await fs.writeFile(GIVEAWAY_FILE, JSON.stringify(giveawayEntries, null, 2));
+    } catch (error) {
+        console.error('Error saving giveaway entries:', error);
+    }
+}
+
+// Load giveaway entries on startup
+loadGiveawayEntries();
+
+// Submit giveaway entry
+app.post('/api/giveaway/enter', rateLimit(2, 86400000), async (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    try {
+        const { email, name, taggeds, installment } = req.body;
+        
+        // Validation
+        if (!email || !/^\S+@\S+\.\S+$/.test(email)) {
+            return res.status(400).json({ error: 'Ogiltig e-postadress' });
+        }
+        
+        if (!name || name.length < 2) {
+            return res.status(400).json({ error: 'Namn är obligatoriskt' });
+        }
+        
+        // Check if already entered
+        if (giveawayEntries.some(entry => entry.email.toLowerCase() === email.toLowerCase())) {
+            return res.status(400).json({ error: 'Du har redan deltagit i giveaway' });
+        }
+        
+        // Create entry
+        const entry = {
+            id: 'GIFT-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+            email: email.toLowerCase(),
+            name: escapeHtml(name),
+            taggeds: Array.isArray(taggeds) ? taggeds : [], // Tagged friends
+            installment: installment || 1, // Which month/period
+            timestamp: new Date().toISOString(),
+            followsInstagram: false,
+            followsNewsletter: false,
+            valid: true
+        };
+        
+        giveawayEntries.push(entry);
+        await saveGiveawayEntries();
+        
+        console.log('🎁 Giveaway entry submitted:', email);
+        res.status(201).json({ 
+            success: true, 
+            message: 'Lycka till i giveaway! Du kan vinna 863kr i produkter! 🍀',
+            entryId: entry.id
+        });
+    } catch (error) {
+        console.error('Error submitting giveaway entry:', error);
+        res.status(500).json({ error: 'Kunde inte registrera giveaway-bidrag' });
+    }
+});
+
+// Get giveaway stats (admin endpoint)
+app.get('/api/giveaway/stats', (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    const adminKey = (req.query.key || '').trim();
+    const expectedKey = (process.env.ADMIN_KEY || '').trim();
+    
+    if (adminKey !== expectedKey) {
+        return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    const validEntries = giveawayEntries.filter(e => e.valid);
+    const installmentCounts = {};
+    validEntries.forEach(entry => {
+        installmentCounts[entry.installment] = (installmentCounts[entry.installment] || 0) + 1;
+    });
+    
+    res.json({
+        totalEntries: validEntries.length,
+        uniqueEmails: new Set(validEntries.map(e => e.email)).size,
+        installmentBreakdown: installmentCounts,
+        entryEmail: validEntries.map(e => ({ 
+            id: e.id,
+            email: e.email, 
+            name: e.name,
+            tagged: e.taggeds.length,
+            timestamp: e.timestamp 
+        })).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    });
+});
+
+// Pick random winner (admin endpoint)
+app.post('/api/giveaway/pick-winner', rateLimit(1, 3600000), async (req, res) => {
+    const allowedOrigins = [
+        'https://tree-of-lifa.vercel.app',
+        'https://treeoflifa-production.up.railway.app',
+        'https://treeoflifa.se',
+        'http://localhost:3000',
+        'http://127.0.0.1:5500'
+    ];
+    const origin = req.headers.origin;
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    
+    try {
+        const { adminKey, count = 5 } = req.body;
+        
+        if (!adminKey || adminKey.trim() !== (process.env.ADMIN_KEY || '').trim()) {
+            return res.status(403).json({ error: 'Unauthorized' });
+        }
+        
+        const validEntries = giveawayEntries.filter(e => e.valid);
+        
+        if (validEntries.length < count) {
+            return res.status(400).json({ 
+                error: `Not enough valid entries. Have ${validEntries.length}, need ${count}`
+            });
+        }
+        
+        // Fisher-Yates shuffle
+        const shuffled = [...validEntries];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        
+        const winners = shuffled.slice(0, count);
+        
+        // Mark as won
+        winners.forEach(winner => {
+            const entry = giveawayEntries.find(e => e.id === winner.id);
+            if (entry) {
+                entry.won = true;
+                entry.wonDate = new Date().toISOString();
+            }
+        });
+        
+        await saveGiveawayEntries();
+        
+        console.log('🎉 Giveaway winners picked:', winners.length);
+        
+        res.json({
+            success: true,
+            message: `${count} winners picked!`,
+            winners: winners.map(w => ({ 
+                id: w.id,
+                email: w.email, 
+                name: w.name,
+                timestamp: w.timestamp 
+            }))
+        });
+    } catch (error) {
+        console.error('Error picking winners:', error);
+        res.status(500).json({ error: 'Failed to pick winners' });
+    }
+});
+
 // ===== TEST EMAIL ENDPOINT =====
 app.post('/api/test-email', async (req, res) => {
     console.log('🧪 Testing email...');
