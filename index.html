@@ -1711,47 +1711,48 @@
         }
 
         // Produktdata (metadata - priserna och bilder)
+        // Obs: Priser inkluderar nu fri frakt i hela Sverige!
         const PRODUCTS = {
             'Kokosskrubb': { 
-                price: 25, 
+                price: 35, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5805.jpg',
                 description: 'Naturlig kokosfiber skrubb för intensiv rengöring. Perfekt för kroppsskrubb och exfoliering av torr hud. 100% biologiskt nedbrytbar.',
                 longDescription: 'Vår kokosfiber skrubb är gjord av ekologisk kokosfibrer som erbjuder en djup och kraftig rengöring. Idealisk för att avlägsna död hud och förbättra blodcirkulationen. Kan även klippas till tvålunderlägg för tvål. Miljövänlig och hållbar.'
             },
             
             'Lifa Handske': { 
-                price: 50, 
+                price: 65, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5802.jpg',
                 description: 'Mysig duschhandske med mjuk framidasida och exfolierande liffavävnad. Perfekt för daglig kroppsvård.',
                 longDescription: 'Denna unika dusch handske kombinerar mjukhet och exfoliering. Den mjuka sidan är perfekt för mild rengöring medan liffasidan ger en kraftig exfoliering. Perfekt för hela kroppen och ansiktet. 100% naturlig och miljövänlig.'
             },
             
             'Tvålunderlägg Lifa': { 
-                price: 25, 
+                price: 35, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5816.jpg',
                 description: 'Blekt luffasvamp tvålunderlägg. Håller din tvål torr och ger bättre luftcirkulation. Ca 5-7cm i diameter.',
                 longDescription: 'Det perfekta tillbehöret för din tvål! Vårt tvålunderlägg är gjort av naturlig luffasvamp som håller din tvål torr mellan användningar. Det låter luften cirkulera runt tvålen och förlängar dess livslängd. Blekt och helt naturligt.'
             },
             'Mindre Lifah': { 
-                price: 50, 
+                price: 65, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5809.jpg',
                 description: 'Naturlig luffasvamp för daglig kroppskrubb och exfoliering. Perfekt storlek för handledning och ansiktsvård. Ca 10cm lång.',
                 longDescription: 'Vår populäraste och mest älskade luffasvamp! Denna mindre variant är perfekt för daglig användning, tack vare sin hanterliga storlek. Den ekologiska odlade luffasvampen ger en mild men effektiv exfoliering. Mäter cirka 10cm längd och 5-8cm i diameter. 100% naturlig och biologiskt nedbrytbar.'
             },
             'Större Lifah': { 
-                price: 75, 
+                price: 90, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG',
                 description: 'Extra tjock och hållbar luffasvamp för grundlig djuprengöring och exfoliering. Stor storlek för effektiv användning.',
                 longDescription: 'Denna större och tjockare luffasvamp är gjord för de som vill ha en mer intensiv rengöring. Perfekt för hela kroppen och långvarigt bruk. Den extra tjocka konstruktionen gör den mycket hållbar och resistent. Ekologisk och 100% naturlig, helt utan kemikalier.'
             },
             'Aleppotvål': { 
-                price: 70, 
+                price: 85, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG',
                 description: 'Naturlig Aleppotvål gjord på ett gammalt hemlighetsrecept. Mild och fuktig tvål för känslig hud. 100% ekologisk.',
                 longDescription: 'Denna autentiska Aleppotvål är tillverkad enligt ett urgammalt recept från Aleppo, Syrien. Gjord på olivolja och lautelolja, denna tvål är extremt mild och perfekt för känslig och torr hud. Den innehåller inga kemikalier eller konstgjorda additiver. Perfekt för både ansikte och kropp. En tvål som har använts i århundraden för sin läkande egenskaper.'
             },
             'Presentset': { 
-                price: 145, 
+                price: 165, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png',
                 description: 'Komplett naturligt presentset i fin presentbox. Perfekt gåva för hälsa- och naturvårdsentusiaster.',
                 longDescription: 'Vår premium presentset innehåller ett urval av våra mest populära produkter, paketerade i en vacker gåvask. Perfekt för att ge en komplett naturlig hudvårdsupplevelse. Innehåller exfolierande verktyg och naturlig tvål. En genomtänkt gåva som visar att du bryr dig om naturlig skönhet och miljön. Miljövänlig packaging.'
@@ -2215,7 +2216,7 @@
             try {
                 const checkoutSubtotal = document.getElementById('checkout-subtotal');
                 const checkoutTotal = document.getElementById('checkout-total');
-                const shippingCost = 49;
+                const shippingCost = 0; // Fri frakt i hela Sverige!
                 
                 if (checkoutSubtotal) checkoutSubtotal.textContent = `${subtotal} kr`;
                 if (checkoutTotal) checkoutTotal.textContent = `${subtotal + shippingCost} kr`;
@@ -2601,7 +2602,7 @@
                     transactionId: 'STRIPE-' + Math.random().toString(36).substr(2, 9),
                     items: [...cart],
                     subtotal,
-                    shipping: 49,
+                    shipping: 0,
                     total,
                     paymentMethod: 'card',
                     customer: customerData,
@@ -2678,7 +2679,7 @@
                     transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
                     items: [...cart],
                     subtotal, 
-                    shipping: 49, 
+                    shipping: 0, 
                     total,
                     paymentMethod: 'swish',
                     customer: customerData,
