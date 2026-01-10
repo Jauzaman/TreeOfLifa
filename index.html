@@ -1431,12 +1431,6 @@
                         <span>💳</span>
                         <div><strong>Kortbetalning</strong><br><small>Betala säkert med kort</small></div>
                     </div>
-
-                    <div class="payment-method" onclick="selectPayment('swish')">
-                        <input type="radio" name="payment" value="swish">
-                        <span>📱</span>
-                        <div><strong>Swish</strong><br><small>Betala med Swish - 123 164 91 77</small></div>
-                    </div>
                 </div>
 
                 <div id="payment-details" style="display: none; margin-top: 1rem;">
@@ -1544,7 +1538,7 @@
                 <div style="padding: 1.5rem;">
                     <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
                     <h4 style="color: #2d4a2b; margin-bottom: 0.5rem;">Säker Betalning</h4>
-                    <p style="font-size: 0.9rem; color: #666;">Stripe & Swish krypterad</p>
+                    <p style="font-size: 0.9rem; color: #666;">Stripe krypterad betalning</p>
                 </div>
                 <div style="padding: 1.5rem;">
                     <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🌱</div>
@@ -2474,10 +2468,6 @@
                         if (paymentDetails) paymentDetails.style.display = 'none';
                     }
                     
-                } else if (paymentType === 'swish') {
-                    if (paymentDetails) paymentDetails.style.display = 'none';
-                    if (submitButton) submitButton.style.display = 'block';
-                    showStatusMessage('Swish är valt. Fyll i dina uppgifter och klicka "Slutför beställning".', 'info');
                 }
                 
             } catch (error) {
@@ -2514,9 +2504,6 @@
                     // Wait for payment to complete - will throw error if cancelled/failed
                     await processStripePayment();
                     // If we reach here, payment succeeded - success message is already shown in processStripePayment
-                } else if (paymentMethod === 'swish') {
-                    await processSwishPayment();
-                    // Swish flow completes order directly
                 }
             } catch (error) {
                 console.error('Error placing order:', error);
@@ -2655,109 +2642,6 @@
             }
         }
 
-        async function processSwishPayment() {
-            try {
-                showLoadingIndicator(true);
-                showStatusMessage('Bearbetar Swish-betalning...', 'info');
-                
-                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-                const total = subtotal + 49;
-                const orderId = 'SWISH-' + Date.now();
-                
-                const customerData = {
-                    name: document.getElementById('namn').value.trim(),
-                    email: document.getElementById('email').value.trim(),
-                    phone: document.getElementById('telefon').value.trim(),
-                    address: document.getElementById('adress').value.trim(),
-                    postalCode: document.getElementById('postnummer').value.trim(),
-                    city: document.getElementById('stad').value.trim()
-                };
-
-                // Prepare order data
-                const orderData = {
-                    orderId: orderId,
-                    transactionId: 'SWISH-' + Math.random().toString(36).substr(2, 9),
-                    items: [...cart],
-                    subtotal, 
-                    shipping: 0, 
-                    total,
-                    paymentMethod: 'swish',
-                    customer: customerData,
-                    timestamp: new Date().toISOString(),
-                    reservedItems: cart.map(item => ({name: item.name, quantity: item.quantity}))
-                };
-                
-                // Send order to backend
-                console.log('📤 Sending order to backend:', orderData.orderId);
-                
-                const response = await fetch(`${API_BASE_URL}/api/orders`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(orderData)
-                });
-
-                console.log('📨 Backend response status:', response.status);
-                const responseData = await response.json();
-                console.log('📨 Backend response:', responseData);
-                
-                if (!response.ok) {
-                    throw new Error(`Backend error: ${response.status} - ${responseData.error}`);
-                }
-                if (response.ok) {
-                    console.log('✅ Order sent to backend successfully');
-                    
-                    // Track successful purchase in analytics
-                    if (analytics) {
-                        analytics.trackPurchaseComplete({
-                            orderId: orderData.orderId,
-                            total: orderData.total,
-                            items: orderData.items,
-                            paymentMethod: 'swish'
-                        });
-                    }
-                    
-                    // Clear cart
-                    cart = [];
-                    updateCartDisplay();
-                    
-                    // Show Swish payment instructions
-                    showLoadingIndicator(false);
-                    showStatusMessage(`
-                        <div style="text-align: center; background: linear-gradient(135deg, #2d4a2b 0%, #4a7c59 100%); padding: 40px 30px; border-radius: 12px;">
-                            <h3 style="color: white; margin-bottom: 25px; font-size: 1.4em;">Swisha till:</h3>
-                            <div style="background: white; color: #2d4a2b; padding: 20px; border-radius: 8px; margin-bottom: 25px; font-size: 2em; font-weight: bold; letter-spacing: 2px;">
-                                123 164 91 77
-                            </div>
-                            
-                            <p style="margin: 20px 0; font-size: 1.3em; color: white;"><strong>Belopp:</strong></p>
-                            <div style="background: white; color: #2d4a2b; padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 1.8em; font-weight: bold;">
-                                ${total} kr
-                            </div>
-                            
-                            <p style="margin: 20px 0; font-size: 1.1em; color: #e8f5e8;"><strong>Meddelande:</strong></p>
-                            <div style="background: white; color: #2d4a2b; padding: 15px; border-radius: 8px; margin-bottom: 25px; font-size: 1.2em; font-weight: bold; word-break: break-all;">
-                                ${orderId}
-                            </div>
-                            
-                            <p style="margin-top: 25px; color: #e8f5e8; font-size: 1em; line-height: 1.5;">Din beställning är registrerad och du får en bekräftelse via email.</p>
-                            <p style="margin-top: 15px; color: #c9e4c9; font-size: 0.95em;">Du kan nu stänga denna ruta.</p>
-                        </div>
-                    `, 'info');
-                    
-                } else {
-                    console.error('❌ Backend returned error:', response.status);
-                    showLoadingIndicator(false);
-                    showStatusMessage(`Fel vid beställning (${response.status}). Kontakta oss på tree.of.liifa@gmail.com`, 'error');
-                    throw new Error(`Backend error: ${response.status}`);
-                }
-                
-            } catch (error) {
-                console.error('❌ Swish payment error:', error);
-                showLoadingIndicator(false);
-                showStatusMessage('Fel vid Swish-betalning. ' + error.message, 'error');
-                throw error;
-            }
-        }
 
         function showSuccessMessage(orderData) {
             const message = document.createElement('div');
