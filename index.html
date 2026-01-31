@@ -1864,6 +1864,16 @@
                             <div id="reviews-${name.replace(/\s+/g, '-')}" class="product-reviews" style="margin: 0.5rem 0; font-size: 0.9em; color: #666;">
                                 <span style="display: inline-block;">⭐ Laddar recensioner...</span>
                             </div>
+                            <button onclick="openReviewModalForProduct('${name.replace(/'/g, "\\'")}')" style="
+                                background: none;
+                                border: none;
+                                color: var(--terracotta);
+                                font-size: 0.85rem;
+                                cursor: pointer;
+                                text-decoration: underline;
+                                padding: 0.3rem 0;
+                                margin: 0.3rem 0;
+                            ">✍️ Skriv recension</button>
                             ${stockInfo}
                             <div class="price">${product.price} kr</div>
                             <button class="buy-button" ${buttonDisabled} onclick='addToCart(${JSON.stringify(name)}, ${product.price})'>
@@ -2789,6 +2799,17 @@
                 modal.classList.add('show');
                 document.body.style.overflow = 'hidden';
             }
+        }
+
+        function openReviewModalForProduct(productName) {
+            openReviewModal();
+            // Pre-select the product
+            setTimeout(() => {
+                const selectElement = document.getElementById('review-product');
+                if (selectElement) {
+                    selectElement.value = productName;
+                }
+            }, 100);
         }
 
         function closeReviewModal() {

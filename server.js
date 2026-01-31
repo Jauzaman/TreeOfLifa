@@ -1551,3 +1551,132 @@ app.post('/api/test-email', async (req, res) => {
         nodeEnv: process.env.NODE_ENV
     });
 });
+
+// ===== CHAT ENDPOINT =====
+app.post('/api/chat', async (req, res) => {
+    try {
+        const { message } = req.body;
+        console.log('💬 Chat message received:', message);
+
+        // Simple automated responses based on keywords
+        let response = '';
+        const lowerMessage = message.toLowerCase();
+
+        if (lowerMessage.includes('hej') || lowerMessage.includes('hallå')) {
+            response = 'Hej! 👋 Hur kan jag hjälpa dig idag? Har du frågor om våra produkter eller leverans?';
+        } else if (lowerMessage.includes('frakt') || lowerMessage.includes('leverans')) {
+            response = 'Vi har fri frakt i hela Sverige! 🚚 Leveranstid är 2-3 arbetsdagar.';
+        } else if (lowerMessage.includes('pris') || lowerMessage.includes('kostar')) {
+            response = 'Våra priser: Mindre Lifah 65kr, Större Lifah 90kr, Aleppotvål 85kr, Presentset 165kr. Alla priser inkluderar fri frakt! 🌿';
+        } else if (lowerMessage.includes('produkt') || lowerMessage.includes('luffa') || lowerMessage.includes('lifah')) {
+            response = 'Vi säljer 100% naturliga luffasvampar och ekologisk Aleppotvål. Alla produkter är biologiskt nedbrytbara och miljövänliga! 🌱';
+        } else if (lowerMessage.includes('beställ') || lowerMessage.includes('köp')) {
+            response = 'Du kan beställa direkt på vår hemsida! Klicka bara på "Lägg i kundvagn" på produkten du vill ha. 🛒';
+        } else if (lowerMessage.includes('retur') || lowerMessage.includes('ångra')) {
+            response = 'Vi har 14 dagars öppet köp. Kontakta oss på tree.of.liifa@gmail.com så hjälper vi dig! 📧';
+        } else if (lowerMessage.includes('kontakt') || lowerMessage.includes('email') || lowerMessage.includes('mail')) {
+            response = 'Du kan nå oss på tree.of.liifa@gmail.com eller genom denna chat! 💚';
+        } else if (lowerMessage.includes('betala') || lowerMessage.includes('betalning')) {
+            response = 'Vi tar emot kortbetalning via Stripe. Betalningen är säker och krypterad. 💳';
+        } else {
+            response = 'Tack för din fråga! För mer specifik hjälp, kontakta oss gärna på tree.of.liifa@gmail.com 📧';
+        }
+
+        res.json({ response });
+    } catch (error) {
+        console.error('❌ Chat error:', error);
+        res.status(500).json({ error: 'Chat error' });
+    }
+});
+
+// ===== SUBMIT REVIEW ENDPOINT =====
+app.post('/api/reviews', async (req, res) => {
+    try {
+        const { productName, customerName, rating, reviewText } = req.body;
+        
+        console.log('📝 Review submission:', { productName, customerName, rating });
+
+        // Validation
+        if (!productName || !customerName || !rating || !reviewText) {
+            return res.status(400).json({ error: 'Alla fält krävs' });
+        }
+
+        if (rating < 1 || rating > 5) {
+            return res.status(400).json({ error: 'Betyg måste vara mellan 1-5' });
+        }
+
+        if (reviewText.length < 10) {
+            return res.status(400).json({ error: 'Recensionen måste vara minst 10 tecken' });
+        }
+
+        // Read existing reviews
+        const reviewsPath = path.join(__dirname, 'reviews.json');
+        let reviews = {};
+        
+        try {
+            const data = await fs.readFile(reviewsPath, 'utf8');
+            reviews = JSON.parse(data);
+        } catch (error) {
+            console.log('Creating new reviews.json file');
+            reviews = {
+                'Aleppotvål': [],
+                'Mindre Lifah': [],
+                'Större Lifah': [],
+                'Kokosskrubb': [],
+                'Lifa Handske': [],
+                'Tvålunderlägg Lifa': [],
+                'Presentset': []
+            };
+        }
+
+        // Create review object
+        const review = {
+            id: `REV-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+            productName,
+            customerName,
+            rating: parseInt(rating),
+            reviewText,
+            date: new Date().toISOString(),
+            helpful: 0
+        };
+
+        // Add review to product
+        if (!reviews[productName]) {
+            reviews[productName] = [];
+        }
+        reviews[productName].push(review);
+
+        // Save to file
+        await fs.writeFile(reviewsPath, JSON.stringify(reviews, null, 2));
+
+        console.log('✅ Review saved:', review.id);
+
+        // Send confirmation email to customer (optional)
+        try {
+            await transporter.sendMail({
+                from: 'tree.of.liifa@gmail.com',
+                to: 'tree.of.liifa@gmail.com', // Send to yourself for notification
+                subject: `Ny recension: ${productName}`,
+                html: `
+                    <h2>Ny recension mottagen!</h2>
+                    <p><strong>Produkt:</strong> ${productName}</p>
+                    <p><strong>Kund:</strong> ${customerName}</p>
+                    <p><strong>Betyg:</strong> ${'⭐'.repeat(rating)}</p>
+                    <p><strong>Recension:</strong> ${reviewText}</p>
+                `
+            });
+        } catch (emailError) {
+            console.log('Email notification failed:', emailError);
+        }
+
+        res.json({ 
+            success: true, 
+            message: 'Tack för din recension!',
+            review 
+        });
+
+    } catch (error) {
+        console.error('❌ Review submission error:', error);
+        res.status(500).json({ error: 'Kunde inte spara recension' });
+    }
+});
