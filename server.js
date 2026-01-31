@@ -1558,28 +1558,161 @@ app.post('/api/chat', async (req, res) => {
         const { message } = req.body;
         console.log('💬 Chat message received:', message);
 
-        // Simple automated responses based on keywords
         let response = '';
         const lowerMessage = message.toLowerCase();
 
-        if (lowerMessage.includes('hej') || lowerMessage.includes('hallå')) {
-            response = 'Hej! 👋 Hur kan jag hjälpa dig idag? Har du frågor om våra produkter eller leverans?';
-        } else if (lowerMessage.includes('frakt') || lowerMessage.includes('leverans')) {
-            response = 'Vi har fri frakt i hela Sverige! 🚚 Leveranstid är 2-3 arbetsdagar.';
-        } else if (lowerMessage.includes('pris') || lowerMessage.includes('kostar')) {
-            response = 'Våra priser: Mindre Lifah 65kr, Större Lifah 90kr, Aleppotvål 85kr, Presentset 165kr. Alla priser inkluderar fri frakt! 🌿';
-        } else if (lowerMessage.includes('produkt') || lowerMessage.includes('luffa') || lowerMessage.includes('lifah')) {
-            response = 'Vi säljer 100% naturliga luffasvampar och ekologisk Aleppotvål. Alla produkter är biologiskt nedbrytbara och miljövänliga! 🌱';
-        } else if (lowerMessage.includes('beställ') || lowerMessage.includes('köp')) {
-            response = 'Du kan beställa direkt på vår hemsida! Klicka bara på "Lägg i kundvagn" på produkten du vill ha. 🛒';
-        } else if (lowerMessage.includes('retur') || lowerMessage.includes('ångra')) {
-            response = 'Vi har 14 dagars öppet köp. Kontakta oss på tree.of.liifa@gmail.com så hjälper vi dig! 📧';
-        } else if (lowerMessage.includes('kontakt') || lowerMessage.includes('email') || lowerMessage.includes('mail')) {
-            response = 'Du kan nå oss på tree.of.liifa@gmail.com eller genom denna chat! 💚';
-        } else if (lowerMessage.includes('betala') || lowerMessage.includes('betalning')) {
-            response = 'Vi tar emot kortbetalning via Stripe. Betalningen är säker och krypterad. 💳';
-        } else {
-            response = 'Tack för din fråga! För mer specifik hjälp, kontakta oss gärna på tree.of.liifa@gmail.com 📧';
+        // Hälsningar & small talk
+        if (lowerMessage.match(/\b(hej|hallå|hejsan|tjena|yo|hi|hello|god (morgon|dag|kväll))\b/)) {
+            const greetings = [
+                'Hej! 👋 Vad kul att du hör av dig! Hur kan jag hjälpa dig idag?',
+                'Hallå där! 🌿 Funderar du på något speciellt eller vill du veta mer om våra produkter?',
+                'Hej och välkommen! 💚 Jag är här för att hjälpa till. Vad undrar du över?',
+                'Tjena! 👋 Har du några frågor om naturlig hudvård eller våra luffasvampar?'
+            ];
+            response = greetings[Math.floor(Math.random() * greetings.length)];
+        }
+        
+        // Frakt & leverans
+        else if (lowerMessage.match(/\b(frakt|leverans|skicka|shipping|får jag|när kommer|levererar|fraktavgift)\b/)) {
+            const shippingResponses = [
+                'Vi har fri frakt i hela Sverige! 🚚 Dina varor levereras inom 2-3 arbetsdagar från att du beställt.',
+                'All frakt är kostnadsfri! 🎉 Vi skickar med Postnord och det tar vanligtvis 2-3 arbetsdagar.',
+                'Ingen fraktavgift hos oss! 💚 Vi skickar till hela Sverige och leveranstiden är 2-3 arbetsdagar.',
+                'Fri frakt på allt! 🚚 Beställer du idag så är paketet framme inom 2-3 dagar.'
+            ];
+            response = shippingResponses[Math.floor(Math.random() * shippingResponses.length)];
+        }
+        
+        // Priser
+        else if (lowerMessage.match(/\b(pris|kostar|kosta|kostnad|billig|dyr|hur mycket)\b/)) {
+            const priceResponses = [
+                'Våra priser:\n🌿 Mindre Lifah: 65 kr\n🌿 Större Lifah: 90 kr\n🧼 Aleppotvål: 85 kr\n🎁 Presentset: 165 kr\n\nAlla priser inkluderar fri frakt! 💚',
+                'Priserna varierar lite:\n• Kokosskrubb: 35 kr\n• Lifa Handske: 65 kr\n• Tvålunderlägg: 35 kr\n• Mindre Lifah: 65 kr\n• Större Lifah: 90 kr\n• Aleppotvål: 85 kr\n• Presentset: 165 kr\n\nFri frakt på allt! 🚚',
+                'Hos oss får du:\nMinsta produkter från 35 kr (Kokosskrubb)\nPopulärast är Mindre Lifah för 65 kr\nPresentset för 165 kr (perfekt gåva!)\n\nIngen fraktavgift! 💚'
+            ];
+            response = priceResponses[Math.floor(Math.random() * priceResponses.length)];
+        }
+        
+        // Produktfrågor - Luffa/Lifah
+        else if (lowerMessage.match(/\b(luffa|lifah|svamp|exfolier|skrubb|peeling)\b/)) {
+            const luffahResponses = [
+                'Våra luffasvampar är 100% naturliga och biologiskt nedbrytbara! 🌱 Vi har två storlekar:\n• Mindre Lifah (65 kr) - perfekt för ansiktet och daglig användning\n• Större Lifah (90 kr) - kraftigare exfoliering för hela kroppen',
+                'Luffa är naturens egen exfoliator! 💚 Den växer från en gurkväxt och är helt biologiskt nedbrytbar. Våra luffasvampar:\n✨ Ger djuprengöring\n✨ Mjukare hud\n✨ Förbättrad blodcirkulation\n✨ Miljövänligt alternativ till plast',
+                'Vi älskar luffasvampar! 🌿 De är:\n• 100% naturliga (från en växt!)\n• Perfekta för exfoliering\n• Håller länge (3-6 månader)\n• Kan komposteras när de är uttjänta\n\nVi har både liten (65 kr) och stor (90 kr) variant!'
+            ];
+            response = luffahResponses[Math.floor(Math.random() * luffahResponses.length)];
+        }
+        
+        // Aleppotvål
+        else if (lowerMessage.match(/\b(tvål|aleppo|tvåla|såpa|tvätta|känslig hud|akne|torr hud)\b/)) {
+            const soapResponses = [
+                'Vår Aleppotvål (85 kr) är fantastisk! 🧼 Den är:\n✨ Gjord på olivolja & lautelolja\n✨ Perfekt för känslig & torr hud\n✨ Helt naturlig - inga kemikalier\n✨ Kan användas på både ansikte och kropp\n\nMany kunder med akne har sett förbättring!',
+                'Aleppotvål är världens äldsta tvål! 💚 Vår är tillverkad enligt urgammalt recept:\n• 100% naturlig\n• Mild & fuktighetgivande\n• Passar känslig hud\n• Inga tillsatser eller parfym\n\n85 kr inklusive fri frakt!',
+                'Älskar du naturlig hudvård? Då måste du testa Aleppotvål! 🧼\n✓ Traditionellt recept från Syrien\n✓ Olivolja + lautelolja\n✓ Superskönt för torr & känslig hud\n✓ Inga konstgjorda additiver\n\nPris: 85 kr med fri frakt! 💚'
+            ];
+            response = soapResponses[Math.floor(Math.random() * soapResponses.length)];
+        }
+        
+        // Presentset
+        else if (lowerMessage.match(/\b(present|gåva|giftbox|paket|julklapp|födelsedagspresent|gåvobox)\b/)) {
+            const giftResponses = [
+                'Vårt presentset är superpopulärt! 🎁 För 165 kr får du:\n• En vacker presentförpackning\n• Ett urval av våra bästa produkter\n• Perfekt för någon som älskar naturlig hudvård\n• Fri frakt!\n\nIdealisk gåva till nån du bryr dig om! 💚',
+                'Letar du efter en genomtänkt gåva? 🌿\n\nPresentset - 165 kr:\n✨ Fin presentbox\n✨ Mix av naturliga produkter\n✨ Komplett hudvårdsupplevelse\n✨ Miljövänlig förpackning\n\nShowar att du bryr dig om både mottagaren OCH miljön! 💚',
+                'Presentset är vår mest populära gåva! 🎁\n165 kr för en komplett upplevelse:\n• Luffasvamp för exfoliering\n• Naturlig tvål\n• Vackert paketerat\n• Fri frakt inkluderat\n\nPerfekt till födelsedag, jul eller "bara för att"! 💚'
+            ];
+            response = giftResponses[Math.floor(Math.random() * giftResponses.length)];
+        }
+        
+        // Hur man använder produkterna
+        else if (lowerMessage.match(/\b(använd|använda|funkar|fungerar|gör|how to|instruktion)\b/)) {
+            const howToResponses = [
+                'Så här använder du luffasvamp:\n1️⃣ Blöt den i varmt vatten (den mjuknar!)\n2️⃣ Applicera tvål/duschcreme\n3️⃣ Skrubba i cirkelrörelser\n4️⃣ Skölj av och häng upp att torka\n\nAnvänd 2-3 gånger/vecka för bäst resultat! 🌿',
+                'Tips för bästa resultat:\n💚 Luffa: Blöt först, använd med tvål, skrubba mjukt\n💚 Aleppotvål: Skumma mellan händerna, applicera försiktigt\n💚 Tvålunderlägg: Lägg tvålen på det för att hålla den torr\n\nLåt alltid produkterna lufttorka mellan användningarna!',
+                'Användarguide:\n🌿 Luffasvamp blir mjuk i vatten\n🌿 Använd 2-3x/vecka (inte varje dag!)\n🌿 Skrubba i cirkelrörelser\n🌿 Häng upp att torka efter användning\n🌿 Byt ut efter 3-6 månader\n\nVill du ha mer specifika tips? Fråga på! 💚'
+            ];
+            response = howToResponses[Math.floor(Math.random() * howToResponses.length)];
+        }
+        
+        // Beställning & köp
+        else if (lowerMessage.match(/\b(beställ|köp|köpa|handla|lägga order|checkout|kassa|varukorg)\b/)) {
+            const orderResponses = [
+                'Super enkelt att beställa! 🛒\n1. Klicka "Lägg i kundvagn" på produkterna du vill ha\n2. Klicka på kundvagnen (🛒) uppe till höger\n3. Gå till kassan\n4. Fyll i dina uppgifter\n5. Betala säkert med kort\n\nKlart på några minuter! 💚',
+                'För att handla:\n💚 Välj produkt → Lägg i kundvagn\n💚 Öppna kundvagnen (🛒-ikonen)\n💚 Klicka "Gå till kassan"\n💚 Fyll i leveransadress\n💚 Betala med kort (säkert via Stripe)\n\nPaketet är på väg inom 24h! 📦',
+                'Beställningsprocess:\n1️⃣ Bläddra bland produkterna\n2️⃣ Lägg till i kundvagnen\n3️⃣ Gå till kassan\n4️⃣ Ange leveransinfo\n5️⃣ Betala (Visa/Mastercard)\n\nDu får bekräftelse via email direkt! 💚'
+            ];
+            response = orderResponses[Math.floor(Math.random() * orderResponses.length)];
+        }
+        
+        // Betalning
+        else if (lowerMessage.match(/\b(betala|betalning|kort|swish|klarna|säker|stripe|faktura)\b/)) {
+            const paymentResponses = [
+                'Vi tar emot kortbetalning via Stripe 💳\n✓ Visa\n✓ Mastercard\n✓ American Express\n\nBetalningen är 100% säker och krypterad. Vi ser aldrig dina kortuppgifter! 🔒',
+                'Betalning är supersäkert hos oss! 🔒\n• Vi använder Stripe (världsledande)\n• SSL-krypterad betalning\n• Dina kortuppgifter sparas inte\n• Accepterar alla vanliga kort\n\nTrygg shopping! 💚',
+                'Betalningsmöjligheter:\n💳 Kort (Visa, Mastercard, Amex)\n🔒 100% säkert via Stripe\n🛡️ Ingen kortinfo sparas\n\nTyvärr har vi inte Swish/Klarna än, men det kommer! 🌿'
+            ];
+            response = paymentResponses[Math.floor(Math.random() * paymentResponses.length)];
+        }
+        
+        // Retur & ångerrätt
+        else if (lowerMessage.match(/\b(retur|ångra|bytesrätt|reklamation|nöjd|returnera|skicka tillbaka)\b/)) {
+            const returnResponses = [
+                'Vi har 14 dagars öppet köp! 💚\n\nOm du inte är nöjd:\n📧 Maila oss på tree.of.liifa@gmail.com\n📦 Skicka tillbaka produkten\n💰 Få pengarna tillbaka\n\nVi vill att du ska vara 100% nöjd!',
+                'Ångerrätt & retur:\n✓ 14 dagars öppet köp\n✓ Enkelt returförfarande\n✓ Full återbetalning\n\nKontakta oss på tree.of.liifa@gmail.com så fixar vi det! 💚',
+                'Inte helt nöjd? Inga problem! 🌿\n\nVi har 14 dagars ångerrätt.\nSkicka ett mail till tree.of.liifa@gmail.com så hjälper vi dig direkt.\n\nDin tillfredsställelse är viktigast för oss! �'
+            ];
+            response = returnResponses[Math.floor(Math.random() * returnResponses.length)];
+        }
+        
+        // Miljö & hållbarhet
+        else if (lowerMessage.match(/\b(miljö|hållbar|ekologisk|grön|nedbrytbar|plast|kompost|återvinn)\b/)) {
+            const ecoResponses = [
+                'Miljön är viktig för oss! 🌍\n\n✓ 100% naturliga produkter\n✓ Biologiskt nedbrytbara\n✓ Inga kemikalier\n✓ Minimal plast i förpackning\n✓ Kan komposteras\n\nVi bryr oss om planeten! 💚',
+                'Hållbarhet är vår passion! 🌿\n\nVåra produkter:\n• Naturliga material\n• Ingen plast\n• Biologiskt nedbrytbar\n• Ekologiskt odlade\n• Kan återgå till naturen\n\nGott för dig OCH planeten! 💚',
+                'Varför vi är miljövänliga:\n🌱 Naturliga råvaror\n🌱 Inga syntetiska tillsatser\n🌱 Nedbrytbara inom månader\n🌱 Ersätter plastprodukter\n🌱 Minimal miljöpåverkan\n\nEn liten förändring kan göra stor skillnad! 💚'
+            ];
+            response = ecoResponses[Math.floor(Math.random() * ecoResponses.length)];
+        }
+        
+        // Kontakt & support
+        else if (lowerMessage.match(/\b(kontakt|email|ring|telefon|suppor|hjälp|fråga)\b/)) {
+            const contactResponses = [
+                'Du kan alltid nå oss! 💚\n\n📧 Email: tree.of.liifa@gmail.com\n💬 Denna chat (jag svarar direkt!)\n📱 Eller via Instagram\n\nVi svarar inom 24h! 🌿',
+                'Behöver du mer hjälp?\n\n📧 Maila: tree.of.liifa@gmail.com\n💬 Chatta här\n📱 DM på Instagram: @treeoflifa\n\nVi är här för dig! 💚',
+                'Kontakta oss gärna:\n✓ Email: tree.of.liifa@gmail.com\n✓ Chat: Skriv här!\n✓ Instagram: @treeoflifa\n\nVi älskar att höra från våra kunder! 💚'
+            ];
+            response = contactResponses[Math.floor(Math.random() * contactResponses.length)];
+        }
+        
+        // Tack & avslut
+        else if (lowerMessage.match(/\b(tack|tackar|thanks|toppen|bra|perfekt|okej|ok|👍)\b/)) {
+            const thanksResponses = [
+                'Varsågod! 💚 Hör av dig om du undrar något mer! Ha en underbar dag! 🌿',
+                'Så kul att jag kunde hjälpa! 😊 Tveka inte att skriva om du har fler frågor! 💚',
+                'Tack själv för att du hörde av dig! 🌿 Välkommen åter! 💚',
+                'Glad att kunna hjälpa! 💚 Lycka till med din beställning! 🌿'
+            ];
+            response = thanksResponses[Math.floor(Math.random() * thanksResponses.length)];
+        }
+        
+        // Rekommendationer
+        else if (lowerMessage.match(/\b(rekommendera|tipsa|bäst|börja|nybörjare|första)\b/)) {
+            const recommendResponses = [
+                'För nybörjare rekommenderar jag:\n\n🌟 Mindre Lifah (65 kr) - perfekt att börja med!\n🌟 Aleppotvål (85 kr) - mild och skön\n\nEller varför inte Presentset (165 kr) för att testa allt? 💚',
+                'Mitt tips för första köpet:\n\n💚 Mindre Lifah - lagom storlek, mjuk exfoliering\n💚 Aleppotvål - passar alla hudtyper\n💚 Eller Presentset om du vill prova allt!\n\nDu kan inte välja fel! 🌿',
+                'Vad passar dig?\n\n🌿 Känslig hud? → Aleppotvål + Mindre Lifah\n🌿 Vill ha kraftig peeling? → Större Lifah\n🌿 Osäker? → Presentset (får prova allt!)\n\nVilket låter bäst för dig? 💚'
+            ];
+            response = recommendResponses[Math.floor(Math.random() * recommendResponses.length)];
+        }
+        
+        // Fallback - om inget matchade
+        else {
+            const fallbackResponses = [
+                'Hmm, jag är inte helt säker på vad du menar! 🤔 Kan du ställa frågan på ett annat sätt? Eller skriv "hjälp" så berättar jag vad jag kan svara på! 💚',
+                'Det var en intressant fråga! 🌿 Jag kan svara på saker om produkter, priser, frakt, betalning och miljö. Vad undrar du över? 💚',
+                'Tack för din fråga! För mer specifik hjälp om det här, kontakta oss gärna på tree.of.liifa@gmail.com så hjälper vi dig personligt! 📧💚',
+                'Jag förstod inte riktigt, men jag vill gärna hjälpa! 💚 Fråga om:\n• Produkter & priser\n• Frakt & leverans\n• Betalning\n• Retur\n• Hållbarhet\n\nVad vill du veta? 🌿'
+            ];
+            response = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)];
         }
 
         res.json({ response });
