@@ -1722,6 +1722,56 @@ app.post('/api/chat', async (req, res) => {
     }
 });
 
+// ===== GET REVIEWS FOR PRODUCT =====
+app.get('/api/reviews/:productName', async (req, res) => {
+    try {
+        const { productName } = req.params;
+        const decodedName = decodeURIComponent(productName);
+        console.log('📖 Fetching reviews for:', decodedName);
+
+        // Read reviews file
+        const reviewsPath = path.join(__dirname, 'reviews.json');
+        let reviews = {};
+        
+        try {
+            const data = await fs.readFile(reviewsPath, 'utf8');
+            reviews = JSON.parse(data);
+        } catch (error) {
+            console.log('No reviews file found, returning empty');
+            return res.json({
+                reviews: [],
+                stats: {
+                    totalReviews: 0,
+                    averageRating: 0
+                }
+            });
+        }
+
+        // Get reviews for this product
+        const productReviews = reviews[decodedName] || [];
+        
+        // Calculate stats
+        const totalReviews = productReviews.length;
+        const averageRating = totalReviews > 0 
+            ? (productReviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews).toFixed(1)
+            : 0;
+
+        console.log(`✅ Found ${totalReviews} reviews for ${decodedName}`);
+
+        res.json({
+            reviews: productReviews,
+            stats: {
+                totalReviews,
+                averageRating
+            }
+        });
+
+    } catch (error) {
+        console.error('❌ Error fetching reviews:', error);
+        res.status(500).json({ error: 'Could not fetch reviews' });
+    }
+});
+
 // ===== SUBMIT REVIEW ENDPOINT =====
 app.post('/api/reviews', async (req, res) => {
     try {
