@@ -1896,22 +1896,40 @@
         // Load and display reviews for a product
         async function loadProductReviews(productName) {
             try {
+                console.log('🔍 Loading reviews for:', productName);
                 const response = await fetch(`${API_BASE_URL}/api/reviews/${encodeURIComponent(productName)}`);
-                if (!response.ok) throw new Error('Failed to load reviews');
+                console.log('📡 Review response status:', response.status);
+                
+                if (!response.ok) {
+                    console.error('Failed to load reviews:', response.status);
+                    throw new Error('Failed to load reviews');
+                }
                 
                 const data = await response.json();
+                console.log('📊 Review data:', data);
+                
                 const reviewsEl = document.getElementById(`reviews-${productName.replace(/\s+/g, '-')}`);
-                if (!reviewsEl) return;
+                console.log('📍 Reviews element found:', !!reviewsEl);
+                
+                if (!reviewsEl) {
+                    console.error('Review element not found for:', productName);
+                    return;
+                }
                 
                 if (data.stats.totalReviews === 0) {
-                    reviewsEl.innerHTML = '<span style="color: #999;">Ingen recensioner än. Bli först!</span>';
+                    reviewsEl.innerHTML = '<span style="color: #999; font-size: 0.85rem;">Inga recensioner än. Bli först!</span>';
                 } else {
                     const avgRating = parseFloat(data.stats.averageRating);
-                    const stars = '⭐'.repeat(Math.round(avgRating)) + (avgRating % 1 >= 0.5 ? '✨' : '');
-                    reviewsEl.innerHTML = `${stars} ${avgRating}/5 (${data.stats.totalReviews} recensioner)`;
+                    const stars = '⭐'.repeat(Math.round(avgRating));
+                    reviewsEl.innerHTML = `<span style="color: #f4a261; font-weight: 500;">${stars} ${avgRating}/5 (${data.stats.totalReviews} ${data.stats.totalReviews === 1 ? 'recension' : 'recensioner'})</span>`;
                 }
+                console.log('✅ Reviews loaded successfully for:', productName);
             } catch (error) {
-                console.error('Error loading reviews:', error);
+                console.error('❌ Error loading reviews for', productName, ':', error);
+                const reviewsEl = document.getElementById(`reviews-${productName.replace(/\s+/g, '-')}`);
+                if (reviewsEl) {
+                    reviewsEl.innerHTML = '<span style="color: #999; font-size: 0.85rem;">Inga recensioner än</span>';
+                }
             }
         }
 
@@ -2751,6 +2769,15 @@
             
             // Ladda lager först
             await loadInventory();
+            
+            // Ladda recensioner efter att produkterna renderats
+            console.log('📚 Loading reviews for all products...');
+            setTimeout(() => {
+                Object.keys(PRODUCTS).forEach(productName => {
+                    console.log('Loading reviews for:', productName);
+                    loadProductReviews(productName);
+                });
+            }, 500);
             
             document.addEventListener('keydown', function(event) {
                 if (event.key === 'Escape') {
