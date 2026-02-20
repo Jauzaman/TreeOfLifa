@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+
+Sitemap: https://treeoflifa.se/sitemap.xml
+
+# Crawl-delay
+Crawl-delay: 1
