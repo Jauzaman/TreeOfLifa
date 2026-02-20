@@ -55,6 +55,12 @@ function isEmailConfirmed(email) {
     return entry && entry.confirmed && entry.expires > Date.now();
 }
 
+// --- Blog routes ---
+app.get('/blog/:filename', (req, res) => {
+    const path = require('path');
+    res.sendFile(path.join(__dirname, 'blog', req.params.filename));
+});
+
 // --- Ensure server starts and logs errors for Railway ---
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
