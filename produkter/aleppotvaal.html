@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Köp Naturlig Aleppotvål | Handgjord & Ekologisk | Fri Frakt Sverige</title>
+    <meta name="description" content="Autentisk Aleppotvål från Syrien. 100% naturlig olivolja & laurtelolja. Perfekt för känslig hud. Handgjord enligt urgammalt recept. Fri frakt i Sverige!">
+    <meta name="keywords" content="aleppotvål, köpa aleppotvål sverige, naturlig tvål, ekologisk tvål, handgjord tvål, tvål känslig hud, olivtvål">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Naturlig Aleppotvål - Handgjord & Ekologisk">
+    <meta property="og:description" content="Autentisk Aleppotvål. 100% naturlig, perfekt för känslig hud. Fri frakt!">
+    <meta property="og:image" content="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG">
+    <meta property="og:url" content="https://treeoflifa.se/produkter/aleppotvaal.html">
+    
+    <!-- Schema.org Product Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "Naturlig Aleppotvål",
+      "image": "https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG",
+      "description": "Autentisk Aleppotvål tillverkad enligt urgammalt recept. Gjord på olivolja och laurtelolja.",
+      "brand": {
+        "@type": "Brand",
+        "name": "TreeOfLifa"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "80",
+        "priceCurrency": "SEK",
+        "availability": "https://schema.org/InStock",
+        "url": "https://treeoflifa.se/produkter/aleppotvaal.html"
+      }
+    }
+    </script>
+    
+    <link rel="stylesheet" href="../index.html">
+    <script src="https://js.stripe.com/v3/"></script>
+    <script src="../config.js"></script>
+    
+    <style>
+        :root {
+            --earth-dark: #3d5a3c;
+            --terracotta: #d4a574;
+            --cream: #f9f6f0;
+            --soft-black: #2d2d24;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Palatino', 'Georgia', serif;
+            line-height: 1.8;
+            color: var(--soft-black);
+            background: var(--cream);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .breadcrumb {
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        
+        .breadcrumb a {
+            color: var(--terracotta);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+        
+        .product-page {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-top: 40px;
+        }
+        
+        .product-image {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        
+        .product-image img {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .product-info h1 {
+            color: var(--earth-dark);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .product-price {
+            font-size: 2em;
+            color: var(--earth-dark);
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .product-price span {
+            font-size: 0.5em;
+            color: #666;
+            font-weight: normal;
+        }
+        
+        .buy-button {
+            background: linear-gradient(135deg, var(--earth-dark), var(--terracotta));
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            width: 100%;
+            margin: 30px 0;
+        }
+        
+        .buy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .features {
+            background: #f0f7f0;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        
+        .features h3 {
+            color: var(--earth-dark);
+            margin-bottom: 15px;
+        }
+        
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .features li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--earth-dark);
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        
+        .description {
+            margin: 40px 0;
+            line-height: 1.9;
+        }
+        
+        .description h2 {
+            color: var(--earth-dark);
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        
+        .trust-badges {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .badge strong {
+            display: block;
+            color: var(--earth-dark);
+        }
+        
+        .related-products {
+            margin-top: 80px;
+            padding-top: 40px;
+            border-top: 2px solid #ddd;
+        }
+        
+        .related-products h2 {
+            color: var(--earth-dark);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .related-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+        }
+        
+        .related-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        
+        .related-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .related-card img {
+            width: 100%;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .related-card h3 {
+            color: var(--earth-dark);
+            margin-bottom: 10px;
+        }
+        
+        .related-card .price {
+            font-size: 1.5em;
+            color: var(--earth-dark);
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        
+        .related-card a {
+            display: inline-block;
+            background: var(--terracotta);
+            color: white;
+            padding: 10px 30px;
+            border-radius: 25px;
+            text-decoration: none;
+            transition: background 0.3s;
+        }
+        
+        .related-card a:hover {
+            background: var(--earth-dark);
+        }
+        
+        @media (max-width: 768px) {
+            .product-page {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .product-image {
+                position: relative;
+                top: 0;
+            }
+            
+            .product-info h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="https://treeoflifa.se">Hem</a> / <a href="https://treeoflifa.se/#products">Produkter</a> / Aleppotvål
+        </div>
+        
+        <div class="product-page">
+            <div class="product-image">
+                <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG" alt="Naturlig Aleppotvål från TreeOfLifa">
+            </div>
+            
+            <div class="product-info">
+                <h1>Naturlig Aleppotvål</h1>
+                
+                <p style="font-size: 1.2em; color: #666;">Handgjord enligt urgammalt recept från Aleppo, Syrien. Perfekt för känslig och torr hud.</p>
+                
+                <div class="product-price">
+                    80 kr <span>Fri frakt i hela Sverige 📦</span>
+                </div>
+                
+                <button class="buy-button" onclick="addToCart('Aleppotvål', 80)">
+                    🛒 Lägg i kundvagn
+                </button>
+                
+                <div class="trust-badges">
+                    <div class="badge">
+                        <strong>✓ 100% Naturlig</strong>
+                        <span>Inga kemikalier</span>
+                    </div>
+                    <div class="badge">
+                        <strong>✓ Handgjord</strong>
+                        <span>Urgammalt recept</span>
+                    </div>
+                    <div class="badge">
+                        <strong>✓ Fri Frakt</strong>
+                        <span>Hela Sverige</span>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <h3>🌿 Varför välja vår Aleppotvål?</h3>
+                    <ul>
+                        <li>100% naturlig olivolja och laurtelolja</li>
+                        <li>Tillverkad enligt traditionellt recept från Aleppo</li>
+                        <li>Extremt mild och perfekt för känslig hud</li>
+                        <li>Inga kemikalier eller konstgjorda additiver</li>
+                        <li>Passar både ansikte och kropp</li>
+                        <li>Läkande egenskaper enligt århundraden gammal tradition</li>
+                        <li>Ekologisk och miljövänlig</li>
+                    </ul>
+                </div>
+                
+                <div class="description">
+                    <h2>Om Aleppotvål</h2>
+                    <p>Denna autentiska Aleppotvål är tillverkad enligt ett urgammalt recept från Aleppo, Syrien - en av världens äldsta städer. Tvålen har tillverkats på samma sätt i över 2000 år och är känd för sina exceptionella hudvårdande egenskaper.</p>
+                    
+                    <h2>Ingredienser</h2>
+                    <p><strong>Olivolja (Olea Europaea)</strong> - Rik på antioxidanter och vitamin E, mjukgör och återfuktar huden naturligt.</p>
+                    <p><strong>Laurtelolja (Laurus Nobilis)</strong> - Känd för sina antiseptiska och läkande egenskaper. Perfekt för känslig och irriterad hud.</p>
+                    
+                    <h2>Hur använder man Aleppotvål?</h2>
+                    <p><strong>För ansiktet:</strong> Fukta ansiktet med ljummet vatten. Skumma upp tvålen mellan händerna eller direkt på ansiktet. Massera försiktigt i cirkelrörelser. Skölj noga med ljummet vatten.</p>
+                    
+                    <p><strong>För kroppen:</strong> Använd som vanlig duschtvål. Skummar rikligt och ger en mild rengöring. Perfekt för daglig användning.</p>
+                    
+                    <p><strong>Som raktvål:</strong> Fungerar utmärkt som naturlig raktvål för både män och kvinnor.</p>
+                    
+                    <h2>Fördelar för huden</h2>
+                    <ul style="margin-left: 20px;">
+                        <li>✨ Återfuktar torr hud</li>
+                        <li>✨ Lugnar irriterad och känslig hud</li>
+                        <li>✨ Hjälper vid eksem och psoriasis</li>
+                        <li>✨ Naturligt antibakteriell</li>
+                        <li>✨ Balanserar hudens pH-värde</li>
+                        <li>✨ Passar även aknebenägen hud</li>
+                    </ul>
+                    
+                    <h2>Förvaring</h2>
+                    <p>Förvara tvålen torrt mellan användningar. Använd gärna vårt <a href="tvaalunderlaegg.html" style="color: var(--earth-dark); text-decoration: underline;">tvålunderlägg i lifa</a> för optimal luftcirkulation och längre livslängd.</p>
+                    
+                    <h2>Fakta om Aleppo</h2>
+                    <p>Aleppo-tvålen har tillverkats i den syriska staden Aleppo i över 2000 år. Metoden har gått i arv från generation till generation och är en av världens äldsta tvåltillverkningstekniker. Tvålen torkas traditionellt i 9-12 månader för optimal kvalitet.</p>
+                </div>
+                
+                <button class="buy-button" onclick="addToCart('Aleppotvål', 80)">
+                    🛒 Lägg i kundvagn - 80 kr
+                </button>
+            </div>
+        </div>
+        
+        <div class="related-products">
+            <h2>🌿 Kombinera med dessa produkter</h2>
+            <div class="related-grid">
+                <div class="related-card">
+                    <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5816.jpg" alt="Tvålunderlägg">
+                    <h3>Tvålunderlägg Lifa</h3>
+                    <p>Håll tvålen torr och fräsch</p>
+                    <div class="price">30 kr</div>
+                    <a href="tvaalunderlaegg.html">Visa produkt →</a>
+                </div>
+                
+                <div class="related-card">
+                    <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5809.jpg" alt="Mindre Lifah">
+                    <h3>Mindre Lifa</h3>
+                    <p>Perfekt för exfoliering</p>
+                    <div class="price">60 kr</div>
+                    <a href="mindre-lifa.html">Visa produkt →</a>
+                </div>
+                
+                <div class="related-card">
+                    <img src="https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png" alt="Presentset">
+                    <h3>Presentset</h3>
+                    <p>Komplett hudvårdsset</p>
+                    <div class="price">160 kr</div>
+                    <a href="presentset.html">Visa produkt →</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Load cart and config from main site
+        const API_BASE_URL = window.API_BASE_URL || 'https://treeoflifa-production.up.railway.app';
+        
+        function addToCart(productName, price) {
+            // Get existing cart
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            
+            // Check if product already in cart
+            const existingItem = cart.find(item => item.name === productName);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    name: productName,
+                    price: price,
+                    quantity: 1
+                });
+            }
+            
+            // Save cart
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            // Show confirmation
+            alert(`✓ ${productName} har lagts till i kundvagnen!\n\nGå till startsidan för att slutföra köpet.`);
+            
+            // Optional: redirect to main page after 2 seconds
+            setTimeout(() => {
+                window.location.href = '/?cart=open';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
