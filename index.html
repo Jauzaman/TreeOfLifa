@@ -368,6 +368,12 @@
             gap: 2rem;
             margin-top: 2.5rem;
         }
+        .product-card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        
         .product-card {
             background: var(--off-white); 
             border-radius: 20px; 
@@ -379,7 +385,8 @@
             position: relative;
             border: 1px solid rgba(154, 184, 150, 0.15);
         }
-        .product-card:hover { 
+        
+        .product-card-link:hover .product-card { 
             transform: translateY(-8px); 
             box-shadow: 0 16px 48px rgba(61, 90, 60, 0.15);
             border-color: var(--sage);
@@ -1714,45 +1721,52 @@
                 price: 30, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5805.jpg',
                 description: 'Naturlig kokosfiber skrubb för intensiv rengöring. Perfekt för kroppsskrubb och exfoliering av torr hud. 100% biologiskt nedbrytbar.',
-                longDescription: 'Vår kokosfiber skrubb är gjord av ekologisk kokosfibrer som erbjuder en djup och kraftig rengöring. Idealisk för att avlägsna död hud och förbättra blodcirkulationen. Kan även klippas till tvålunderlägg för tvål. Miljövänlig och hållbar.'
+                longDescription: 'Vår kokosfiber skrubb är gjord av ekologisk kokosfibrer som erbjuder en djup och kraftig rengöring. Idealisk för att avlägsna död hud och förbättra blodcirkulationen. Kan även klippas till tvålunderlägg för tvål. Miljövänlig och hållbar.',
+                productPage: 'produkter/kokosskrubb.html'
             },
             
             'Lifa Handske': { 
                 price: 60, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5802.jpg',
                 description: 'Mysig duschhandske med mjuk framidasida och exfolierande liffavävnad. Perfekt för daglig kroppsvård.',
-                longDescription: 'Denna unika dusch handske kombinerar mjukhet och exfoliering. Den mjuka sidan är perfekt för mild rengöring medan liffasidan ger en kraftig exfoliering. Perfekt för hela kroppen och ansiktet. 100% naturlig och miljövänlig.'
+                longDescription: 'Denna unika dusch handske kombinerar mjukhet och exfoliering. Den mjuka sidan är perfekt för mild rengöring medan liffasidan ger en kraftig exfoliering. Perfekt för hela kroppen och ansiktet. 100% naturlig och miljövänlig.',
+                productPage: 'produkter/lifa-handske.html'
             },
             
             'Tvålunderlägg Lifa': { 
                 price: 30, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5816.jpg',
                 description: 'Blekt luffasvamp tvålunderlägg. Håller din tvål torr och ger bättre luftcirkulation. Ca 5-7cm i diameter.',
-                longDescription: 'Det perfekta tillbehöret för din tvål! Vårt tvålunderlägg är gjort av naturlig luffasvamp som håller din tvål torr mellan användningar. Det låter luften cirkulera runt tvålen och förlängar dess livslängd. Blekt och helt naturligt.'
+                longDescription: 'Det perfekta tillbehöret för din tvål! Vårt tvålunderlägg är gjort av naturlig luffasvamp som håller din tvål torr mellan användningar. Det låter luften cirkulera runt tvålen och förlängar dess livslängd. Blekt och helt naturligt.',
+                productPage: 'produkter/tvaalunderlaegg.html'
             },
             'Mindre Lifah': { 
                 price: 60, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_5809.jpg',
                 description: 'Naturlig luffasvamp för daglig kroppskrubb och exfoliering. Perfekt storlek för handledning och ansiktsvård. Ca 10cm lång.',
-                longDescription: 'Vår populäraste och mest älskade luffasvamp! Denna mindre variant är perfekt för daglig användning, tack vare sin hanterliga storlek. Den ekologiska odlade luffasvampen ger en mild men effektiv exfoliering. Mäter cirka 10cm längd och 5-8cm i diameter. 100% naturlig och biologiskt nedbrytbar.'
+                longDescription: 'Vår populäraste och mest älskade luffasvamp! Denna mindre variant är perfekt för daglig användning, tack vare sin hanterliga storlek. Den ekologiska odlade luffasvampen ger en mild men effektiv exfoliering. Mäter cirka 10cm längd och 5-8cm i diameter. 100% naturlig och biologiskt nedbrytbar.',
+                productPage: 'produkter/mindre-lifa.html'
             },
             'Större Lifah': { 
                 price: 85, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4057.JPG',
                 description: 'Extra tjock och hållbar luffasvamp för grundlig djuprengöring och exfoliering. Stor storlek för effektiv användning.',
-                longDescription: 'Denna större och tjockare luffasvamp är gjord för de som vill ha en mer intensiv rengöring. Perfekt för hela kroppen och långvarigt bruk. Den extra tjocka konstruktionen gör den mycket hållbar och resistent. Ekologisk och 100% naturlig, helt utan kemikalier.'
+                longDescription: 'Denna större och tjockare luffasvamp är gjord för de som vill ha en mer intensiv rengöring. Perfekt för hela kroppen och långvarigt bruk. Den extra tjocka konstruktionen gör den mycket hållbar och resistent. Ekologisk och 100% naturlig, helt utan kemikalier.',
+                productPage: 'produkter/storre-lifa.html'
             },
             'Aleppotvål': { 
                 price: 80, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/IMG_4024.JPG',
                 description: 'Naturlig Aleppotvål gjord på ett gammalt hemlighetsrecept. Mild och fuktig tvål för känslig hud. 100% ekologisk.',
-                longDescription: 'Denna autentiska Aleppotvål är tillverkad enligt ett urgammalt recept från Aleppo, Syrien. Gjord på olivolja och lautelolja, denna tvål är extremt mild och perfekt för känslig och torr hud. Den innehåller inga kemikalier eller konstgjorda additiver. Perfekt för både ansikte och kropp. En tvål som har använts i århundraden för sin läkande egenskaper.'
+                longDescription: 'Denna autentiska Aleppotvål är tillverkad enligt ett urgammalt recept från Aleppo, Syrien. Gjord på olivolja och lautelolja, denna tvål är extremt mild och perfekt för känslig och torr hud. Den innehåller inga kemikalier eller konstgjorda additiver. Perfekt för både ansikte och kropp. En tvål som har använts i århundraden för sin läkande egenskaper.',
+                productPage: 'produkter/aleppotvaal.html'
             },
             'Presentset': { 
                 price: 160, 
                 image: 'https://raw.githubusercontent.com/Jauzaman/TreeOfLifa/main/Giftbox.png',
                 description: 'Komplett naturligt presentset i fin presentbox. Perfekt gåva för hälsa- och naturvårdsentusiaster.',
-                longDescription: 'Vår premium presentset innehåller ett urval av våra mest populära produkter, paketerade i en vacker gåvask. Perfekt för att ge en komplett naturlig hudvårdsupplevelse. Innehåller exfolierande verktyg och naturlig tvål. En genomtänkt gåva som visar att du bryr dig om naturlig skönhet och miljön. Miljövänlig packaging.'
+                longDescription: 'Vår premium presentset innehåller ett urval av våra mest populära produkter, paketerade i en vacker gåvask. Perfekt för att ge en komplett naturlig hudvårdsupplevelse. Innehåller exfolierande verktyg och naturlig tvål. En genomtänkt gåva som visar att du bryr dig om naturlig skönhet och miljön. Miljövänlig packaging.',
+                productPage: 'produkter/presentset.html'
             }
         };
 
@@ -1855,35 +1869,40 @@
                     stockInfo = '<div class="stock-info in-stock">I lager</div>';
                 }
                 
+                // Get product page URL
+                const productUrl = product.productPage || '#';
+                
                 return `
-                    <div class="product-card">
-                        ${stockBadge}
-                        <div class="product-image ${imageClass}">
-                            <img src="${product.image}" alt="${escapeHtml(name)}" />
-                        </div>
-                        <div class="product-info">
-                            <h3>${escapeHtml(name)}</h3>
-                            <p>${escapeHtml(product.description)}</p>
-                            <div id="reviews-${name.replace(/\s+/g, '-')}" class="product-reviews" style="margin: 0.5rem 0; font-size: 0.9em; color: #666;">
-                                <span style="display: inline-block;">⭐ Laddar recensioner...</span>
+                    <a href="${productUrl}" class="product-card-link">
+                        <div class="product-card">
+                            ${stockBadge}
+                            <div class="product-image ${imageClass}">
+                                <img src="${product.image}" alt="${escapeHtml(name)}" />
                             </div>
-                            <button onclick="openReviewModalForProduct('${name.replace(/'/g, "\\'")}')" style="
-                                background: none;
-                                border: none;
-                                color: var(--terracotta);
-                                font-size: 0.85rem;
-                                cursor: pointer;
-                                text-decoration: underline;
-                                padding: 0.3rem 0;
-                                margin: 0.3rem 0;
-                            ">✍️ Skriv recension</button>
-                            ${stockInfo}
-                            <div class="price">${product.price} kr</div>
-                            <button class="buy-button" ${buttonDisabled} onclick='addToCart(${JSON.stringify(name)}, ${product.price})'>
-                                ${stock.inStock ? 'Lägg i kundvagn' : 'Slut i lager'}
-                            </button>
+                            <div class="product-info">
+                                <h3>${escapeHtml(name)}</h3>
+                                <p>${escapeHtml(product.description)}</p>
+                                <div id="reviews-${name.replace(/\s+/g, '-')}" class="product-reviews" style="margin: 0.5rem 0; font-size: 0.9em; color: #666;">
+                                    <span style="display: inline-block;">⭐ Laddar recensioner...</span>
+                                </div>
+                                <button onclick="event.preventDefault(); event.stopPropagation(); openReviewModalForProduct('${name.replace(/'/g, "\\'")}')" style="
+                                    background: none;
+                                    border: none;
+                                    color: var(--terracotta);
+                                    font-size: 0.85rem;
+                                    cursor: pointer;
+                                    text-decoration: underline;
+                                    padding: 0.3rem 0;
+                                    margin: 0.3rem 0;
+                                ">✍️ Skriv recension</button>
+                                ${stockInfo}
+                                <div class="price">${product.price} kr</div>
+                                <button class="buy-button" ${buttonDisabled} onclick='event.preventDefault(); event.stopPropagation(); addToCart(${JSON.stringify(name)}, ${product.price})'>
+                                    ${stock.inStock ? 'Lägg i kundvagn' : 'Slut i lager'}
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 `;
             }).join('');
             
