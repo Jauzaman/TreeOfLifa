@@ -122,11 +122,17 @@
                 } else {
                     const avgRating = parseFloat(data.stats.averageRating);
                     const stars = '⭐'.repeat(Math.round(avgRating));
-                    reviewsEl.innerHTML = `<div style="font-size: 1.1rem;"><span style="color: #f4a261; font-weight: 600;">${stars} ${avgRating}/5</span> <span style="color: #666;">(${data.stats.totalReviews} ${data.stats.totalReviews === 1 ? 'recension' : 'recensioner'})</span></div>`;
+                    let reviewsHTML = `<div style="margin-bottom: 20px;"><div style="font-size: 1.3rem; margin-bottom: 10px;"><span style="color: #f4a261; font-weight: 600;">${stars} ${avgRating}/5</span> <span style="color: #666; font-size: 0.95rem;">(${data.stats.totalReviews} ${data.stats.totalReviews === 1 ? 'recension' : 'recensioner'})</span></div></div>`;
+                    data.reviews.forEach(review => {
+                        const reviewStars = '⭐'.repeat(review.rating);
+                        const reviewDate = new Date(review.date).toLocaleDateString('sv-SE');
+                        reviewsHTML += `<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid var(--terracotta);"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;"><strong style="color: var(--earth-dark);">${review.customerName || 'Anonym'}</strong><span style="color: #999; font-size: 0.85rem;">${reviewDate}</span></div><div style="color: #f4a261; margin-bottom: 8px;">${reviewStars}</div><p style="color: #333; line-height: 1.6; margin: 0;">${review.reviewText}</p></div>`;
+                    });
+                    reviewsEl.innerHTML = reviewsHTML;
                 }
             } catch (error) {
                 console.error('Error loading reviews:', error);
-                document.getElementById('reviews-display').innerHTML = '<span style="color: #999; font-size: 0.95rem;">Inga recensioner än</span>';
+                document.getElementById('reviews-display').innerHTML = '<span style="color: #ff6b6b; font-size: 0.95rem;">⚠️ Kunde inte ladda recensioner</span>';
             }
         }
         
