@@ -228,6 +228,26 @@
                     🛒 Lägg i kundvagn
                 </button>
                 
+                <!-- Recensioner -->
+                <div id="reviews-section" style="margin: 20px 0; padding: 20px; background: #f9f9f9; border-radius: 10px;">
+                    <div id="reviews-display" style="margin-bottom: 15px;">
+                        <span style="color: #999;">⭐ Laddar recensioner...</span>
+                    </div>
+                    <button onclick="openReviewModal()" style="
+                        background: none;
+                        border: 2px solid var(--terracotta);
+                        color: var(--terracotta);
+                        font-size: 1rem;
+                        cursor: pointer;
+                        padding: 12px 24px;
+                        border-radius: 25px;
+                        transition: all 0.3s;
+                        font-weight: 500;
+                    " onmouseover="this.style.background='var(--terracotta)'; this.style.color='white'" onmouseout="this.style.background='none'; this.style.color='var(--terracotta)'">
+                        ✍️ Skriv en recension
+                    </button>
+                </div>
+                
                 <div class="trust-badges">
                     <div class="badge">
                         <strong>✓ 100% Naturlig</strong>
@@ -300,7 +320,37 @@
     </div>
     
     <script>
-        const API_BASE_URL = window.API_BASE_URL || 'https://treeoflifa-production.up.railway.app';
+        const API_BASE_URL = 'https://treeoflifa.se';
+        const PRODUCT_NAME = 'Mindre Lifah';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductReviews();
+        });
+        
+        async function loadProductReviews() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/reviews/${encodeURIComponent(PRODUCT_NAME)}`);
+                if (!response.ok) throw new Error('Failed to load reviews');
+                
+                const data = await response.json();
+                const reviewsEl = document.getElementById('reviews-display');
+                
+                if (data.stats.totalReviews === 0) {
+                    reviewsEl.innerHTML = '<span style="color: #999; font-size: 0.95rem;">Inga recensioner än. Bli först att recensera!</span>';
+                } else {
+                    const avgRating = parseFloat(data.stats.averageRating);
+                    const stars = '⭐'.repeat(Math.round(avgRating));
+                    reviewsEl.innerHTML = `<div style="font-size: 1.1rem;"><span style="color: #f4a261; font-weight: 600;">${stars} ${avgRating}/5</span> <span style="color: #666;">(${data.stats.totalReviews} ${data.stats.totalReviews === 1 ? 'recension' : 'recensioner'})</span></div>`;
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                document.getElementById('reviews-display').innerHTML = '<span style="color: #999; font-size: 0.95rem;">Inga recensioner än</span>';
+            }
+        }
+        
+        function openReviewModal() {
+            window.location.href = `/?review=${encodeURIComponent(PRODUCT_NAME)}`;
+        }
         
         function addToCart(productName, price) {
             let cart = JSON.parse(localStorage.getItem('cart') || '[]');
