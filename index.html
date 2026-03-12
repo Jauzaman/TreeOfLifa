@@ -1873,7 +1873,9 @@
                     stockInfo = `<div class="stock-info low-stock">Endast ${stock.available} kvar!</div>`;
                 } else {
                     stockBadge = '<div class="stock-badge in-stock">I lager</div>';
-                    stockInfo = '<div class="stock-info in-stock">I lager</div>';
+                    // Show exact available count when in stock
+                    const availableCount = stock.available || 0;
+                    stockInfo = `<div class="stock-info in-stock">${availableCount} st i lager</div>`;
                 }
                 
                 // Get product page URL

@@ -26,7 +26,8 @@
             <h1>Indisk Lifa</h1>
             <p style="color:#666;font-size:1.05rem;">Vår mest populära lifa från småskalig ekologisk odling från Indien. Oblekta, väldigt praktiska att ha med sig till t.ex. gymmet eller bastu. Mäter ca 10 cm lång och 5-6 cm i diameter. Praktisk upphängning för enkel torkning.</p>
             <div class="product-price">60 kr <span style="font-size:0.8rem;color:#777">Fri frakt i hela Sverige</span></div>
-            <button class="buy-button" onclick="addToCart('Indisk Lifa', 60)">🛒 Lägg i kundvagn</button>
+            <div id="stock-info" style="margin-bottom:10px;color:#2f8a3d;font-weight:600">Laddar lager...</div>
+            <button class="buy-button" id="buy-button" onclick="addToCart('Indisk Lifa', 60)">🛒 Lägg i kundvagn</button>
 
             <!-- Recensioner -->
             <div id="reviews-section" style="margin-top:18px;padding:16px;background:#f9f9f9;border-radius:8px;">
@@ -54,6 +55,37 @@
                 el.innerHTML = html;
             }catch(e){ console.error(e); document.getElementById('reviews-display').innerHTML = '<span style="color:#999">Kunde inte ladda recensioner</span>'; }
         }
+
+        // Load stock for this product
+        async function loadProductStock() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/inventory`);
+                if (!res.ok) throw new Error('Inventory fetch failed');
+                const inv = await res.json();
+                const infoEl = document.getElementById('stock-info');
+                const buyBtn = document.getElementById('buy-button');
+                const entry = inv[PRODUCT_NAME];
+                if (!entry) {
+                    infoEl.textContent = 'Lagerstatus okänd';
+                    return;
+                }
+                if (!entry.inStock) {
+                    infoEl.textContent = 'Tillfälligt slut i lager';
+                    if (buyBtn) buyBtn.disabled = true;
+                } else {
+                    const count = entry.available || 0;
+                    infoEl.textContent = `${count} st i lager`;
+                    if (buyBtn) buyBtn.disabled = false;
+                }
+            } catch (e) {
+                console.error('Error loading stock:', e);
+                const infoEl = document.getElementById('stock-info');
+                if (infoEl) infoEl.textContent = 'Kunde inte ladda lager';
+            }
+        }
+
+        // call stock loader
+        document.addEventListener('DOMContentLoaded', () => loadProductStock());
 
         function openReviewModal(){ window.location.href = '/?review=' + encodeURIComponent(PRODUCT_NAME); }
 
