@@ -225,6 +225,11 @@ async function loadInventory() {
     }
 }
 
+// Load persisted inventory on startup so the running server reflects inventory.json
+loadInventory().catch(err => {
+    console.error('⚠️ Kunde inte ladda persistent lager vid uppstart:', err);
+});
+
 // Reservera produkter (när kund går till kassan)
 function reserveItems(items) {
     const reservationId = 'RES-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
