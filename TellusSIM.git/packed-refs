@@ -1,0 +1,4 @@
+# pack-refs with: peeled fully-peeled sorted 
+b5ff812a9c82f765f43fee6096c540961e2d1573 refs/heads/main
+6a3033cd3fd45d9168910dfe809ad650b330e2d9 refs/heads/update-product-limit
+2e4f8d1c514ccba92e949e42761004e53b86d435 refs/tags/backup-stable-2025-11-25

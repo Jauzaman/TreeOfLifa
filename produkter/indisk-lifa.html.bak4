@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="sv">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Indisk Lifa — TreeOfLifa</title>
+    <meta name="description" content="Vår mest populära lifa från småskalig ekologisk odling i Indien. Oblekt, praktisk att ta med till gymmet eller bastun.">
+    <link rel="canonical" href="https://treeoflifa.se/produkter/indisk-lifa.html">
+    <style>
+        :root{--earth-dark:#3d5a3c;--terracotta:#c96b4b}
+        body{font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif; margin:0; padding:20px; background:#fff}
+        .product-page{max-width:980px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}
+        .product-image img{width:100%;border-radius:12px}
+        .product-info h1{font-size:2rem;color:var(--earth-dark)}
+        .product-price{font-size:1.6rem;color:var(--earth-dark);font-weight:700;margin:15px 0}
+        .buy-button{background:var(--terracotta);color:#fff;border:none;padding:12px 26px;border-radius:30px;cursor:pointer}
+        @media(max-width:768px){.product-page{grid-template-columns:1fr}}
+    </style>
+</head>
+<body>
+    <div class="product-page">
+        <div class="product-image">
+            <img src="/IMG_8939.jpg" alt="Indisk Lifa - oblekt lifa från ekologisk odling i Indien, med upphängning" />
+        </div>
+        <div class="product-info">
+            <h1>Indisk Lifa</h1>
+            <p style="color:#666;font-size:1.05rem;">Vår mest populära lifa från småskalig ekologisk odling från Indien. Oblekta, väldigt praktiska att ha med sig till t.ex. gymmet eller bastu. Mäter ca 10 cm lång och 5-6 cm i diameter. Praktisk upphängning för enkel torkning.</p>
+            <div class="product-price">60 kr <span style="font-size:0.8rem;color:#777">Fri frakt i hela Sverige</span></div>
+            <div id="stock-info" style="margin-bottom:10px;color:#2f8a3d;font-weight:600">Laddar lager...</div>
+            <button class="buy-button" id="buy-button" onclick="addToCart('Indisk Lifa', 60)">🛒 Lägg i kundvagn</button>
+
+            <!-- Recensioner -->
+            <div id="reviews-section" style="margin-top:18px;padding:16px;background:#f9f9f9;border-radius:8px;">
+                <div id="reviews-display" style="margin-bottom:12px;color:#666;">⭐ Laddar recensioner...</div>
+                <button onclick="openReviewModal()" style="background:none;border:2px solid var(--terracotta);color:var(--terracotta);padding:10px 18px;border-radius:20px;cursor:pointer">✍️ Skriv en recension</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = window.API_BASE_URL || 'https://treeoflifa.se';
+        const PRODUCT_NAME = 'Indisk Lifa';
+
+        document.addEventListener('DOMContentLoaded', () => loadProductReviews());
+
+        async function loadProductReviews(){
+            try{
+                const res = await fetch(`${API_BASE_URL}/api/reviews/${encodeURIComponent(PRODUCT_NAME)}`);
+                if(!res.ok) throw new Error('Failed');
+                const data = await res.json();
+                const el = document.getElementById('reviews-display');
+                if(data.stats.totalReviews === 0){ el.innerHTML = '<span style="color:#999">Inga recensioner än. Bli först!</span>'; return; }
+                let html = `<div style="margin-bottom:12px;"><strong style="color:var(--earth-dark)">${data.stats.averageRating}/5</strong> (${data.stats.totalReviews} recensioner)</div>`;
+                data.reviews.forEach(r=>{ html += `<div style="background:#fff;padding:10px;border-radius:8px;margin-bottom:10px;border-left:3px solid var(--terracotta)"><div style="font-weight:600">${r.customerName||'Anonym'} <span style="color:#999;font-weight:400">${new Date(r.date).toLocaleDateString('sv-SE')}</span></div><div style="color:#f4a261">${'⭐'.repeat(r.rating)}</div><div style="margin-top:6px">${r.reviewText}</div></div>` });
+                el.innerHTML = html;
+            }catch(e){ console.error(e); document.getElementById('reviews-display').innerHTML = '<span style="color:#999">Kunde inte ladda recensioner</span>'; }
+        }
+
+        // Load stock for this product
+        async function loadProductStock() {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/inventory`);
+                if (!res.ok) throw new Error('Inventory fetch failed');
+                const inv = await res.json();
+                const infoEl = document.getElementById('stock-info');
+                const buyBtn = document.getElementById('buy-button');
+                const entry = inv[PRODUCT_NAME];
+                if (!entry) {
+                    infoEl.textContent = 'Lagerstatus okänd';
+                    return;
+                }
+                if (!entry.inStock) {
+                    infoEl.textContent = 'Tillfälligt slut i lager';
+                    if (buyBtn) buyBtn.disabled = true;
+                } else {
+                    const count = entry.available || 0;
+                    infoEl.textContent = `${count} st i lager`;
+                    if (buyBtn) buyBtn.disabled = false;
+                }
+            } catch (e) {
+                console.error('Error loading stock:', e);
+                const infoEl = document.getElementById('stock-info');
+                if (infoEl) infoEl.textContent = 'Kunde inte ladda lager';
+            }
+        }
+
+        // call stock loader
+        document.addEventListener('DOMContentLoaded', () => loadProductStock());
+
+        function openReviewModal(){ window.location.href = '/?review=' + encodeURIComponent(PRODUCT_NAME); }
+
+        function addToCart(productName, price){
+            let cart = JSON.parse(localStorage.getItem('cart')||'[]');
+            const existing = cart.find(i=>i.name===productName);
+            if(existing) existing.quantity +=1; else cart.push({name:productName,price:price,quantity:1});
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert(`✓ ${productName} har lagts till i kundvagnen!`);
+            setTimeout(()=>window.location.href='/?cart=open',1200);
+        }
+    </script>
+</body>
+</html>

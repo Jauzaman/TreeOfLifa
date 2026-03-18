@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Köp Mindre Lifa | Naturlig Svamp För Exfoliering | Fri Frakt</title>
+    <meta name="description" content="Mindre Lifa - naturlig svamp perfekt för daglig kroppsskrubb och ansiktsvård. 100% biologiskt nedbrytbar. Ca 10cm. Fri frakt i Sverige!">
+    <meta name="keywords" content="lifa, naturlig svamp, exfoliering, kroppsskrubb, luffasvamp, köpa lifa sverige, naturlig hudvård">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="Mindre Lifa - Naturlig Svamp För Exfoliering">
+    <meta property="og:description" content="Naturlig lifa perfekt för daglig användning. 100% biologiskt nedbrytbar!">
+    <meta property="og:image" content="/images/indisk-lifa.jpg">
+    <meta property="og:url" content="https://treeoflifa.se/produkter/mindre-lifa.html">
+    
+    <!-- Schema.org Product Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org/",
+      "@type": "Product",
+      "name": "Mindre Lifa",
+    "image": "https://treeoflifa.se/images/indisk-lifa.jpg",
+      "description": "Naturlig lifa för daglig kroppsskrubb och exfoliering. Perfekt storlek ca 10cm.",
+      "brand": {
+        "@type": "Brand",
+        "name": "TreeOfLifa"
+      },
+      "offers": {
+        "@type": "Offer",
+        "price": "60",
+        "priceCurrency": "SEK",
+        "availability": "https://schema.org/InStock",
+        "url": "https://treeoflifa.se/produkter/mindre-lifa.html"
+      }
+    }
+    </script>
+    
+    <script src="../config.js"></script>
+    
+    <style>
+        :root {
+            --earth-dark: #3d5a3c;
+            --terracotta: #d4a574;
+            --cream: #f9f6f0;
+            --soft-black: #2d2d24;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Palatino', 'Georgia', serif;
+            line-height: 1.8;
+            color: var(--soft-black);
+            background: var(--cream);
+        }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        
+        .breadcrumb {
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+        
+        .breadcrumb a {
+            color: var(--terracotta);
+            text-decoration: none;
+        }
+        
+        .breadcrumb a:hover { text-decoration: underline; }
+        
+        .product-page {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            margin-top: 40px;
+        }
+        
+        .product-image {
+            position: sticky;
+            top: 20px;
+            height: fit-content;
+        }
+        
+        .product-image img {
+            width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .product-info h1 {
+            color: var(--earth-dark);
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        
+        .product-price {
+            font-size: 2em;
+            color: var(--earth-dark);
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        
+        .product-price span {
+            font-size: 0.5em;
+            color: #666;
+            font-weight: normal;
+        }
+        
+        .buy-button {
+            background: linear-gradient(135deg, var(--earth-dark), var(--terracotta));
+            color: white;
+            border: none;
+            padding: 20px 50px;
+            font-size: 1.2em;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            width: 100%;
+            margin: 30px 0;
+        }
+        
+        .buy-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .features {
+            background: #f0f7f0;
+            padding: 30px;
+            border-radius: 10px;
+            margin: 30px 0;
+        }
+        
+        .features h3 {
+            color: var(--earth-dark);
+            margin-bottom: 15px;
+        }
+        
+        .features ul {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .features li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+        
+        .features li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--earth-dark);
+            font-weight: bold;
+            font-size: 1.3em;
+        }
+        
+        .description {
+            margin: 40px 0;
+            line-height: 1.9;
+        }
+        
+        .description h2 {
+            color: var(--earth-dark);
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+        
+        .trust-badges {
+            display: flex;
+            gap: 20px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        
+        .badge {
+            background: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .badge strong {
+            display: block;
+            color: var(--earth-dark);
+        }
+        
+        @media (max-width: 768px) {
+            .product-page {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .product-image {
+                position: relative;
+                top: 0;
+            }
+            
+            .product-info h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="https://treeoflifa.se">Hem</a> / <a href="https://treeoflifa.se/#products">Produkter</a> / Mindre Lifa
+        </div>
+        
+        <div class="product-page">
+            <div class="product-image">
+                <img src="/images/indisk-lifa.jpg" alt="Mindre Lifa från TreeOfLifa">
+            </div>
+            
+            <div class="product-info">
+                <h1>Mindre Lifa</h1>
+                
+                <p style="font-size: 1.2em; color: #666;">Vår populäraste lifa! Perfekt storlek för daglig användning och ansiktsvård. Ca 10cm lång.</p>
+                
+                <div class="product-price">
+                    60 kr <span>Fri frakt i hela Sverige 📦</span>
+                </div>
+                
+                <button class="buy-button" onclick="addToCart('Mindre Lifah', 60)">
+                    🛒 Lägg i kundvagn
+                </button>
+                
+                <!-- Recensioner -->
+                <div id="reviews-section" style="margin: 20px 0; padding: 20px; background: #f9f9f9; border-radius: 10px;">
+                    <div id="reviews-display" style="margin-bottom: 15px;">
+                        <span style="color: #999;">⭐ Laddar recensioner...</span>
+                    </div>
+                    <button onclick="openReviewModal()" style="
+                        background: none;
+                        border: 2px solid var(--terracotta);
+                        color: var(--terracotta);
+                        font-size: 1rem;
+                        cursor: pointer;
+                        padding: 12px 24px;
+                        border-radius: 25px;
+                        transition: all 0.3s;
+                        font-weight: 500;
+                    " onmouseover="this.style.background='var(--terracotta)'; this.style.color='white'" onmouseout="this.style.background='none'; this.style.color='var(--terracotta)'">
+                        ✍️ Skriv en recension
+                    </button>
+                </div>
+                
+                <div class="trust-badges">
+                    <div class="badge">
+                        <strong>✓ 100% Naturlig</strong>
+                        <span>Växtbaserad</span>
+                    </div>
+                    <div class="badge">
+                        <strong>✓ Biologiskt Nedbrytbar</strong>
+                        <span>Miljövänlig</span>
+                    </div>
+                    <div class="badge">
+                        <strong>✓ Fri Frakt</strong>
+                        <span>Hela Sverige</span>
+                    </div>
+                </div>
+                
+                <div class="features">
+                    <h3>🌿 Varför välja Mindre Lifa?</h3>
+                    <ul>
+                        <li>Perfekt hanterbar storlek (ca 10cm)</li>
+                        <li>100% naturlig växtfiber</li>
+                        <li>Mild men effektiv exfoliering</li>
+                        <li>Passar både kropp och ansikte</li>
+                        <li>Biologiskt nedbrytbar</li>
+                        <li>Stimulerar blodcirkulationen</li>
+                        <li>Avlägsnar döda hudceller</li>
+                    </ul>
+                </div>
+                
+                <div class="description">
+                    <h2>Om Lifa (Luffasvamp)</h2>
+                    <p>Lifa är faktiskt inte en havssvamp, utan en <strong>växt</strong>! Den kommer från luffa-växten (Luffa aegyptiaca), en gurkväxt som växer i tropiska och subtropiska områden. När frukten torkar bildar den ett naturligt fibernätverk som är perfekt för exfoliering.</p>
+                    
+                    <h2>Så använder du din Lifa</h2>
+                    <p><strong>Steg 1:</strong> Blöt lifan i varmt vatten i 2-3 minuter tills den mjuknar.</p>
+                    <p><strong>Steg 2:</strong> Tillsätt tvål eller duschgel. Vi rekommenderar vår <a href="aleppotvaal.html" style="color: var(--earth-dark); text-decoration: underline;">naturliga Aleppotvål</a>.</p>
+                    <p><strong>Steg 3:</strong> Massera huden i cirkelrörelser med lätt till medelhård tryck.</p>
+                    <p><strong>Steg 4:</strong> Skölj noga och häng upp lifan att torka.</p>
+                    
+                    <p><strong>Läs mer:</strong> <a href="../blog/hur-anvander-man-lifa.html" style="color: var(--earth-dark); text-decoration: underline;">Komplett guide - Hur använder man lifa?</a></p>
+                    
+                    <h2>Hur ofta ska man använda?</h2>
+                    <p><strong>För kroppen:</strong> 2-3 gånger per vecka för normal hud, 1-2 gånger för känslig hud.</p>
+                    <p><strong>För ansiktet:</strong> 1 gång per vecka med försiktig tryck.</p>
+                    <p><strong>Fötter och armbågar:</strong> Kan användas dagligen på tjockare hud.</p>
+                    
+                    <h2>Skötsel & Rengöring</h2>
+                    <p><strong>Efter varje användning:</strong> Skölj noga i varmt vatten och häng upp att lufttorka.</p>
+                    <p><strong>Veckovis:</strong> Koka lifan i vatten i 5 minuter eller mikra i 1-2 minuter för djuprengöring.</p>
+                    <p><strong>Byt ut:</strong> Efter 2-3 månader eller när den börjar lukta/missfärgas.</p>
+                    
+                    <h2>Fördelar för huden</h2>
+                    <ul style="margin-left: 20px;">
+                        <li>✨ Avlägsnar döda hudceller effektivt</li>
+                        <li>✨ Förbättrar hudens textur och utseende</li>
+                        <li>✨ Stimulerar blodcirkulationen</li>
+                        <li>✨ Hjälper mot inåtväxande hår</li>
+                        <li>✨ Ger mjukare och jämnare hud</li>
+                        <li>✨ 100% naturlig exfoliering</li>
+                    </ul>
+                    
+                    <h2>Miljövänligt val</h2>
+                    <p>Till skillnad från plastsvampar som tar hundratals år att brytas ner, är lifan 100% biologiskt nedbrytbar. När den är utsliten kan du kompostera den eller kasta i hushållsavfallet där den bryts ner naturligt. Ett perfekt val för dig som vill ha ett hållbart badrum! 🌍</p>
+                </div>
+                
+                <button class="buy-button" onclick="addToCart('Mindre Lifah', 60)">
+                    🛒 Lägg i kundvagn - 60 kr
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'https://treeoflifa.se';
+        const PRODUCT_NAME = 'Mindre Lifah';
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            loadProductReviews();
+        });
+        
+        async function loadProductReviews() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/reviews/${encodeURIComponent(PRODUCT_NAME)}`);
+                if (!response.ok) throw new Error('Failed to load reviews');
+                
+                const data = await response.json();
+                const reviewsEl = document.getElementById('reviews-display');
+                
+                if (data.stats.totalReviews === 0) {
+                    reviewsEl.innerHTML = '<span style="color: #999; font-size: 0.95rem;">Inga recensioner än. Bli först att recensera!</span>';
+                } else {
+                    const avgRating = parseFloat(data.stats.averageRating);
+                    const stars = '⭐'.repeat(Math.round(avgRating));
+                    let reviewsHTML = `<div style="margin-bottom: 20px;"><div style="font-size: 1.3rem; margin-bottom: 10px;"><span style="color: #f4a261; font-weight: 600;">${stars} ${avgRating}/5</span> <span style="color: #666; font-size: 0.95rem;">(${data.stats.totalReviews} ${data.stats.totalReviews === 1 ? 'recension' : 'recensioner'})</span></div></div>`;
+                    data.reviews.forEach(review => {
+                        const reviewStars = '⭐'.repeat(review.rating);
+                        const reviewDate = new Date(review.date).toLocaleDateString('sv-SE');
+                        reviewsHTML += `<div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 3px solid var(--terracotta);"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;"><strong style="color: var(--earth-dark);">${review.customerName || 'Anonym'}</strong><span style="color: #999; font-size: 0.85rem;">${reviewDate}</span></div><div style="color: #f4a261; margin-bottom: 8px;">${reviewStars}</div><p style="color: #333; line-height: 1.6; margin: 0;">${review.reviewText}</p></div>`;
+                    });
+                    reviewsEl.innerHTML = reviewsHTML;
+                }
+            } catch (error) {
+                console.error('Error loading reviews:', error);
+                document.getElementById('reviews-display').innerHTML = '<span style="color: #ff6b6b; font-size: 0.95rem;">⚠️ Kunde inte ladda recensioner</span>';
+            }
+        }
+        
+        function openReviewModal() {
+            window.location.href = `/?review=${encodeURIComponent(PRODUCT_NAME)}`;
+        }
+        
+        function addToCart(productName, price) {
+            let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+            const existingItem = cart.find(item => item.name === productName);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ name: productName, price: price, quantity: 1 });
+            }
+            
+            localStorage.setItem('cart', JSON.stringify(cart));
+            alert(`✓ ${productName} har lagts till i kundvagnen!\n\nGå till startsidan för att slutföra köpet.`);
+            
+            setTimeout(() => {
+                window.location.href = '/?cart=open';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
